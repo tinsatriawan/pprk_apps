@@ -1,2 +1,2 @@
-# pprk_apps
+# PPRK
 Aplikasi Perencanaan Pembangunan Rendah Karbon
