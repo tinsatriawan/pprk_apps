@@ -37,10 +37,11 @@ body <- dashboardBody(
             selectInput("pprkResults",
                         label="Pilih output yang ingin ditampilkan",
                         choices=c("GDP",
-                                  "Backward & Forward Linkage",
+                                  "Backward Linkage",
+                                  "Forward Linkage",
                                   "Multiplier Income",
                                   "Multiplier Labour",
-                                  "Multiplier Outcome", 
+                                  "Multiplier Output", 
                                   "Multiplier Energy Used", 
                                   "Multiplier Waste Product", 
                                   "Land Productivity Coefficient",
@@ -94,36 +95,62 @@ server <- function(input, output) {
     if(is.null(inAddedValue))
       return(NULL)    
     
-    sec<-read.table(inSector$datapath, header=FALSE, sep=";")
-    indem<-read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
-    findem<-read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
-    addval<-read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
+    sector <- read.table(inSector$datapath, header=FALSE, sep=";")
+    indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
+    findem <- read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
+    addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
     
-    indem_matrix<-as.matrix(indem)
-    addval_matrix<-as.matrix(addval)
-    dimensi<-ncol(int_con.m)
+    indem_matrix <- as.matrix(indem)
+    addval_matrix <- as.matrix(addval)
+    dimensi <- ncol(int_con.m)
     
-    indem_colsum<-colSums(indem_matrix)
-    addval_colsum<-colSums(addval_matrix)
-    fin_con<- 1/(indem_colsum+addval_colsum)
-    fin_con[is.infinite(fin_con)]<-0
-    tinput_invers<-diag(fin_con)
-    A<-indem_matrix %*% tinput_invers
-    I<-as.matrix(diag(dimensi))
-    I_A<-I-A
-    leontief<-solve(I_A)
+    indem_colsum <- colSums(indem_matrix)
+    addval_colsum <- colSums(addval_matrix)
+    fin_con <- 1/(indem_colsum+addval_colsum)
+    fin_con[is.infinite(fin_con)] <- 0
+    tinput_invers <- diag(fin_con)
+    A <- indem_matrix %*% tinput_invers
+    I <- as.matrix(diag(dimensi))
+    I_A <- I-A
+    leontief <- solve(I_A)
     
-    DBL<-colSums(Leontief)
-    DBL<-DBL/(mean(DBL))
-    DBL<-cbind(sec,DBL)
-    colnames(DBL)[1] <- "Sektor"
+    # Backward Linkage
+    DBL <- colSums(leontief)
+    DBL <- DBL/(mean(DBL))
+    # Forward Linkage
+    DFL<-rowSums(leontief)
+    DFL<-DFL/(mean(DFL))
+    # GDP
     
-    DBL
+    # Multiplier Output
+    multiplierOutput <- colSums(leontief)
+    
+    # Multiplier Income
+      
+    result <- cbind(sector, DBL, DFL, multiplierOutput)
+    colnames(result)[1] <- "Sektor"
+    result
+    
   })
   
   output$plotResults <- renderPlot({
-    ggplot(data=sec(), aes(x=Sektor, y=DBL)) + 
-      geom_bar(colour="black", stat="identity") + 
+    anlysisResult <- sec()
+    
+    if(input$pprkResults == "GDP"){
+      graph <- data.frame(Sektor="", Analysis="")
+    } else if(input$pprkResults == "Backward Linkage"){
+      graph <- subset(anlysisResult, select = c(Sektor, DBL))
+    } else if(input$pprkResults == "Forward Linkage"){
+      graph <- subset(anlysisResult, select = c(Sektor, DFL))
+    } else if(input$pprkResults == "Multiplier Output"){
+      graph <- subset(anlysisResult, select = c(Sektor, multiplierOutput))
+    } else if(input$pprkResults == "Multiplier Income"){
+      graph <- data.frame(Sektor="", Analysis="")
+    }
+    
+    colnames(graph) <- c("Sektor", "Analysis")
+    ggplot(data=graph, aes(x=Sektor, y=Analysis)) + 
+      geom_bar(colour="blue", stat="identity") + 
       coord_flip() + guides(fill=FALSE) + xlab("Sectors") + ylab("Value") 
   })
   
