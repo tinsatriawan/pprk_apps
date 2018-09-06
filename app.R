@@ -1,6 +1,7 @@
 # initiate library
 library(shiny)
 library(shinydashboard)
+library(ggplot2)
 
 # header
 header <- dashboardHeader(title="PPRK")
@@ -52,7 +53,9 @@ body <- dashboardBody(
                                   "Emission from waste product", 
                                   "Upah gaji",
                                   "Income per capita"
-                                  ))
+                                  )
+                        ),
+            plotOutput("plotResults")
     ),
       
     tabItem(tabName = "pageThree",
@@ -79,14 +82,49 @@ server <- function(input, output) {
     if(is.null(inSector))
       return(NULL)
     
-    intermediateDemand <- input$intermediateDemand
-    if(is.null(intermediateDemand))
+    inIntermediateDemand <- input$intermediateDemand
+    if(is.null(inIntermediateDemand))
       return(NULL)
 
-    finalDemand <- input$finalDemand
-    a<-read.table(inSector$datapath, header=FALSE, sep=";")
-    b<-read.table(intermediateDemand$datapath, header=FALSE, sep=";")
-    cbind(a, b)
+    inFinalDemand <- input$finalDemand
+    if(is.null(inFinalDemand))
+      return(NULL)
+    
+    inAddedValue <- input$addedValue
+    if(is.null(inAddedValue))
+      return(NULL)    
+    
+    sec<-read.table(inSector$datapath, header=FALSE, sep=";")
+    indem<-read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
+    findem<-read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
+    addval<-read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
+    
+    indem_matrix<-as.matrix(indem)
+    addval_matrix<-as.matrix(addval)
+    dimensi<-ncol(int_con.m)
+    
+    indem_colsum<-colSums(indem_matrix)
+    addval_colsum<-colSums(addval_matrix)
+    fin_con<- 1/(indem_colsum+addval_colsum)
+    fin_con[is.infinite(fin_con)]<-0
+    tinput_invers<-diag(fin_con)
+    A<-indem_matrix %*% tinput_invers
+    I<-as.matrix(diag(dimensi))
+    I_A<-I-A
+    leontief<-solve(I_A)
+    
+    DBL<-colSums(Leontief)
+    DBL<-DBL/(mean(DBL))
+    DBL<-cbind(sec,DBL)
+    colnames(DBL)[1] <- "Sektor"
+    
+    DBL
+  })
+  
+  output$plotResults <- renderPlot({
+    ggplot(data=sec(), aes(x=Sektor, y=DBL)) + 
+      geom_bar(colour="black", stat="identity") + 
+      coord_flip() + guides(fill=FALSE) + xlab("Sectors") + ylab("Value") 
   })
   
   output$tableIO <- renderTable({
