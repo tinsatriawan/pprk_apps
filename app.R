@@ -36,16 +36,16 @@ body <- dashboardBody(
             # h2("Page 2"),
             selectInput("pprkResults",
                         label="Pilih output yang ingin ditampilkan",
-                        choices=c("GDP",
+                        choices=c("PDRB",
                                   "Backward Linkage",
                                   "Forward Linkage",
-                                  "Multiplier Income",
-                                  "Multiplier Labour",
-                                  "Multiplier Output", 
-                                  "Multiplier Energy Used", 
-                                  "Multiplier Waste Product", 
+                                  "Angka Pengganda Pendapatan Rumah Tangga",
+                                  "Angka Pengganda Tenaga Kerja",
+                                  "Angka Pengganda Output", 
+                                  "Angka Pengganda Energi", 
+                                  "Angka Pengganda Buangan Limbah", 
                                   "Land Productivity Coefficient",
-                                  "Energy Used Coefficient",
+                                  "Koefisien Intensitas Energi",
                                   "Waste Product Coefficient", 
                                   "Radar Chart", 
                                   "Total Emission", 
@@ -53,8 +53,8 @@ body <- dashboardBody(
                                   "Emission from energy used",
                                   "Emission from waste product", 
                                   "Upah gaji",
-                                  "Income per capita"
-                                  )
+                                  "Pendapatan per kapita"
+                        )
                         ),
             plotOutput("plotResults")
     ),
@@ -137,23 +137,23 @@ server <- function(input, output) {
     anlysisResult <- sec()
     graph <- data.frame(Sektor="", Analysis="")
     
-    if(input$pprkResults == "GDP"){
+    if(input$pprkResults == "PDRB"){
       graph <- subset(anlysisResult, select = c(Sektor, GDP))
     } else if(input$pprkResults == "Backward Linkage"){
       graph <- subset(anlysisResult, select = c(Sektor, DBL))
     } else if(input$pprkResults == "Forward Linkage"){
       graph <- subset(anlysisResult, select = c(Sektor, DFL))
-    } else if(input$pprkResults == "Multiplier Output"){
+    } else if(input$pprkResults == "Angka Pengganda Output"){
       graph <- subset(anlysisResult, select = c(Sektor, multiplierOutput))
-    } else if(input$pprkResults == "Multiplier Income"){
+    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
       # graph <- data.frame(Sektor="", Analysis="")
-    } else if(input$pprkResults == "Multiplier Energy Used"){
+    } else if(input$pprkResults == "Angka Pengganda Energi"){
       
-    } else if(input$pprkResults == "Multiplier Waste Product"){
+    } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
       
     } else if(input$pprkResults == "Land Productivity Coefficient"){
       
-    } else if(input$pprkResults == "Energy Used Coefficient"){
+    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
       
     } else if(input$pprkResults == "Waste Product Coefficient"){
       
@@ -169,7 +169,7 @@ server <- function(input, output) {
       
     } else if(input$pprkResults == "Upah gaji"){
       
-    } else if(input$pprkResults == "Income per capita"){
+    } else if(input$pprkResults == "Pendapatan per kapita"){
       
     }
     
