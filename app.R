@@ -171,8 +171,7 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
   
     } else if(input$pprkResults == "Pendapatan per kapita"){
-      
-    } 
+    }
     
     colnames(graph) <- c("Sektor", "Analysis")
     ggplot(data=graph, aes(x=Sektor, y=Analysis)) + 
