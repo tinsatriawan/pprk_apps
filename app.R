@@ -121,13 +121,13 @@ server <- function(input, output) {
     DFL<-rowSums(leontief)
     DFL<-DFL/(mean(DFL))
     # GDP
-    
+    GDP <- colSums(addval_matrix)
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     
     # Multiplier Income
       
-    result <- cbind(sector, DBL, DFL, multiplierOutput)
+    result <- cbind(sector, DBL, DFL, multiplierOutput, GDP)
     colnames(result)[1] <- "Sektor"
     result
     
@@ -135,9 +135,10 @@ server <- function(input, output) {
   
   output$plotResults <- renderPlot({
     anlysisResult <- sec()
+    graph <- data.frame(Sektor="", Analysis="")
     
     if(input$pprkResults == "GDP"){
-      graph <- data.frame(Sektor="", Analysis="")
+      graph <- subset(anlysisResult, select = c(Sektor, GDP))
     } else if(input$pprkResults == "Backward Linkage"){
       graph <- subset(anlysisResult, select = c(Sektor, DBL))
     } else if(input$pprkResults == "Forward Linkage"){
@@ -145,7 +146,31 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Multiplier Output"){
       graph <- subset(anlysisResult, select = c(Sektor, multiplierOutput))
     } else if(input$pprkResults == "Multiplier Income"){
-      graph <- data.frame(Sektor="", Analysis="")
+      # graph <- data.frame(Sektor="", Analysis="")
+    } else if(input$pprkResults == "Multiplier Energy Used"){
+      
+    } else if(input$pprkResults == "Multiplier Waste Product"){
+      
+    } else if(input$pprkResults == "Land Productivity Coefficient"){
+      
+    } else if(input$pprkResults == "Energy Used Coefficient"){
+      
+    } else if(input$pprkResults == "Waste Product Coefficient"){
+      
+    } else if(input$pprkResults == "Radar Chart"){
+      
+    } else if(input$pprkResults == "Total Emission"){
+      
+    } else if(input$pprkResults == "Emission from land use"){
+      
+    } else if(input$pprkResults == "Emission from energy used"){
+      
+    } else if(input$pprkResults == "Emission from waste product"){
+      
+    } else if(input$pprkResults == "Upah gaji"){
+      
+    } else if(input$pprkResults == "Income per capita"){
+      
     }
     
     colnames(graph) <- c("Sektor", "Analysis")
