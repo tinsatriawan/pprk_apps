@@ -104,8 +104,8 @@ server <- function(input, output) {
     addval_matrix <- as.matrix(addval)
     dimensi <- ncol(int_con.m)
     
-    indem_colsum <- colSums(indem_matrix)
-    addval_colsum <- colSums(addval_matrix)
+    indem_colsum <- rowSums(indem_matrix)
+    addval_colsum <- rowSums(addval_matrix)
     fin_con <- 1/(indem_colsum+addval_colsum)
     fin_con[is.infinite(fin_con)] <- 0
     tinput_invers <- diag(fin_con)
