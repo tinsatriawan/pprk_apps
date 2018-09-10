@@ -9,9 +9,9 @@ header <- dashboardHeader(title="PPRK")
 # sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Page 1", tabName = "pageOne"),
-    menuItem("Page 2", tabName = "pageTwo"),
-    menuItem("Page 3", tabName = "pageThree")
+    menuItem("Input", tabName = "pageOne"),
+    menuItem("Results", tabName = "pageTwo"),
+    menuItem("I-O Table", tabName = "pageThree")
   )
 )
 
@@ -53,10 +53,13 @@ body <- dashboardBody(
                                   "Emission from energy used",
                                   "Emission from waste product", 
                                   "Upah gaji",
+                                  "Rasio Upah gaji per Surplus Usaha",
                                   "Pendapatan per kapita"
-                        )
+                                  )
                         ),
-            plotOutput("plotResults")
+            plotOutput("plotResults"),
+            hr(), 
+            tag$div(id='placeholder')
     ),
       
     tabItem(tabName = "pageThree",
@@ -95,14 +98,24 @@ server <- function(input, output) {
     if(is.null(inAddedValue))
       return(NULL)    
     
+    inLabour <- input$labour
+    if(is.null(inLabour))
+      return(NULL)
+    
+    inEnergy <- input$energyTable
+    if(is.null(inEnergy))
+      return(NULL)  
+    
     sector <- read.table(inSector$datapath, header=FALSE, sep=";")
     indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
     findem <- read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
     addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
+    labour <- read.table(inLabour$datapath, header=FALSE, dec=",", sep=";")
+    energy <- read.table(inEnergy$datapath, header=TRUE, dec=",", sep=";")
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
-    dimensi <- ncol(int_con.m)
+    dimensi <- ncol(indem_matrix)
     
     indem_colsum <- rowSums(indem_matrix)
     addval_colsum <- rowSums(addval_matrix)
@@ -118,37 +131,81 @@ server <- function(input, output) {
     DBL <- colSums(leontief)
     DBL <- DBL/(mean(DBL))
     # Forward Linkage
-    DFL<-rowSums(leontief)
-    DFL<-DFL/(mean(DFL))
+    DFL <- rowSums(leontief)
+    DFL <- DFL/(mean(DFL))
     # GDP
     GDP <- colSums(addval_matrix)
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
-    
     # Multiplier Income
+    income_matrix <- GDP * fin_con
+    multiplierIncome <- leontief %*% income_matrix
+    # Labour
+    labour_matrix <- as.matrix(labour*fin_con)
+    multiplierLabour <- as.numeric(leontief %*% labour_matrix)
+    # Multiplier Energy Used
+    multiplierEnergy <- leontief %*% energy[,3]
+    # Wages
+    wages <- t(as.matrix(addval[2,]))
+    colnames(wages) <- "wages"
+    # Ratio Wages / Business Surplus
+    ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
+    ratio_ws[is.na(ratio_ws)] <- 0
+    colnames(ratio_ws) <- "ratio_ws"
       
-    result <- cbind(sector, DBL, DFL, multiplierOutput, GDP)
+    result <- cbind(sector, DBL, DFL, GDP, multiplierOutput, multiplierIncome, multiplierLabour, multiplierEnergy, wages, ratio_ws)
     colnames(result)[1] <- "Sektor"
     result
     
   })
   
   output$plotResults <- renderPlot({
-    anlysisResult <- sec()
+    analysisResult <- sec()
     graph <- data.frame(Sektor="", Analysis="")
     
     if(input$pprkResults == "PDRB"){
-      graph <- subset(anlysisResult, select = c(Sektor, GDP))
+      graph <- subset(analysisResult, select = c(Sektor, GDP))
+      GDPvalues <- as.matrix(analysisResult$GDP)
+      GDPTotal <- colSums(GDPvalues)
+      insertUI(
+        selector="#placeholder",
+        ui = tags$div(
+          valueBox(
+            paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8
+          ),
+          id='pdrb'
+        )
+      )
     } else if(input$pprkResults == "Backward Linkage"){
-      graph <- subset(anlysisResult, select = c(Sektor, DBL))
+      graph <- subset(analysisResult, select = c(Sektor, DBL))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Forward Linkage"){
-      graph <- subset(anlysisResult, select = c(Sektor, DFL))
+      graph <- subset(analysisResult, select = c(Sektor, DFL))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Angka Pengganda Output"){
-      graph <- subset(anlysisResult, select = c(Sektor, multiplierOutput))
+      graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
-      # graph <- data.frame(Sektor="", Analysis="")
+      graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Angka Pengganda Energi"){
-      
+      graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
+    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
       
     } else if(input$pprkResults == "Land Productivity Coefficient"){
@@ -168,20 +225,31 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Emission from waste product"){
       
     } else if(input$pprkResults == "Upah gaji"){
+      graph <- subset(analysisResult, select = c(Sektor, wages))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
-  
+      graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
+      removeUI(
+        selector = 'div:has(> #pdrb)'
+      )
     } else if(input$pprkResults == "Pendapatan per kapita"){
+      
     }
     
-    colnames(graph) <- c("Sektor", "Analysis")
-    ggplot(data=graph, aes(x=Sektor, y=Analysis)) + 
+    colnames(graph) <- c("Sektor", "Analisis")
+    ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
       geom_bar(colour="blue", stat="identity") + 
-      coord_flip() + guides(fill=FALSE) + xlab("Sectors") + ylab("Value") 
+      coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai") 
+  
   })
   
   output$tableIO <- renderTable({
     sec()
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
+  
+  
 }
 
 # Run the application 
