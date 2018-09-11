@@ -124,14 +124,18 @@ for(s in 1:stepN){
   if(s == 1){
     fDemandSeries <- agg_fDem_matrix
     tStamps <- startT
+    tOUseries <- leontief %*% agg_fDem_matrix
   }
   prjFinDem <- coef_Grise * fDemandSeries[, s]
   fDemandSeries <- cbind(fDemandSeries, prjFinDem)
+  prjOU <- leontief %*% prjFinDem
+  tOUseries <- cbind(tOUseries, prjOU)
   # notes on the year
   T_prj <- startT+s*stepT
   tStamps <- c(tStamps, T_prj)
 }
 colnames(fDemandSeries) <- as.character(tStamps)
+colnames(tOUseries) <- as.character(tStamps)
 # tes_findem <- coef_Grise * agg_fDem_matrix
 
 
@@ -201,7 +205,7 @@ satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup
 # 4. Output presentation: time series data: PPRK indicators: # A. Labour
 # B. Income; Income/profits ratio atau income per surplus usaha; income per capita
 # test to check the validity of the formula
-ou_recalc <- leontief %*% fDemandSeries[,1] # total output
+# ou_recalc <- leontief %*% fDemandSeries[,1] # total output
 
-tes_intDem <- A %*% diag(as.vector(tes_intDem), ncol = dimensi, nrow= dimensi) # intermediate demand
+tes_intDem <- A %*% diag(tOUseries[,1], ncol = dimensi, nrow= dimensi) # intermediate demand
 
