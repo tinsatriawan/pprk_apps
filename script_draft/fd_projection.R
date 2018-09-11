@@ -7,7 +7,13 @@ endT <- 2030
 startT <- 2010
 stepT <- 5
 # Misc. inputs====
-otherEm <- data.frame(year= seq(from = startT, to = endT, by= stepT), emission_land = sample(10000:100000, (endT-startT)/stepT + 1 ), emission_agri = sample(10000:100000, (endT-startT)/stepT + 1 ), stringsAsFactors = FALSE) # other emission sources not directly accounted within the framework, e.g. agriculture and land based sector. Note that all values are nett emission and are expressed in ton CO2 equivalent.
+otherEm <- data.frame(year= seq(from = startT, to = endT, by= stepT), emission_land = sample(10000:100000, (endT-startT)/stepT + 1 ), emission_agri = sample(10000:100000, (endT-startT)/stepT + 1 ), stringsAsFactors = FALSE)# other emission sources not directly accounted within the framework, e.g. agriculture and land based sector. Note that all values are nett emission and are expressed in ton CO2 equivalent.
+# addedvalue component identification
+importRow <- 1
+incomeRow <- 2
+profitRow <- 3
+
+
 
 # ADtestonly inputs====
 data_path <- "D:/PPRK/database/indonesia/provinces/kalimantan_timur/data/testing_AD/"
@@ -31,7 +37,7 @@ satLabour_file <- "D:/PPRK/process/table_manipulations/result/satellite_labour.c
 sat_Energy <- read.csv(satEnergy_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
 energy_Em <- read.csv(energyEm_file, sep = ";", stringsAsFactors = FALSE)
 sat_Waste <- read.csv(satWaste_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
-energy_Em <- read.csv(wasteEm_file, sep = ";", stringsAsFactors = FALSE)
+waste_Em <- read.csv(wasteEm_file, sep = ";", stringsAsFactors = FALSE)
 sat_Labour <- read.csv(satLabour_file, sep = ";", stringsAsFactors = FALSE)
 
 # creating waste_EM dummy
@@ -109,60 +115,7 @@ mult_matrix <- function(input.mx = matrix(), column = 5){
   return(res_mx)
 }
 
-# 2. 
-
-
-# Calculation of Final demand projection====
-# In the case of module 3, the final demand is input by the user, while in this case, it is automatically derived by the model based on the expected GDP growth rate which is assumed to match the final demand growth rate
-findem_matrix <- as.matrix(findem)
-agg_fDem_matrix <- as.matrix(rowSums(findem_matrix))
-coef_Grise <- (100+G_rate)/100
-# Grise_matrix <- diag(coef_Grise, nrow= dimensi, ncol = dimensi) # remove: not required
-stepN <- (endT-startT)/stepT
-for(s in 1:stepN){
-  
-  if(s == 1){
-    fDemandSeries <- agg_fDem_matrix
-    tStamps <- startT
-    tOUseries <- leontief %*% agg_fDem_matrix
-  }
-  prjFinDem <- coef_Grise * fDemandSeries[, s]
-  fDemandSeries <- cbind(fDemandSeries, prjFinDem)
-  prjOU <- leontief %*% prjFinDem
-  tOUseries <- cbind(tOUseries, prjOU)
-  # notes on the year
-  T_prj <- startT+s*stepT
-  tStamps <- c(tStamps, T_prj)
-}
-colnames(fDemandSeries) <- as.character(tStamps)
-colnames(tOUseries) <- as.character(tStamps)
-# tes_findem <- coef_Grise * agg_fDem_matrix
-
-
-# DEV. NOTES
-# 1. Shall incorporate the calculation of gdp rise instead of the final demand rise? Done by first calculating the relative proportion of imports towards primary inputs. SKIPPED for now
-
-# \Calculation of Final demand projection eN=======
-
-# Coefficients calculation======
-coef_primInput <- addval_matrix %*% tinput_invers # imports, value added, etc.
-# coef_labour <- grossLabour_matrix %*% tinput_invers
-# coef_energy <- grossEnergy_matrix %*% tinput_invers
-# coef_waste <- grossWaste_matrix %*% tinput_invers
-
-# prop_emEnergy <- 
-# prop_emWaste <- 
-# Coefficients calculation\end======
-
-
-
-
-# Following the calculation of final demand, series of events shall occur, namely:
-# 1. The calculation of the total outputs & other impacts for each time step (intermediate demand, primary inputs including income etc., also the redistribution of the final demand: proportionally)
-# 2. The calculation of the: A. Energy consumptions by type & B. Disposed waste by type <<<< Energy and Waste satellite account
-# 3. The calculation of the emission related to activities mentioned in point 2 <<< Energy and Waste satellite account
-
-# To create function which calculates the impact on labour, energy, and waste [the latter two: energy and waste will return a list which includes not only the consumption but also the emission]
+# 2. To create function which calculates the impact on labour, energy, and waste [the latter two: energy and waste will return a list which includes not only the consumption but also the emission]
 satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame()){ # first argument to define which satellite is currently under investigation
   # second arg is the total output matrix calculated earlier
   # third arg is compulsory only when sat.type is either "energy" or "waste"
@@ -176,7 +129,7 @@ satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup
     coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
     coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
     impact$cons[,3] <- coeff_matrix %*% TO.matrix
-    colnames(impact$cons[3]) <- "Tconsumption"
+    colnames(impact$cons)[3] <- "Tconsumption"
     # distribute the newly calculated gross consumption
     impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
     # on emission factor
@@ -191,7 +144,7 @@ satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup
     impact$emission <- impact$cons
     impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)])%*%em_f
     impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
-    colnames(impact$emission[3]) <- "Temission"
+    colnames(impact$emission)[3] <- "Temission"
   } else { # for labour case
     impact <- list()
     impact$cons <- sat_Labour
@@ -202,10 +155,95 @@ satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup
   return(impact)
 }
 
+# function definition \end====
+
+
+# Coefficients calculation======
+coef_primInput <- addval_matrix %*% tinput_invers # imports, value added, etc.
+
+# Calculation of Final demand projection====
+# In the case of module 3, the final demand is input by the user, while in this case, it is automatically derived by the model based on the expected GDP growth rate which is assumed to match the final demand growth rate
+findem_matrix <- as.matrix(findem)
+agg_fDem_matrix <- as.matrix(rowSums(findem_matrix))
+# finDemComp proportion calculation----
+prop_finDemand <- findem/agg_fDem_matrix
+# finDemComp proportion calculation\end----
+
+coef_Grise <- (100+G_rate)/100
+# Grise_matrix <- diag(coef_Grise, nrow= dimensi, ncol = dimensi) # remove: not required
+stepN <- (endT-startT)/stepT
+for(s in 1:stepN){
+  
+  if(s == 1){
+    # GDP compile table
+    GDPseries <- data.frame(sector.id=1:nrow(sector), sector = sector[,1], stringsAsFactors = FALSE)
+    eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), importRow),])")))
+    fDemandSeries <- agg_fDem_matrix
+    tStamps <- paste0("y", startT)
+    tOUseries <- leontief %*% agg_fDem_matrix
+    # blank lists for keeping intDemandSeries; addValueSeries; fDCompSeries
+    intDemandSeries <- list()
+    addValueSeries <- list()
+    fDCompSeries <- list()
+    impactLabour <- list()
+    impactEnergy <- list()
+    impactWaste <- list()
+    # Add first values to the lists. Lists values are all matrices
+    eval(parse(text= paste0("intDemandSeries$y", startT, " <- indem_matrix")))
+    eval(parse(text= paste0("addValueSeries$y", startT, " <- addval_matrix")))
+    eval(parse(text= paste0("fDCompSeries$y", startT, " <- findem_matrix")))
+    eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', TO.matrix = as.matrix(tOUseries))")))
+    eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', TO.matrix = as.matrix(tOUseries), Em.lookup =energy_Em)")))
+    eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', TO.matrix = as.matrix(tOUseries), Em.lookup =waste_Em)")))
+    print("first year data load has been successfully conducted")
+  }
+  prjFinDem <- coef_Grise * fDemandSeries[, s]
+  fDemandSeries <- cbind(fDemandSeries, prjFinDem)
+  prjOU <- leontief %*% prjFinDem
+  tOUseries <- cbind(tOUseries, prjOU)
+  # notes on the year
+  T_prj <- startT+s*stepT
+  T_prj <- paste0("y", T_prj)
+  tStamps <- c(tStamps, T_prj)
+  # add additional values to the list
+  eval(parse(text=paste0("fDCompSeries$", T_prj, " <- as.matrix(prop_finDemand*prjFinDem)"))) # contains NaN
+  eval(parse(text=paste0("intDemandSeries$", T_prj, " <-  A %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
+  eval(parse(text=paste0("addValueSeries$", T_prj, " <-  coef_primInput %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
+  # GDP projection
+  eval(parse(text = paste0("GDPseries$", T_prj, "<- colSums(addValueSeries$", T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
+  # Impact projection
+  eval(parse(text= paste0("impactLabour$", T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(prjOU))")))
+  eval(parse(text= paste0("impactEnergy$", T_prj, " <- satelliteImpact('energy', TO.matrix = as.matrix(prjOU), Em.lookup =energy_Em)")))
+  eval(parse(text= paste0("impactWaste$", T_prj, " <- satelliteImpact('waste', TO.matrix = as.matrix(prjOU), Em.lookup =waste_Em)")))
+}
+colnames(fDemandSeries) <- as.character(tStamps)
+colnames(tOUseries) <- as.character(tStamps)
+# tes_findem <- coef_Grise * agg_fDem_matrixl
+
+
+# DEV. NOTES
+# 1. Shall incorporate the calculation of gdp rise instead of the final demand rise? Done by first calculating the relative proportion of imports towards primary inputs. SKIPPED for now
+
+# \Calculation of Final demand projection eN=======
+
+
+# prop_emEnergy <- 
+# prop_emWaste <- 
+# Coefficients calculation\end======
+
+
+
+
+# Following the calculation of final demand, series of events shall occur, namely:
+# 1. The calculation of the total outputs & other impacts for each time step (intermediate demand, primary inputs including income etc., also the redistribution of the final demand: proportionally)
+# 2. The calculation of the: A. Energy consumptions by type & B. Disposed waste by type <<<< Energy and Waste satellite account
+# 3. The calculation of the emission related to activities mentioned in point 2 <<< Energy and Waste satellite account
+
+
 # 4. Output presentation: time series data: PPRK indicators: # A. Labour
 # B. Income; Income/profits ratio atau income per surplus usaha; income per capita
 # test to check the validity of the formula
 # ou_recalc <- leontief %*% fDemandSeries[,1] # total output
 
-tes_intDem <- A %*% diag(tOUseries[,1], ncol = dimensi, nrow= dimensi) # intermediate demand
+# tes_intDem <- A %*% diag(tOUseries[,1], ncol = dimensi, nrow= dimensi) # intermediate demand
 
