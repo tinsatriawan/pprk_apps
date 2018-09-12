@@ -202,13 +202,26 @@ server <- function(input, output) {
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
-    income_matrix <- GDP * fin_con
-    multiplierIncome <- leontief %*% income_matrix
+    income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+    income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+    InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+    multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+    multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+    multiplierIncome[is.na(multiplierIncome)] <- 0
     # Labour
-    labour_matrix <- as.matrix(labour*fin_con)
-    multiplierLabour <- as.numeric(leontief %*% labour_matrix)
+    labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+    labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+    InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+    multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+    multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+    multiplierLabour[is.na(multiplierLabour)] <- 0
     # Multiplier Energy Used
-    multiplierEnergy <- leontief %*% energy[,3]
+    energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+    energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+    multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+    multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+    multiplierEnergy[is.na(multiplierEnergy)] <- 0
     # Ratio Wages / Business Surplus
     ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
     ratio_ws[is.na(ratio_ws)] <- 0
