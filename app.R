@@ -9,12 +9,12 @@ header <- dashboardHeader(title="PPRK")
 # sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Historis", startExpanded = TRUE,
+    menuItem("Historis", 
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               menuSubItem("I-O Table", tabName = "pageThree")
     ),
-    menuItem("Skenario Bisnis Seperti Biasa",  
+    menuItem("Skenario Bisnis Seperti Biasa",  startExpanded = TRUE,
               menuSubItem("Input", tabName = "pageFour"),
               menuSubItem("Results", tabName = "pageFive"),
               menuSubItem("I-O Table", tabName = "pageSix")
@@ -39,13 +39,13 @@ body <- dashboardBody(
             fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+            # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
+            # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("popDensTable", "Tabel Kepadatan Populasi Penduduk", buttonLabel="Browse...", placeholder="No file selected"),
+            numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000),
             actionButton("button", "Submit")
     ),
     
@@ -61,14 +61,13 @@ body <- dashboardBody(
                                   "Angka Pengganda Output", 
                                   "Angka Pengganda Energi", 
                                   "Angka Pengganda Buangan Limbah", 
-                                  "Land Productivity Coefficient",
-                                  "Koefisien Intensitas Energi",
-                                  "Waste Product Coefficient", 
-                                  "Radar Chart", 
-                                  "Total Emission", 
-                                  "Emission from land use",
-                                  "Emission from energy used",
-                                  "Emission from waste product", 
+                                  # "Land Productivity Coefficient",
+                                  "Koefisien Intensitas Energi",# total sectoral energy cons / sectoral GDP 
+                                  "Koefisien Produk Limbah",  # 
+                                  "Perbandingan Angka Pengganda", 
+                                  # "Total Emission", 
+                                  "Emisi dari Penggunaan Energi",
+                                  "Emisi dari Limbah", 
                                   "Upah gaji",
                                   "Rasio Upah gaji per Surplus Usaha",
                                   "Pendapatan per kapita"
@@ -84,11 +83,32 @@ body <- dashboardBody(
             div(style="overflow-x: scroll", tableOutput('tableIO'))
     ),
     
-    tabItem(tabName = "pageFour"
+    tabItem(tabName = "pageFour",
+            sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=5),
+            numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
+            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100),
+            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100), 
+            fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+            actionButton("buttonBAU", "Submit")
     ),
-    tabItem(tabName = "pageFive"
+    tabItem(tabName = "pageFive",
+            selectInput("bauResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("Proyeksi PDRB", 
+                                  "Proyeksi Konsumsi Energi",
+                                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                                  "Proyeksi Buangan Limbah",
+                                  "Proyeksi Emisi Terkait Buangan Limbah",
+                                  "Total Emisi",
+                                  "Upah Gaji",
+                                  "Upah per Kapita" 
+                                  )
+                        ),
+            plotOutput("plotResultsBAU")
     ),
-    tabItem(tabName = "pageSix"
+    tabItem(tabName = "pageSix",
+            div(style="overflow-x: scroll", tableOutput('tableIOBAU'))
     ),
     tabItem(tabName = "pageSeven"
     ),
@@ -189,15 +209,12 @@ server <- function(input, output) {
     multiplierLabour <- as.numeric(leontief %*% labour_matrix)
     # Multiplier Energy Used
     multiplierEnergy <- leontief %*% energy[,3]
-    # Wages
-    wages <- t(as.matrix(addval[2,]))
-    colnames(wages) <- "wages"
     # Ratio Wages / Business Surplus
     ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
     ratio_ws[is.na(ratio_ws)] <- 0
     colnames(ratio_ws) <- "ratio_ws"
       
-    result <- cbind(sector, DBL, DFL, GDP, multiplierOutput, multiplierIncome, multiplierLabour, multiplierEnergy, wages, ratio_ws)
+    result <- cbind(sector, DBL, DFL, GDP, multiplierOutput, multiplierIncome, multiplierLabour, multiplierEnergy, ratio_ws)
     colnames(result)[1] <- "Sektor"
     
     list_table <- list(result=result, sector=sector, indem=indem, findem=findem, addval=addval, labour=labour, energy=energy, findemcom=findemcom, addvalcom=addvalcom) 
@@ -271,7 +288,7 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Emission from waste product"){
       
     } else if(input$pprkResults == "Upah gaji"){
-      graph <- subset(analysisResult, select = c(Sektor, wages))
+      # graph <- subset(analysisResult, select = c(Sektor, wages))
       removeUI(
         selector = '#pdrb'
       )
@@ -335,6 +352,9 @@ server <- function(input, output) {
     io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
   
+  allInputsBAU <- eventReactive(input$buttonBAU, {
+    
+  })
   
 }
 
