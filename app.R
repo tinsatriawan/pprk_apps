@@ -9,9 +9,21 @@ header <- dashboardHeader(title="PPRK")
 # sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Input", tabName = "pageOne"),
-    menuItem("Results", tabName = "pageTwo"),
-    menuItem("I-O Table", tabName = "pageThree")
+    menuItem("Historis", startExpanded = TRUE,
+              menuSubItem("Input", tabName = "pageOne"),
+              menuSubItem("Results", tabName = "pageTwo"),
+              menuSubItem("I-O Table", tabName = "pageThree")
+    ),
+    menuItem("Skenario Bisnis Seperti Biasa",  
+              menuSubItem("Input", tabName = "pageFour"),
+              menuSubItem("Results", tabName = "pageFive"),
+              menuSubItem("I-O Table", tabName = "pageSix")
+    ),
+    menuItem("Skenario Intervensi", 
+              menuSubItem("Input", tabName = "pageSeven"),
+              menuSubItem("Results", tabName = "pageEight"),
+              menuSubItem("I-O Table", tabName = "pageNine")
+    )
   )
 )
 
@@ -29,6 +41,11 @@ body <- dashboardBody(
             fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("popDensTable", "Tabel Kepadatan Populasi Penduduk", buttonLabel="Browse...", placeholder="No file selected"),
             actionButton("button", "Submit")
     ),
     
@@ -59,12 +76,25 @@ body <- dashboardBody(
                         ),
             plotOutput("plotResults"),
             hr(), 
-            tag$div(id='placeholder')
+            tags$div(id='placeholder')
     ),
       
     tabItem(tabName = "pageThree",
             # h2("Page 3"), 
             div(style="overflow-x: scroll", tableOutput('tableIO'))
+    ),
+    
+    tabItem(tabName = "pageFour"
+    ),
+    tabItem(tabName = "pageFive"
+    ),
+    tabItem(tabName = "pageSix"
+    ),
+    tabItem(tabName = "pageSeven"
+    ),
+    tabItem(tabName = "pageEight"
+    ),
+    tabItem(tabName = "pageNine"
     )
   )
 )
@@ -81,7 +111,7 @@ ui <- dashboardPage(
 
 # Define server 
 server <- function(input, output) {
-  sec <- eventReactive(input$button, {
+  allInputs <- eventReactive(input$button, {
     inSector <- input$sector
     if(is.null(inSector))
       return(NULL)
@@ -104,6 +134,18 @@ server <- function(input, output) {
     
     inEnergy <- input$energyTable
     if(is.null(inEnergy))
+      return(NULL) 
+    
+    # inWaste <- input$wasteTable
+    # if(is.null(inWaste))
+    #   return(NULL)  
+    
+    inFinalDemandComp <- input$finalDemandComponent
+    if(is.null(inFinalDemandComp))
+      return(NULL) 
+    
+    inAddedValueComp <- input$addedValueComponent
+    if(is.null(inAddedValueComp))
       return(NULL)  
     
     sector <- read.table(inSector$datapath, header=FALSE, sep=";")
@@ -112,6 +154,8 @@ server <- function(input, output) {
     addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
     labour <- read.table(inLabour$datapath, header=FALSE, dec=",", sep=";")
     energy <- read.table(inEnergy$datapath, header=TRUE, dec=",", sep=";")
+    findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
+    addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
@@ -155,12 +199,14 @@ server <- function(input, output) {
       
     result <- cbind(sector, DBL, DFL, GDP, multiplierOutput, multiplierIncome, multiplierLabour, multiplierEnergy, wages, ratio_ws)
     colnames(result)[1] <- "Sektor"
-    result
     
+    list_table <- list(result=result, sector=sector, indem=indem, findem=findem, addval=addval, labour=labour, energy=energy, findemcom=findemcom, addvalcom=addvalcom) 
+    list_table
   })
   
   output$plotResults <- renderPlot({
-    analysisResult <- sec()
+    sec <- allInputs()
+    analysisResult <- sec$result
     graph <- data.frame(Sektor="", Analysis="")
     
     if(input$pprkResults == "PDRB"){
@@ -179,32 +225,32 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Backward Linkage"){
       graph <- subset(analysisResult, select = c(Sektor, DBL))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Forward Linkage"){
       graph <- subset(analysisResult, select = c(Sektor, DFL))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Angka Pengganda Output"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Angka Pengganda Energi"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
       
@@ -227,12 +273,12 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Upah gaji"){
       graph <- subset(analysisResult, select = c(Sektor, wages))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
       graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
       removeUI(
-        selector = 'div:has(> #pdrb)'
+        selector = '#pdrb'
       )
     } else if(input$pprkResults == "Pendapatan per kapita"){
       
@@ -246,7 +292,47 @@ server <- function(input, output) {
   })
   
   output$tableIO <- renderTable({
-    sec()
+    sec <- allInputs()
+    sector <- sec$sector
+    indem <- sec$indem
+    findem <- sec$findem
+    addval <- sec$addval
+    findemcom <- sec$findemcom
+    addvalcom <- sec$addvalcom
+    
+    io_table <- cbind(sector, indem)
+    colnames(io_table) <- c("Sektor", t(sector))
+    io_table$`Total Permintaan Antara` <- rowSums(indem)
+    
+    colnames(findem) <- c(t(findemcom))
+    findem$`Total Permintaan Akhir` <- rowSums(findem)
+    io_table <- cbind(io_table, findem)
+    
+    total_indem <- colSums(indem)
+    out_indem <- sum(total_indem)
+    total_findem <- colSums(findem)
+    out_findem <- sum(total_findem)
+    total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
+    
+    colnames(total_all_indem) <- colnames(io_table)
+    io_table<-rbind(io_table, total_all_indem)
+    
+    totalrow_addval <- rowSums(addval)
+    totalcol_addval <- colSums(addval)
+    total_addval <- sum(totalrow_addval)
+    addval_table <- cbind(addvalcom, addval, totalrow_addval)
+    total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
+    
+    remaining_col <- ncol(io_table) - ncol(total_addval_table) 
+    for(i in 1:remaining_col){
+      eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
+      eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
+    }
+    colnames(addval_table) <- colnames(io_table)
+    colnames(total_addval_table) <- colnames(io_table)
+    io_table <- rbind(io_table, addval_table, total_addval_table)
+    
+    io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
   
   
