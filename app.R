@@ -202,8 +202,12 @@ server <- function(input, output) {
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
-    income_matrix <- GDP * fin_con
-    multiplierIncome <- leontief %*% income_matrix
+    income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+    income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+    InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+    multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+    multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+    multiplierIncome[is.na(multiplierIncome)] <- 0
     # Labour
     labour_matrix <- as.matrix(labour*fin_con)
     multiplierLabour <- as.numeric(leontief %*% labour_matrix)
