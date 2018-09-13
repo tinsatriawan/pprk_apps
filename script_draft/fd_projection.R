@@ -33,12 +33,15 @@ energyEm_file <- "D:/PPRK/process/table_manipulations/result/Emission_factor.csv
 satWaste_file <- "D:/PPRK/process/table_manipulations/result/satellite_waste.csv"
 wasteEm_file <- "D:/PPRK/process/table_manipulations/result/Emission_Wfactor.csv"
 satLabour_file <- "D:/PPRK/process/table_manipulations/result/satellite_labour.csv"
+population_file <- "D:/PPRK/database/indonesia/provinces/kalimantan_timur/data/testing_AD/projPopulation.csv"
 
 sat_Energy <- read.csv(satEnergy_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
 energy_Em <- read.csv(energyEm_file, sep = ";", stringsAsFactors = FALSE)
 sat_Waste <- read.csv(satWaste_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
 waste_Em <- read.csv(wasteEm_file, sep = ";", stringsAsFactors = FALSE)
 sat_Labour <- read.csv(satLabour_file, sep = ";", stringsAsFactors = FALSE)
+
+population <- read.table(population_file, header=TRUE, dec=".", sep=";", stringsAsFactors = FALSE)
 
 # creating waste_EM dummy
 # waste_Em <- energy_Em[c(1:2, 5:9, 11:12),]
@@ -225,6 +228,141 @@ colnames(tOUseries) <- as.character(tStamps)
 # 1. Shall incorporate the calculation of gdp rise instead of the final demand rise? Done by first calculating the relative proportion of imports towards primary inputs. SKIPPED for now
 
 # \Calculation of Final demand projection eN=======
+
+# Wrap up outputs====
+# 1. GDP (ind. 1)
+GDP_ou <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
+for(c in 3:ncol(GDPseries)){
+  add.row <- GDPseries[, c(1,2, c)]
+  names(add.row) <- c("id.sector", "sector", "GDP")
+  add.row$year <- startT + (c-3)*stepT
+  add.row <- add.row[, colnames(GDP_ou)]
+  GDP_ou <- data.frame(rbind(GDP_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+GDP_ou <- GDP_ou[GDP_ou$year != 0, ] # remove initial values
+# 2. Income per capita (ind. 9)
+
+incCap_ou <- data.frame(year = 0, Income.per.capita = 0)
+for(t in 0: stepN){
+  t_curr <- startT + t*stepT
+  pop_curr <- population[which(population[, 1] == t_curr), 2]
+  inc_curr <- sum(addValueSeries[[t+1]][incomeRow,])
+  inc_capita <- inc_curr/pop_curr
+  add.row <- data.frame(cbind(t_curr, inc_capita))
+  names(add.row) <- names(incCap_ou)
+  incCap_ou <- data.frame(rbind(incCap_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+incCap_ou <- incCap_ou[incCap_ou$year != 0, ]
+
+# 3. Wages or Income (ind. 7)
+inc_ou <- data.frame(year = 0, id.sector = 0, sector= "", income = 0, stringsAsFactors = FALSE)
+id.sc <- 1:dimensi
+sc.name <- sector[,1]
+for(t in 0: stepN){
+  t_curr <- startT + t*stepT
+  inc_curr <- data.frame(addValueSeries[[t+1]][incomeRow,])
+  add.row <- data.frame(cbind(t_curr, id.sc, sc.name, inc_curr), stringsAsFactors = FALSE)
+  names(add.row) <- names(inc_ou)
+  inc_ou <- data.frame(rbind(inc_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+inc_ou <- inc_ou[inc_ou$year != 0, ]
+
+# 4. Labour (ind. number 10)
+labour_ou <- data.frame(year = 0, id.sector = 0, sector= "", labour = 0, stringsAsFactors = FALSE)
+for(t in 0: stepN){
+  t_curr <- startT + t*stepT
+  add.row <- data.frame(impactLabour[[t+1]][[1]])
+  names(add.row) <- names(labour_ou)[2:4]
+  add.row$year <- t_curr
+  add.row <- add.row[, names(labour_ou)]
+  labour_ou <- data.frame(rbind(labour_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+labour_ou <- labour_ou[labour_ou$year != 0, ]
+
+# 5. Energy cons (indicator number 2)
+enCons_ou <- impactEnergy[[1]][[1]]
+enCons_ou$year <- startT
+enCons_ou <- enCons_ou[, c("year", names(impactEnergy[[1]][[1]]))]
+
+for(t in 1: stepN){
+  t_curr <- startT + t*stepT
+  add.row <- data.frame(impactEnergy[[t+1]][[1]]) # [[2]] for emission
+  add.row$year <- t_curr
+  add.row <- add.row[, names(enCons_ou)]
+  enCons_ou <- data.frame(rbind(enCons_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+names(enCons_ou)[2:3] <- c("id.sector", "sector")
+# enCons_ou <- enCons_ou[enCons_ou$year != 0, ]
+
+# 6. Energy emission (indicator number 3)
+enEms_ou <- impactEnergy[[1]][[2]]
+enEms_ou$year <- startT
+enEms_ou <- enEms_ou[, c("year", names(impactEnergy[[1]][[2]]))]
+
+for(t in 1: stepN){
+  t_curr <- startT + t*stepT
+  add.row <- data.frame(impactEnergy[[t+1]][[2]]) # [[2]] for emission
+  add.row$year <- t_curr
+  add.row <- add.row[, names(enEms_ou)]
+  enEms_ou <- data.frame(rbind(enEms_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+names(enEms_ou)[2:3] <- c("id.sector", "sector")
+# enEms_ou <- enEms_ou[enEms_ou$year != 0, ]
+
+# 7. Waste cons (indicator number 2)
+wsDisp_ou <- impactWaste[[1]][[1]]
+wsDisp_ou$year <- startT
+wsDisp_ou <- wsDisp_ou[, c("year", names(impactWaste[[1]][[1]]))]
+
+for(t in 1: stepN){
+  t_curr <- startT + t*stepT
+  add.row <- data.frame(impactWaste[[t+1]][[1]]) # [[2]] for emission
+  add.row$year <- t_curr
+  add.row <- add.row[, names(wsDisp_ou)]
+  wsDisp_ou <- data.frame(rbind(wsDisp_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+names(wsDisp_ou)[2:3] <- c("id.sector", "sector")
+# wsDisp_ou <- wsDisp_ou[wsDisp_ou$year != 0, ]
+
+# 8. Waste emission (indicator number 3)
+wsEms_ou <- impactWaste[[1]][[2]]
+wsEms_ou$year <- startT
+wsEms_ou <- wsEms_ou[, c("year", names(impactWaste[[1]][[2]]))]
+
+for(t in 1: stepN){
+  t_curr <- startT + t*stepT
+  add.row <- data.frame(impactWaste[[t+1]][[2]]) # [[2]] for emission
+  add.row$year <- t_curr
+  add.row <- add.row[, names(wsEms_ou)]
+  wsEms_ou <- data.frame(rbind(wsEms_ou, add.row), stringsAsFactors = FALSE)
+  
+}
+names(wsEms_ou)[2:3] <- c("id.sector", "sector")
+# wsEms_ou <- wsEms_ou[wsEms_ou$year != 0, ]
+
+# 9. Total Emission
+tEm_ou <- otherEm
+emission_Econs <- numeric()
+emission_IndWaste <- numeric()
+for(t in 0: stepN){
+  t_curr <- startT + t*stepT
+  add_MEcons <- sum(enEms_ou[enEms_ou$year==t_curr, "Temission"])
+  add_MWdisp <- sum(wsEms_ou[wsEms_ou$year==t_curr, "Temission"])
+  emission_Econs <- c(emission_Econs, add_MEcons)
+  emission_IndWaste <- c(emission_IndWaste, add_MWdisp)
+}
+tEm_ou$emission_EnergyCons <- emission_Econs
+tEm_ou$emission_WasteDisp <- emission_IndWaste
+tEm_ou$TotalEmission <- rowSums(tEm_ou[, 2:ncol(tEm_ou)])
+tEm_ou$CummulativeEmission <- cumsum(tEm_ou$TotalEmission)
+# Wrap up outputs\end====
 
 
 # prop_emEnergy <- 
