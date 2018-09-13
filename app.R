@@ -402,16 +402,16 @@ server <- function(input, output) {
       removeUI(
         selector = '#capita'
       )
-    } else if(input$pprkResults == "Emission from energy used"){
-      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+    } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
+      graph <- subset(analysisResult, select = c(Sektor, em_energy_total))
       removeUI(
         selector = '#pdrb'
       )
       removeUI(
         selector = '#capita'
       )
-    } else if(input$pprkResults == "Emission from waste product"){
-      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+    } else if(input$pprkResults == "Emisi dari Limbah"){
+      graph <- subset(analysisResult, select = c(Sektor, em_waste_total))
       removeUI(
         selector = '#pdrb'
       )
