@@ -177,12 +177,15 @@ server <- function(input, output) {
     findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
     addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
     
+    # Row explicit definition
+    incomeRow <- 2
+    
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
     dimensi <- ncol(indem_matrix)
     
-    indem_colsum <- rowSums(indem_matrix)
-    addval_colsum <- rowSums(addval_matrix)
+    indem_colsum <- colSums(indem_matrix)
+    addval_colsum <- colSums(addval_matrix)
     fin_con <- 1/(indem_colsum+addval_colsum)
     fin_con[is.infinite(fin_con)] <- 0
     tinput_invers <- diag(fin_con)
@@ -198,7 +201,7 @@ server <- function(input, output) {
     DFL <- rowSums(leontief)
     DFL <- DFL/(mean(DFL))
     # GDP
-    GDP <- colSums(addval_matrix)
+    GDP <- colSums(addval_matrix[2:6,])
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
