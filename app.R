@@ -628,8 +628,8 @@ server <- function(input, output) {
       
     }
     GDP_ou <- GDP_ou[GDP_ou$year != 0, ] # remove initial values
-    # 2. Income per capita (ind. 9)
     
+    # 2. Income per capita (ind. 9)
     incCap_ou <- data.frame(year = 0, Income.per.capita = 0)
     for(t in 0: stepN){
       t_curr <- startT + t*stepT
@@ -765,7 +765,7 @@ server <- function(input, output) {
   })
   
   output$yearSelection <- renderUI({
-    selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(2010:2030))
+    selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2030))
   })
   
   output$plotResultsBAU <- renderPlot({
