@@ -177,6 +177,9 @@ server <- function(input, output) {
     findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
     addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
     
+    # Row explicit definition
+    incomeRow <- 2
+    
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
     dimensi <- ncol(indem_matrix)
