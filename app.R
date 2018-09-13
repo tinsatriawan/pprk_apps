@@ -9,12 +9,12 @@ header <- dashboardHeader(title="PPRK")
 # sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Historis", 
+    menuItem("Historis", startExpanded = TRUE,
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               menuSubItem("I-O Table", tabName = "pageThree")
     ),
-    menuItem("Skenario Bisnis Seperti Biasa",  startExpanded = TRUE,
+    menuItem("Skenario Bisnis Seperti Biasa",  
               menuSubItem("Input", tabName = "pageFour"),
               menuSubItem("Results", tabName = "pageFive"),
               menuSubItem("I-O Table", tabName = "pageSix")
@@ -62,9 +62,9 @@ body <- dashboardBody(
                                   "Angka Pengganda Energi", 
                                   "Angka Pengganda Buangan Limbah", 
                                   # "Land Productivity Coefficient",
-                                  "Koefisien Intensitas Energi",# total sectoral energy cons / sectoral GDP 
-                                  "Koefisien Produk Limbah",  # 
-                                  "Perbandingan Angka Pengganda", 
+                                  "Koefisien Intensitas Energi", 
+                                  "Koefisien Produk Limbah",  
+                                  # "Perbandingan Angka Pengganda", 
                                   # "Total Emission", 
                                   "Emisi dari Penggunaan Energi",
                                   "Emisi dari Limbah", 
@@ -156,9 +156,17 @@ server <- function(input, output) {
     if(is.null(inEnergy))
       return(NULL) 
     
-    # inWaste <- input$wasteTable
-    # if(is.null(inWaste))
-    #   return(NULL)  
+    inWaste <- input$wasteTable
+    if(is.null(inWaste))
+      return(NULL)
+    
+    inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
+    if(is.null(inEmissionFactorEnergiTable))
+      return(NULL)
+    
+    inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
+    if(is.null(inEmissionFactorLandWasteTable))
+      return(NULL)
     
     inFinalDemandComp <- input$finalDemandComponent
     if(is.null(inFinalDemandComp))
@@ -174,6 +182,9 @@ server <- function(input, output) {
     addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
     labour <- read.table(inLabour$datapath, header=TRUE, dec=",", sep=";")
     energy <- read.table(inEnergy$datapath, header=TRUE, dec=",", sep=";")
+    waste <- read.table(inWaste$datapath, header=TRUE, dec=",", sep=";")
+    ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, dec=",", sep=";")
+    ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, dec=",", sep=";")
     findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
     addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
     
@@ -225,21 +236,78 @@ server <- function(input, output) {
     multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
     multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
     multiplierEnergy[is.na(multiplierEnergy)] <- 0
+    # Multiplier Waste Product
+    waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+    waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+    multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+    multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+    multiplierWaste[is.na(multiplierWaste)] <- 0
     # Ratio Wages / Business Surplus
     ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
     ratio_ws[is.na(ratio_ws)] <- 0
+    ratio_ws[ratio_ws == Inf] <- 0
     colnames(ratio_ws) <- "ratio_ws"
+    # Koefisien Intensitas Energi
+    # total sectoral energy cons / sectoral GDP
+    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:6,])
+    # Koefisien Produk Limbah
+    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:6,])
+    # Emission from energy
+    f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
+    em_energy <- as.matrix(energy[,4:12]) %*% f_energy_diag
+    em_energy_total <- rowSums(em_energy)
+    # Emission from waste
+    f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
+    em_waste <- as.matrix(waste[,4:12]) %*% f_waste_diag
+    em_waste_total <- rowSums(em_waste)
+    # Wages
+    wages <- as.matrix(t(addval[2,]))
+    colnames(wages) <- "wages"
+    
+    # Income per capita
+    income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
       
-    result <- cbind(sector, DBL, DFL, GDP, multiplierOutput, multiplierIncome, multiplierLabour, multiplierEnergy, ratio_ws)
+    result <- cbind(sector,
+                    DBL,
+                    DFL, 
+                    GDP, 
+                    multiplierOutput, 
+                    multiplierIncome,
+                    multiplierLabour,
+                    multiplierEnergy,
+                    multiplierWaste,
+                    wages,
+                    ratio_ws, 
+                    coef_energy,
+                    coef_waste,
+                    em_energy_total,
+                    em_waste_total
+                    )
     colnames(result)[1] <- "Sektor"
     
-    list_table <- list(result=result, sector=sector, indem=indem, findem=findem, addval=addval, labour=labour, energy=energy, findemcom=findemcom, addvalcom=addvalcom) 
+    list_table <- list(result=result, 
+                       sector=sector, 
+                       indem=indem, 
+                       findem=findem, 
+                       addval=addval, 
+                       labour=labour, 
+                       energy=energy, 
+                       findemcom=findemcom, 
+                       addvalcom=addvalcom,
+                       waste=waste,
+                       ef_waste=ef_waste,
+                       ef_energy=ef_energy,
+                       income_per_capita=income_per_capita
+                    ) 
     list_table
   })
   
   output$plotResults <- renderPlot({
     sec <- allInputs()
     analysisResult <- sec$result
+    print(analysisResult)
+    income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
     
     if(input$pprkResults == "PDRB"){
@@ -255,66 +323,130 @@ server <- function(input, output) {
           id='pdrb'
         )
       )
+      removeUI(
+        selector = '#capita'
+      )
     } else if(input$pprkResults == "Backward Linkage"){
       graph <- subset(analysisResult, select = c(Sektor, DBL))
       removeUI(
         selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
       )
     } else if(input$pprkResults == "Forward Linkage"){
       graph <- subset(analysisResult, select = c(Sektor, DFL))
       removeUI(
         selector = '#pdrb'
       )
+      removeUI(
+        selector = '#capita'
+      )
     } else if(input$pprkResults == "Angka Pengganda Output"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
       removeUI(
         selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
       )
     } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
       removeUI(
         selector = '#pdrb'
       )
+      removeUI(
+        selector = '#capita'
+      )
     } else if(input$pprkResults == "Angka Pengganda Energi"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
       removeUI(
         selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
       )
     } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
       graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
       removeUI(
         selector = '#pdrb'
       )
+      removeUI(
+        selector = '#capita'
+      )
     } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
-      
-    } else if(input$pprkResults == "Land Productivity Coefficient"){
-      
-    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
-      
-    } else if(input$pprkResults == "Waste Product Coefficient"){
-      
-    } else if(input$pprkResults == "Radar Chart"){
-      
-    } else if(input$pprkResults == "Total Emission"){
-      
-    # } else if(input$pprkResults == "Emission from land use"){
-      
-    } else if(input$pprkResults == "Emission from energy used"){
-      
-    } else if(input$pprkResults == "Emission from waste product"){
-      
-    } else if(input$pprkResults == "Upah gaji"){
-      # graph <- subset(analysisResult, select = c(Sektor, wages))
+      graph <- subset(analysisResult, select = c(Sektor, multiplierWaste))
       removeUI(
         selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_energy))
+      removeUI(
+        selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Koefisien Produk Limbah"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+      removeUI(
+        selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Emission from energy used"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+      removeUI(
+        selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Emission from waste product"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+      removeUI(
+        selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
+      )
+    } else if(input$pprkResults == "Upah gaji"){
+      graph <- subset(analysisResult, select = c(Sektor, wages))
+      removeUI(
+        selector = '#pdrb'
+      )
+      removeUI(
+        selector = '#capita'
       )
     } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
       graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
       removeUI(
         selector = '#pdrb'
       )
+      removeUI(
+        selector = '#capita'
+      )
     } else if(input$pprkResults == "Pendapatan per kapita"){
-      
+      removeUI(
+        selector = '#pdrb'
+      )
+      insertUI(
+        selector="#placeholder",
+        ui = tags$div(
+          valueBox(
+            paste0(income_per_capita), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8
+          ),
+          id='capita'
+        )
+      )
     }
     
     colnames(graph) <- c("Sektor", "Analisis")
@@ -368,7 +500,138 @@ server <- function(input, output) {
     io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
   
+  mult_matrix <- function(input.mx = matrix(), column = 5){
+    res_mx <- matrix(c(rep(as.numeric(input.mx), column)), nrow = nrow(input.mx), ncol = column)
+    return(res_mx)
+  }
+  
+  satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame()){ 
+    if(sat.type == "energy" | sat.type == "waste"){
+      impact <- list() # impact$cons; impact$emission
+      if(sat.type == "energy") impact$cons <- sat_Energy else impact$cons <- sat_Waste
+      
+      prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
+      
+      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
+      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
+      impact$cons[,3] <- coeff_matrix %*% TO.matrix
+      colnames(impact$cons)[3] <- "Tconsumption"
+      
+      impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
+      
+      order_cname <- names(impact$cons)[4:ncol(impact$cons)]
+      em_f <- numeric()
+      for(m in 1: length(order_cname)){
+        em_f <- c(em_f, Em.lookup[which(Em.lookup[,1]==order_cname[m]), 2])
+      }
+      em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
+      
+      impact$emission <- impact$cons
+      impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)])%*%em_f
+      impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
+      colnames(impact$emission)[3] <- "Temission"
+    } else { # for labour case
+      impact <- list()
+      impact$cons <- sat_Labour
+      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
+      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
+      impact$cons[,3] <- coeff_matrix %*% TO.matrix
+    }
+    return(impact)
+  }
+  
   allInputsBAU <- eventReactive(input$buttonBAU, {
+    sec <- allInputs()
+    sector <- sec$sector
+    indem <- sec$indem
+    findem <- sec$findem
+    addval <- sec$addval
+    findemcom <- sec$findemcom
+    addvalcom <- sec$addvalcom
+    sat_Labour <- sec$labour
+    sat_Energy <- sec$energy
+    energy_Em <- sec$ef_energy
+    sat_Waste <-sec$waste
+    waste_Em <- sec$efe_waste
+    
+    G_rate <- input$gdpRate
+    endT <- input$dateTo
+    startT <- input$dateFrom
+    stepT <- input$timeStep
+    
+    print(G_rate)
+    
+    indem_matrix <- as.matrix(indem)
+    addval_matrix <- as.matrix(addval)
+    dimensi <- ncol(indem_matrix)
+    
+    indem_colsum <- colSums(indem_matrix)
+    addval_colsum <- colSums(addval_matrix)
+    fin_con <- 1/(indem_colsum+addval_colsum)
+    fin_con[is.infinite(fin_con)] <- 0
+    tinput_invers <- diag(fin_con)
+    A <- indem_matrix %*% tinput_invers
+    I <- as.matrix(diag(dimensi))
+    I_A <- I-A
+    leontief <- solve(I_A)
+    
+    coef_primInput <- addval_matrix %*% tinput_invers # imports, value added, etc.
+
+    # Calculation of Final demand projection====
+    findem_matrix <- as.matrix(findem)
+    agg_fDem_matrix <- as.matrix(rowSums(findem_matrix))
+    
+    prop_finDemand <- findem/agg_fDem_matrix
+    
+    coef_Grise <- (100+G_rate)/100
+    
+    stepN <- (endT-startT)/stepT
+    for(s in 1:stepN){
+      
+      if(s == 1){
+        # GDP compile table
+        GDPseries <- data.frame(sector.id=1:nrow(sector), sector = sector[,1], stringsAsFactors = FALSE)
+        eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), importRow),])")))
+        fDemandSeries <- agg_fDem_matrix
+        tStamps <- paste0("y", startT)
+        tOUseries <- leontief %*% agg_fDem_matrix
+        # blank lists for keeping intDemandSeries; addValueSeries; fDCompSeries
+        intDemandSeries <- list()
+        addValueSeries <- list()
+        fDCompSeries <- list()
+        impactLabour <- list()
+        impactEnergy <- list()
+        impactWaste <- list()
+        # Add first values to the lists. Lists values are all matrices
+        eval(parse(text= paste0("intDemandSeries$y", startT, " <- indem_matrix")))
+        eval(parse(text= paste0("addValueSeries$y", startT, " <- addval_matrix")))
+        eval(parse(text= paste0("fDCompSeries$y", startT, " <- findem_matrix")))
+        eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', TO.matrix = as.matrix(tOUseries))")))
+        eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', TO.matrix = as.matrix(tOUseries), Em.lookup =energy_Em)")))
+        eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', TO.matrix = as.matrix(tOUseries), Em.lookup =waste_Em)")))
+        print("first year data load has been successfully conducted")
+      }
+      prjFinDem <- coef_Grise * fDemandSeries[, s]
+      fDemandSeries <- cbind(fDemandSeries, prjFinDem)
+      prjOU <- leontief %*% prjFinDem
+      tOUseries <- cbind(tOUseries, prjOU)
+      # notes on the year
+      T_prj <- startT+s*stepT
+      T_prj <- paste0("y", T_prj)
+      tStamps <- c(tStamps, T_prj)
+      # add additional values to the list
+      eval(parse(text=paste0("fDCompSeries$", T_prj, " <- as.matrix(prop_finDemand*prjFinDem)"))) # contains NaN
+      eval(parse(text=paste0("intDemandSeries$", T_prj, " <-  A %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
+      eval(parse(text=paste0("addValueSeries$", T_prj, " <-  coef_primInput %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
+      # GDP projection
+      eval(parse(text = paste0("GDPseries$", T_prj, "<- colSums(addValueSeries$", T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
+      # Impact projection
+      eval(parse(text= paste0("impactLabour$", T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(prjOU))")))
+      eval(parse(text= paste0("impactEnergy$", T_prj, " <- satelliteImpact('energy', TO.matrix = as.matrix(prjOU), Em.lookup =energy_Em)")))
+      eval(parse(text= paste0("impactWaste$", T_prj, " <- satelliteImpact('waste', TO.matrix = as.matrix(prjOU), Em.lookup =waste_Em)")))
+    }
+    colnames(fDemandSeries) <- as.character(tStamps)
+    colnames(tOUseries) <- as.character(tStamps)
     
   })
   
