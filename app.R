@@ -172,7 +172,7 @@ server <- function(input, output) {
     indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
     findem <- read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
     addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
-    labour <- read.table(inLabour$datapath, header=FALSE, dec=",", sep=";")
+    labour <- read.table(inLabour$datapath, header=TRUE, dec=",", sep=";")
     energy <- read.table(inEnergy$datapath, header=TRUE, dec=",", sep=";")
     findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
     addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
