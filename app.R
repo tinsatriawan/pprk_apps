@@ -86,10 +86,10 @@ body <- dashboardBody(
     ),
     
     tabItem(tabName = "pageFour",
-            sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=5),
+            sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
             numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
-            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100),
-            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100), 
+            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
+            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
             fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
             actionButton("buttonBAU", "Submit")
@@ -471,46 +471,6 @@ server <- function(input, output) {
     io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
   
-  mult_matrix <- function(input.mx = matrix(), column = 5){
-    res_mx <- matrix(c(rep(as.numeric(input.mx), column)), nrow = nrow(input.mx), ncol = column)
-    return(res_mx)
-  }
-  
-  satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame()){ 
-    if(sat.type == "energy" | sat.type == "waste"){
-      impact <- list() # impact$cons; impact$emission
-      if(sat.type == "energy") impact$cons <- sat_Energy else impact$cons <- sat_Waste
-      
-      prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
-      
-      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
-      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-      impact$cons[,3] <- coeff_matrix %*% TO.matrix
-      colnames(impact$cons)[3] <- "Tconsumption"
-      
-      impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
-      
-      order_cname <- names(impact$cons)[4:ncol(impact$cons)]
-      em_f <- numeric()
-      for(m in 1: length(order_cname)){
-        em_f <- c(em_f, Em.lookup[which(Em.lookup[,1]==order_cname[m]), 2])
-      }
-      em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
-      
-      impact$emission <- impact$cons
-      impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)]) %*% em_f
-      impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
-      colnames(impact$emission)[3] <- "Temission"
-    } else { # for labour case
-      impact <- list()
-      impact$cons <- sat_Labour
-      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
-      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-      impact$cons[,3] <- coeff_matrix %*% TO.matrix
-    }
-    return(impact)
-  }
-  
   allInputsBAU <- eventReactive(input$buttonBAU, {
     sec <- allInputs()
     sector <- sec$sector
@@ -558,6 +518,46 @@ server <- function(input, output) {
     I <- as.matrix(diag(dimensi))
     I_A <- I-A
     leontief <- solve(I_A)
+    
+    mult_matrix <- function(input.mx = matrix(), column = 5){
+      res_mx <- matrix(c(rep(as.numeric(input.mx), column)), nrow = nrow(input.mx), ncol = column)
+      return(res_mx)
+    }
+    
+    satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame()){ 
+      if(sat.type == "energy" | sat.type == "waste"){
+        impact <- list() # impact$cons; impact$emission
+        if(sat.type == "energy") impact$cons <- sat_Energy else impact$cons <- sat_Waste
+        
+        prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
+        
+        coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
+        coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
+        impact$cons[,3] <- coeff_matrix %*% TO.matrix
+        colnames(impact$cons)[3] <- "Tconsumption"
+        
+        impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
+        
+        order_cname <- names(impact$cons)[4:ncol(impact$cons)]
+        em_f <- numeric()
+        for(m in 1: length(order_cname)){
+          em_f <- c(em_f, Em.lookup[which(Em.lookup[,1]==order_cname[m]), 2])
+        }
+        em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
+        
+        impact$emission <- impact$cons
+        impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)]) %*% em_f
+        impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
+        colnames(impact$emission)[3] <- "Temission"
+      } else { # for labour case
+        impact <- list()
+        impact$cons <- sat_Labour
+        coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
+        coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
+        impact$cons[,3] <- coeff_matrix %*% TO.matrix
+      }
+      return(impact)
+    }
     
     coef_primInput <- addval_matrix %*% tinput_invers # imports, value added, etc.
 
@@ -770,15 +770,15 @@ server <- function(input, output) {
   
   output$plotResultsBAU <- renderPlot({
     results <- allInputsBAU()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table 
-    labour_table <- results$labour_table 
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
+    GDP_table <- results[[1]]
+    income_percapita_table <- results[[2]]  
+    income_table <- results[[3]] 
+    labour_table <- results[[4]] 
+    energy_consumption_table <- results[[5]] 
+    energy_emission_table <- results[[6]] 
+    waste_consumption_table <- results[[7]]  
+    waste_emission_table <- results[[8]] 
+    total_emission_table <- results[[9]]
     
     if(input$bauResults == "Proyeksi PDRB"){
       graph <- GDP_table[GDP_table$year==input$selectedYear,]
@@ -788,45 +788,45 @@ server <- function(input, output) {
       
     } else if(input$bauResults == "Proyeksi Upah per Kapita"){
       ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
-      
+
     } else if(input$bauResults == "Proyeksi Upah Gaji"){
       graph <- income_table[income_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=income)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=income)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
       graph <- labour_table[labour_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=labour)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=labour)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
       graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       graph <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=Temission)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
       graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       graph <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=sector, y=Temission)) +
+        geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$bauResults == "Proyeksi Total Emisi"){
-      ggplot(data=total_emission_table, aes(x=year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
     }
     
   })
