@@ -3,6 +3,7 @@ library(shiny)
 library(shinydashboard)
 library(fmsb)
 library(ggplot2)
+library(DT)
 
 # header
 header <- dashboardHeader(title="PPRK")
@@ -116,13 +117,37 @@ body <- dashboardBody(
             div(style="overflow-x: scroll", tableOutput('tableIOBAU'))
     ),
     tabItem(tabName = "pageSeven",
-            fileInput("finalDemandTable", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected")
-            
+            selectInput("yearStart", "Tahun awal:", choices = c(1990, 1995, 2000, 2005, 2010, 2025, 2030, 2035, 2040), selected=2010),
+            DTOutput("interactiveFD"),
+            fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("waste1", "Tabel Produksi Limbah 1", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("waste2", "Tabel Produksi Limbah 2", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
+            fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
+            actionButton("buttonInter", "Submit")
     ),
-    tabItem(tabName = "pageEight"
+    tabItem(tabName = "pageEight",
+            selectInput("interResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("Proyeksi PDRB", 
+                                  "Proyeksi Upah per Kapita",
+                                  "Proyeksi Upah Gaji",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Konsumsi Energi",
+                                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                                  "Proyeksi Buangan Limbah",
+                                  "Proyeksi Emisi Terkait Buangan Limbah",
+                                  "Proyeksi Total Emisi"
+                                  )
+                        ),
+            uiOutput("yearInterSelection"),
+            plotOutput("plotResultsInter")
     ),
     tabItem(tabName = "pageNine",
-            div(style="overflow-x: scroll", tableOutput('tableIOFL'))
+            div(style="overflow-x: scroll", tableOutput('tableIOInter'))
     )
   )
 )
@@ -617,6 +642,8 @@ server <- function(input, output) {
     colnames(fDemandSeries) <- as.character(tStamps)
     colnames(tOUseries) <- as.character(tStamps)
     
+    finalDemandSeriesTable<- cbind(sector, fDemandSeries)
+    
     # 1. GDP (ind. 1)
     GDP_ou <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
     for(c in 3:ncol(GDPseries)){
@@ -758,7 +785,8 @@ server <- function(input, output) {
                      energy_emission_table <- enEms_ou,
                      waste_consumption_table <- wsDisp_ou,
                      waste_emission_table <- wsEms_ou,
-                     total_emission_table <- tEm_ou
+                     total_emission_table <- tEm_ou,
+                     FDSeries <- finalDemandSeriesTable
                     ) 
     
     list_bau
@@ -879,6 +907,25 @@ server <- function(input, output) {
     io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
+  observe({
+    resultsBAU <- allInputsBAU()
+    fd_table <- resultsBAU[[10]]
+    output$interactiveFD = renderDT(fd_table, selection='none', editable=TRUE)
+    proxy = dataTableProxy('interactiveFD')
+    observeEvent(input$x1_cell_edit, {
+      info = input$x1_cell_edit
+      str(info)
+      i = info$row
+      j = info$col + 1  # column index offset by 1
+      v = info$value
+      fd_table[i, j] <<- DT::coerceValue(v, fd_table[i, j])
+      replaceData(proxy, fd_table, resetPaging = FALSE, rownames = FALSE)
+    })
+  })
+  
+  allInputsInter <- observeEvent(input$buttonInter, {
+    
+  })
 }
 
 # Run the application 
