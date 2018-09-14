@@ -128,6 +128,7 @@ satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup
     # calculate the proportion of the types
     # calculate the distribution of the fuel/waste type
     prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
+    impact$cons[, 4:ncol(impact$cons)] <- prop
     # calculate the new gross consumptions of fuel/waste types
     coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
     coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
