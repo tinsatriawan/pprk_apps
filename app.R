@@ -1,29 +1,95 @@
 # initiate library
 library(shiny)
 library(shinydashboard)
+library(shinyBS)
 library(fmsb)
 library(ggplot2)
 library(DT)
 
 # header
-header <- dashboardHeader(title="PPRK")
+header <- dashboardHeader(title="PPRK", titleWidth = "300px")
 
 # sidebar
-sidebar <- dashboardSidebar(
+sidebar <- dashboardSidebar(width = "300px",
   sidebarMenu(
     menuItem("Historis", startExpanded = TRUE,
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
+              selectInput("pprkResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("PDRB",
+                                  "Backward Linkage",
+                                  "Forward Linkage",
+                                  "Angka Pengganda Pendapatan Rumah Tangga",
+                                  "Angka Pengganda Tenaga Kerja",
+                                  "Angka Pengganda Output", 
+                                  "Angka Pengganda Energi", 
+                                  "Angka Pengganda Buangan Limbah", 
+                                  # "Land Productivity Coefficient",
+                                  "Koefisien Intensitas Energi", 
+                                  "Koefisien Produk Limbah",  
+                                  "Perbandingan Angka Pengganda",
+                                  # "Total Emission", 
+                                  "Emisi dari Penggunaan Energi",
+                                  "Emisi dari Limbah", 
+                                  "Upah gaji",
+                                  "Rasio Upah gaji per Surplus Usaha",
+                                  "Pendapatan per kapita"
+                                  )
+                        ),
+              # actionButton("ioTable", "Show I-O Table"),
+              # mainPanel(
+              #   bsModal("modalExample",
+              #           "I-O Table",
+              #           "ioTable",
+              #           size = "large",
+              #           div(style="overflow-x: scroll", tableOutput('tableIO'))
+              #           # downloadButton('downloadPlot', 'Download')
+              #           )
+              # )
               menuSubItem("I-O Table", tabName = "pageThree")
     ),
     menuItem("Skenario Bisnis Seperti Biasa",  
               menuSubItem("Input", tabName = "pageFour"),
+              sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
+              numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
+              selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
+              selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
+              fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+              actionButton("buttonBAU", "Submit"),
               menuSubItem("Results", tabName = "pageFive"),
+              selectInput("bauResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("Proyeksi PDRB", 
+                                  "Proyeksi Upah per Kapita",
+                                  "Proyeksi Upah Gaji",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Konsumsi Energi",
+                                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                                  "Proyeksi Buangan Limbah",
+                                  "Proyeksi Emisi Terkait Buangan Limbah",
+                                  "Proyeksi Total Emisi"
+                                  )
+                        ),
               menuSubItem("I-O Table", tabName = "pageSix")
     ),
     menuItem("Skenario Intervensi", 
               menuSubItem("Input", tabName = "pageSeven"),
               menuSubItem("Results", tabName = "pageEight"),
+              selectInput("interResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("Proyeksi PDRB", 
+                                  "Proyeksi Upah per Kapita",
+                                  "Proyeksi Upah Gaji",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Konsumsi Energi",
+                                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                                  "Proyeksi Buangan Limbah",
+                                  "Proyeksi Emisi Terkait Buangan Limbah",
+                                  "Proyeksi Total Emisi"
+                                  )
+                        ),
               menuSubItem("I-O Table", tabName = "pageNine")
     )
   )
@@ -53,62 +119,23 @@ body <- dashboardBody(
     
     tabItem(tabName = "pageTwo",
             # h2("Page 2"),
-            selectInput("pprkResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("PDRB",
-                                  "Backward Linkage",
-                                  "Forward Linkage",
-                                  "Angka Pengganda Pendapatan Rumah Tangga",
-                                  "Angka Pengganda Tenaga Kerja",
-                                  "Angka Pengganda Output", 
-                                  "Angka Pengganda Energi", 
-                                  "Angka Pengganda Buangan Limbah", 
-                                  # "Land Productivity Coefficient",
-                                  "Koefisien Intensitas Energi", 
-                                  "Koefisien Produk Limbah",  
-                                  "Perbandingan Angka Pengganda",
-                                  # "Total Emission", 
-                                  "Emisi dari Penggunaan Energi",
-                                  "Emisi dari Limbah", 
-                                  "Upah gaji",
-                                  "Rasio Upah gaji per Surplus Usaha",
-                                  "Pendapatan per kapita"
-                                  )
-                        ),
             uiOutput("sectorSelection"),
             plotOutput("plotResults"),
+            tableOutput('tableResults'),
             hr(), 
-            tags$div(id='placeholder')
+            tags$div(id='placeholder'),
+            hr(),
+            downloadButton('downloadTable', 'Download Table (.csv)')
     ),
       
     tabItem(tabName = "pageThree",
-            # h2("Page 3"), 
+            # h2("Page 3"),
             div(style="overflow-x: scroll", tableOutput('tableIO'))
     ),
     
-    tabItem(tabName = "pageFour",
-            sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
-            numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
-            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
-            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
-            fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-            actionButton("buttonBAU", "Submit")
-    ),
+    # tabItem(tabName = "pageFour"
+    # ),
     tabItem(tabName = "pageFive",
-            selectInput("bauResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi"
-                                  )
-                        ),
             uiOutput("yearSelection"),
             plotOutput("plotResultsBAU"),
             hr(),
@@ -132,19 +159,6 @@ body <- dashboardBody(
             actionButton("buttonInter", "Submit")
     ),
     tabItem(tabName = "pageEight",
-            selectInput("interResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi"
-                                  )
-                        ),
             uiOutput("yearInterSelection"),
             plotOutput("plotResultsInter")
     ),
@@ -454,6 +468,116 @@ server <- function(input, output) {
     }
   
   })
+  
+  output$tableResults <- renderTable({
+    sec <- allInputs()
+    analysisResult <- sec$result
+    
+    if(input$pprkResults == "PDRB"){
+      tables <- subset(analysisResult, select = c(Sektor, GDP))
+      tables
+    } else if(input$pprkResults == "Backward Linkage"){
+      tables <- subset(analysisResult, select = c(Sektor, DBL))
+      tables
+    } else if(input$pprkResults == "Forward Linkage"){
+      tables <- subset(analysisResult, select = c(Sektor, DFL))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Output"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+      tables
+    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+      tables
+    } else if(input$pprkResults == "Koefisien Produk Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+      tables
+    } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+      tables
+    } else if(input$pprkResults == "Emisi dari Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+      tables
+    } else if(input$pprkResults == "Upah gaji"){
+      tables <- subset(analysisResult, select = c(Sektor, wages))
+      tables
+    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+      tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+      tables
+    } else if(input$pprkResults == "Pendapatan per kapita"){
+      return(NULL)
+    } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+      return(NULL)  
+    }
+  })
+  
+  output$downloadTable <- downloadHandler(
+    filename = input$pprkResults, 
+    content = function(file) {
+      sec <- allInputs()
+      analysisResult <- sec$result
+      
+      if(input$pprkResults == "PDRB"){
+        tables <- subset(analysisResult, select = c(Sektor, GDP))
+        
+      } else if(input$pprkResults == "Backward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DBL))
+        
+      } else if(input$pprkResults == "Forward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DFL))
+        
+      } else if(input$pprkResults == "Angka Pengganda Output"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+        
+      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+        
+      } else if(input$pprkResults == "Angka Pengganda Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+        
+      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+        
+      } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+        
+      } else if(input$pprkResults == "Koefisien Intensitas Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+        
+      } else if(input$pprkResults == "Koefisien Produk Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+        
+      } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+        
+      } else if(input$pprkResults == "Emisi dari Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+        
+      } else if(input$pprkResults == "Upah gaji"){
+        tables <- subset(analysisResult, select = c(Sektor, wages))
+        
+      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+        tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+        
+      } else if(input$pprkResults == "Pendapatan per kapita"){
+        tables <- data.frame(NODATA="")
+      } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+        tables <- data.frame(NODATA="")
+      }
+      write.csv(tables, file)
+    }
+  )
   
   output$tableIO <- renderTable({
     sec <- allInputs()
@@ -952,7 +1076,7 @@ server <- function(input, output) {
     })
   })
   
-  allInputsInter <- observeEvent(input$buttonInter, {
+  allInputsInter <- eventReactive(input$buttonInter, {
     resultsBAU <- allInputsBAU()
     fDemandSeries <- resultsBAU$FDSeries
     sat_Energy <- resultsBAU$energy_consumption_table
