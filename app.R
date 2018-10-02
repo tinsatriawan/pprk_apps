@@ -78,6 +78,17 @@ sidebar <- dashboardSidebar(width = "300px",
     ),
     menuItem("Skenario Intervensi", icon = icon("random"), 
               menuSubItem("Input", tabName = "pageSeven"),
+              actionButton("addScenario", "Tambah Skenario"),
+              fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("waste1", "Tabel Produksi Limbah 1", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("waste2", "Tabel Produksi Limbah 2", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
+              actionButton("buttonInter", "Submit"),
+              actionButton("delScenario", "Hapus Skenario"),
               menuSubItem("Results", tabName = "pageEight"),
               selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -94,7 +105,7 @@ sidebar <- dashboardSidebar(width = "300px",
                         ),
               menuSubItem("I-O Table", tabName = "pageNine")
     ),
-    menuItem("Help", icon = icon("question-circle"))
+    menuItem("Help", icon = icon("question-circle"), tabName="help")
   )
 )
 
@@ -105,14 +116,14 @@ body <- dashboardBody(
       jumbotron("PPRK Tools", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
       hr(),
       fluidRow(
-        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Historis',
+        column(4, thumbnail_label(image = 'history-solid.svg', label = 'Historis',
                                   content = 'Bagian pertama dari alat bantu ini menyediakan antar muka di mana pengguna dapat memasukkan data-data yang diperlukan. Setelah kebutuhan data dipenuhi, akan dihasilkan angka-angka dan indeks yang merupakan beberapa indikator umum ekonomi regional serta indikator PPRK, yakni emisi, upah dan gaji, dan jumlah kebutuhan tenaga kerja. Hasil-hasil tersebut tersaji dalam bentuk grafik dan tabel yang menunjukkan nilai total maupun nilai sektoral. Seluruh hasil tersebut dapat diunduh dan dianalisis lebih lanjut sesuai dengan kebutuhan pengguna.',
                                   button_link = '', button_label = 'Click me')
         ),
-        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Bisnis Seperti Biasa',
+        column(4, thumbnail_label(image = 'exchange-alt-solid.svg', label = 'Skenario Bisnis Seperti Biasa',
                                   content = 'Modul ini memuat fitur-fitur untuk membuat proyeksi dampak sosial, lingkungan, dan ekonomi di masa depan berdasarkan persentase pertumbuhan PDRB dambaan tahunan yang ditentukan oleh pengguna. Proyeksi dibangun berdasarkan asumsi bahwa pertumbuhan PDRB dicapai dengan meningkatkan permintaan akhir seluruh sektor penggerak ekonomi sebesar persentase peningkatan PDRB yang ditargetkan. Secara umum, Struktur ekonomi daerah dianggap tidak mengalami perubahan yang berarti. Atas dasar inilah, proyeksi dampak yang dihasilkan dapat dikatakan sebagai dampak dari Skenario Bisnis Seperti Biasa. Hasil-hasil proyeksi emisi dari sumber lain yang belum turut diperhitungkan (eksogen terhadap model ini) dapat diinput pada bagian ini.',
                                   button_link = '', button_label = 'Click me')),
-        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Intervensi',
+        column(4, thumbnail_label(image = 'random-solid.svg', label = 'Skenario Intervensi',
                                   content = 'Dampak sosial, ekonomi, dan lingkungan dari aksi mitigasi perubahan iklim yang dicanangkan dianalisis secara kuantitatif pada bagian ini. Dampak sosial, ekonomi, dan lingkungan dipicu oleh perubahan permintaan akhir (konsumsi) terhadap output satu atau lebih sektor ekonomi daerah yang merupakan konsekuensi dari suatu aksi mitigasi. Selain itu, perubahan nilai emisi akibat perubahan modus pemenuhan kebutuhan energi dan/atau pengelolaan limbah dihitung berdasarkan tabel input satelit baru yang menggambarkan kondisi setelah intervensi diterapkan.',
                                   button_link = '', button_label = 'Click me'))
 
@@ -166,8 +177,8 @@ body <- dashboardBody(
             div(style="overflow-x: scroll", tableOutput('tableIOBAU'))
     ),
     tabItem(tabName = "pageSeven",
-            selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2025, 2030, 2035, 2040), selected=2010),
-            DTOutput("interactiveFD"),
+            selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040), selected=2015),
+            dataTableOutput("interactiveFD"),
             fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
             fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
@@ -185,6 +196,12 @@ body <- dashboardBody(
     tabItem(tabName = "pageNine",
             uiOutput("yearIOInterSelection"),
             div(style="overflow-x: scroll", tableOutput('tableIOInter'))
+    ),
+    tabItem(tabName = "help",
+              tags$div(class = "header", checked = NA,
+              tags$p("Ini Help. Image letakkan di folder www"),
+              tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
+            )
     )
   )
 )
@@ -1084,7 +1101,7 @@ server <- function(input, output) {
                      waste_consumption_table = wsDisp_ou,
                      waste_emission_table = wsEms_ou,
                      total_emission_table = tEm_ou,
-                     FDSeries = finalDemandSeriesTable,
+                     FDSeries = fDemandSeries,
                      GDP_rate = G_rate,
                      dateTo = endT,
                      dateFrom = startT,
@@ -1235,7 +1252,9 @@ server <- function(input, output) {
   observe({
     resultsBAU <- allInputsBAU()
     fd_table <- resultsBAU[[10]]
-    output$interactiveFD = renderDT(fd_table, selection='none', editable=TRUE)
+    output$interactiveFD <- renderDataTable({
+      datatable(fd_table, selection='none', editable=TRUE, options=list(pageLength=50))
+    })
     proxy = dataTableProxy('interactiveFD')
     observeEvent(input$x1_cell_edit, {
       info = input$x1_cell_edit
@@ -1253,6 +1272,7 @@ server <- function(input, output) {
     fDemandSeries <- resultsBAU$FDSeries
     sat_Energy <- resultsBAU$energy_consumption_table
     sat_Waste <- resultsBAU$waste_consumption_table
+    sat_Labour <- resultsBAU$labour_table
     
     # inEnergy1 <- input$enery1
     # if(is.null(inEnergy1))
@@ -1327,16 +1347,15 @@ server <- function(input, output) {
     }
 
     # to modify fDemandSeries
-    startT <- resultsBAU$dateFrom
-    stepT <- resultsBAU$timeStep
-    endT <- resultsBAU$dateTo
-    G_rate <- resultsBAU$GDP_rate
+    startT <- as.numeric(resultsBAU$dateFrom)
+    stepT <- as.numeric(resultsBAU$timeStep)
+    endT <- as.numeric(resultsBAU$dateTo)
+    G_rate <- as.numeric(resultsBAU$GDP_rate)
     twStartT <- as.numeric(input$yearStart)
     stepTweak <- (twStartT-startT)/stepT
     stepN <- (endT-startT)/stepT
     dimensi <- 37
     
-    print(fDemandSeries)
     # loop since the twStartT
     for(tu in stepTweak:stepN){
       # store the total final demand to memorize
@@ -1372,9 +1391,7 @@ server <- function(input, output) {
       #   if(control$value == 1) break
       # }
       
-      print(finDem_edit)
       mfDemandSeries<- as.matrix(cbind(mfDemandSeries, finDem_edit$finDem_edit))
-      print(mfDemandSeries)
       colnames(mfDemandSeries) <- paste0("y", seq(startT, startT+tu*stepT, by = stepT))
       
     }
@@ -1386,7 +1403,7 @@ server <- function(input, output) {
     satAccounts <- data.frame(step= 0:stepN, 
                               year= seq(startT, endT, by = stepT),
                               satEnergy = c("sat_Energy[sat_Energy$year==2010,]", "sat_Energy[sat_Energy$year==2015,]", "sat_Energy[sat_Energy$year==2020,]", "sat_Energy[sat_Energy$year==2025,]", "sat_Energy[sat_Energy$year==2030,]"),
-                              satWaste =  c("sat_Energy[sat_Waste$year==2010,]", "sat_Energy[sat_Waste$year==2015,]", "sat_Energy[sat_Waste$year==2020,]", "sat_Energy[sat_Waste$year==2025,]", "sat_Waste[sat_Waste$year==2030,]"),
+                              satWaste =  c("sat_Waste[sat_Waste$year==2010,]", "sat_Waste[sat_Waste$year==2015,]", "sat_Waste[sat_Waste$year==2020,]", "sat_Waste[sat_Waste$year==2025,]", "sat_Waste[sat_Waste$year==2030,]"),
                               stringsAsFactors = FALSE)
     # new satellite tables \ends====
     

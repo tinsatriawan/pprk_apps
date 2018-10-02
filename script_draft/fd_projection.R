@@ -21,27 +21,27 @@ data_path <- "D:/PPRK/database/indonesia/provinces/kalimantan_timur/data/testing
 # wd definition
 setwd(data_path)
 inSector <- list()
-inSector$datapath <- "sector.csv"
+inSector$datapath <- "d:/PPRK/1_sector.csv"
 inIntermediateDemand <- list()
-inIntermediateDemand$datapath <- "intermediate_demand.csv"
+inIntermediateDemand$datapath <- "d:/PPRK/2_intermediate_demand.csv"
 inFinalDemand <- list()
-inFinalDemand$datapath <- "final_demand.csv"
+inFinalDemand$datapath <- "d:/PPRK/4_final_demand.csv"
 inAddedValue <- list()
-inAddedValue$datapath <- "value_added.csv"
-satEnergy_file <- "D:/PPRK/process/table_manipulations/result/satellite_energy.csv"
-energyEm_file <- "D:/PPRK/process/table_manipulations/result/Emission_factor.csv"
-satWaste_file <- "D:/PPRK/process/table_manipulations/result/satellite_waste.csv"
-wasteEm_file <- "D:/PPRK/process/table_manipulations/result/Emission_Wfactor.csv"
-satLabour_file <- "D:/PPRK/process/table_manipulations/result/satellite_labour.csv"
-population_file <- "D:/PPRK/database/indonesia/provinces/kalimantan_timur/data/testing_AD/projPopulation.csv"
+inAddedValue$datapath <- "d:/PPRK/6_value_added.csv"
+satEnergy_file <- "d:/PPRK/8_satellite_energy.csv"
+energyEm_file <- "d:/PPRK/10_emission_factor_energy.csv"
+satWaste_file <- "d:/PPRK/9_satellite_waste.csv"
+wasteEm_file <- "d:/PPRK/11_emission_factor_waste.csv"
+satLabour_file <- "d:/PPRK/7_satellite_labour.csv"
+population_file <- "d:/PPRK/12_population.csv"
 
-sat_Energy <- read.csv(satEnergy_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
-energy_Em <- read.csv(energyEm_file, sep = ";", stringsAsFactors = FALSE)
-sat_Waste <- read.csv(satWaste_file, sep = ";", stringsAsFactors = FALSE) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
-waste_Em <- read.csv(wasteEm_file, sep = ";", stringsAsFactors = FALSE)
-sat_Labour <- read.csv(satLabour_file, sep = ";", stringsAsFactors = FALSE)
+sat_Energy <- read.csv(satEnergy_file, sep = ";", header = T) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
+energy_Em <- read.csv(energyEm_file, sep = ";", header = T)
+sat_Waste <- read.csv(satWaste_file, sep = ";", header = T) # first three columns are: sectorID, sectorName, Total energy cons # Then followed by the fuel source
+waste_Em <- read.csv(wasteEm_file, sep = ";", header = T)
+sat_Labour <- read.csv(satLabour_file, sep = ";", header = T)
 
-population <- read.table(population_file, header=TRUE, dec=".", sep=";", stringsAsFactors = FALSE)
+population <- read.table(population_file, header=TRUE, sep=";")
 
 # creating waste_EM dummy
 # waste_Em <- energy_Em[c(1:2, 5:9, 11:12),]
@@ -90,10 +90,10 @@ population <- read.table(population_file, header=TRUE, dec=".", sep=";", strings
 # if(is.null(inAddedValue))
 #   return(NULL)    
 
-sector <- read.table(inSector$datapath, header=FALSE, sep=";", stringsAsFactors = FALSE)
-indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  dec=".", sep=";", stringsAsFactors = FALSE)
-findem <- read.table(inFinalDemand$datapath, header=FALSE, dec=".", sep=";", stringsAsFactors = FALSE)
-addval <- read.table(inAddedValue$datapath, header=FALSE, dec=".", sep=";", stringsAsFactors = FALSE)
+sector <- read.table(inSector$datapath, header=FALSE, sep=";")
+indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  sep=";")
+findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=";")
+addval <- read.table(inAddedValue$datapath, header=FALSE, sep=";")
 
 indem_matrix <- as.matrix(indem)
 addval_matrix <- as.matrix(addval)
