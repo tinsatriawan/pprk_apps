@@ -106,26 +106,14 @@ body <- dashboardBody(
       hr(),
       fluidRow(
         column(4, thumbnail_label(image = 'Rlogo.png', label = 'Historis',
-                    content = 'Havana brown cornish rex bombay but bombay,
-                            but havana brown devonshire rex and devonshire rex.
-                            Tomcat egyptian mau. Cornish rex sphynx sphynx yet
-                            cougar and panther. Panther siberian. Lynx munchkin
-                            american shorthair. Norwegian forest. ',
-                    button_link = '', button_label = 'Click me')
-               ),
+                                  content = 'Bagian pertama dari alat bantu ini menyediakan antar muka di mana pengguna dapat memasukkan data-data yang diperlukan. Setelah kebutuhan data dipenuhi, akan dihasilkan angka-angka dan indeks yang merupakan beberapa indikator umum ekonomi regional serta indikator PPRK, yakni emisi, upah dan gaji, dan jumlah kebutuhan tenaga kerja. Hasil-hasil tersebut tersaji dalam bentuk grafik dan tabel yang menunjukkan nilai total maupun nilai sektoral. Seluruh hasil tersebut dapat diunduh dan dianalisis lebih lanjut sesuai dengan kebutuhan pengguna.',
+                                  button_link = '', button_label = 'Click me')
+        ),
         column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Bisnis Seperti Biasa',
-                                  content = 'Havana brown cornish rex bombay but bombay,
-                                  but havana brown devonshire rex and devonshire rex.
-                                  Tomcat egyptian mau. Cornish rex sphynx sphynx yet
-                                  cougar and panther. Panther siberian. Lynx munchkin
-                                  american shorthair. Norwegian forest. ',
+                                  content = 'Modul ini memuat fitur-fitur untuk membuat proyeksi dampak sosial, lingkungan, dan ekonomi di masa depan berdasarkan persentase pertumbuhan PDRB dambaan tahunan yang ditentukan oleh pengguna. Proyeksi dibangun berdasarkan asumsi bahwa pertumbuhan PDRB dicapai dengan meningkatkan permintaan akhir seluruh sektor penggerak ekonomi sebesar persentase peningkatan PDRB yang ditargetkan. Secara umum, Struktur ekonomi daerah dianggap tidak mengalami perubahan yang berarti. Atas dasar inilah, proyeksi dampak yang dihasilkan dapat dikatakan sebagai dampak dari Skenario Bisnis Seperti Biasa. Hasil-hasil proyeksi emisi dari sumber lain yang belum turut diperhitungkan (eksogen terhadap model ini) dapat diinput pada bagian ini.',
                                   button_link = '', button_label = 'Click me')),
         column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Intervensi',
-                                  content = 'Havana brown cornish rex bombay but bombay,
-                                  but havana brown devonshire rex and devonshire rex.
-                                  Tomcat egyptian mau. Cornish rex sphynx sphynx yet
-                                  cougar and panther. Panther siberian. Lynx munchkin
-                                  american shorthair. Norwegian forest. ',
+                                  content = 'Dampak sosial, ekonomi, dan lingkungan dari aksi mitigasi perubahan iklim yang dicanangkan dianalisis secara kuantitatif pada bagian ini. Dampak sosial, ekonomi, dan lingkungan dipicu oleh perubahan permintaan akhir (konsumsi) terhadap output satu atau lebih sektor ekonomi daerah yang merupakan konsekuensi dari suatu aksi mitigasi. Selain itu, perubahan nilai emisi akibat perubahan modus pemenuhan kebutuhan energi dan/atau pengelolaan limbah dihitung berdasarkan tabel input satelit baru yang menggambarkan kondisi setelah intervensi diterapkan.',
                                   button_link = '', button_label = 'Click me'))
 
       )
