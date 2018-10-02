@@ -2,6 +2,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinyBS)
+library(shinyLP)
 library(fmsb)
 library(ggplot2)
 library(DT)
@@ -12,7 +13,8 @@ header <- dashboardHeader(title="PPRK", titleWidth = "300px")
 # sidebar
 sidebar <- dashboardSidebar(width = "300px",
   sidebarMenu(
-    menuItem("Historis", startExpanded = TRUE,
+    menuItem("Home", icon = icon("home"), tabName = "home"),
+    menuItem("Historis", icon = icon("history"),
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               selectInput("pprkResults",
@@ -49,7 +51,7 @@ sidebar <- dashboardSidebar(width = "300px",
               # )
               menuSubItem("I-O Table", tabName = "pageThree")
     ),
-    menuItem("Skenario Bisnis Seperti Biasa",  
+    menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
               menuSubItem("Input", tabName = "pageFour"),
               sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
               numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
@@ -74,7 +76,7 @@ sidebar <- dashboardSidebar(width = "300px",
                         ),
               menuSubItem("I-O Table", tabName = "pageSix")
     ),
-    menuItem("Skenario Intervensi", 
+    menuItem("Skenario Intervensi", icon = icon("random"), 
               menuSubItem("Input", tabName = "pageSeven"),
               menuSubItem("Results", tabName = "pageEight"),
               selectInput("interResults",
@@ -91,13 +93,43 @@ sidebar <- dashboardSidebar(width = "300px",
                                   )
                         ),
               menuSubItem("I-O Table", tabName = "pageNine")
-    )
+    ),
+    menuItem("Help", icon = icon("question-circle"))
   )
 )
 
 # body
 body <- dashboardBody(
   tabItems(
+    tabItem(tabName = "home",
+      jumbotron("PPRK Tools", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
+      hr(),
+      fluidRow(
+        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Historis',
+                    content = 'Havana brown cornish rex bombay but bombay,
+                            but havana brown devonshire rex and devonshire rex.
+                            Tomcat egyptian mau. Cornish rex sphynx sphynx yet
+                            cougar and panther. Panther siberian. Lynx munchkin
+                            american shorthair. Norwegian forest. ',
+                    button_link = '', button_label = 'Click me')
+               ),
+        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Bisnis Seperti Biasa',
+                                  content = 'Havana brown cornish rex bombay but bombay,
+                                  but havana brown devonshire rex and devonshire rex.
+                                  Tomcat egyptian mau. Cornish rex sphynx sphynx yet
+                                  cougar and panther. Panther siberian. Lynx munchkin
+                                  american shorthair. Norwegian forest. ',
+                                  button_link = '', button_label = 'Click me')),
+        column(4, thumbnail_label(image = 'Rlogo.png', label = 'Skenario Intervensi',
+                                  content = 'Havana brown cornish rex bombay but bombay,
+                                  but havana brown devonshire rex and devonshire rex.
+                                  Tomcat egyptian mau. Cornish rex sphynx sphynx yet
+                                  cougar and panther. Panther siberian. Lynx munchkin
+                                  american shorthair. Norwegian forest. ',
+                                  button_link = '', button_label = 'Click me'))
+
+      )
+    ),
     tabItem(tabName = "pageOne",
             # h2("Page 1"),
             fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
@@ -181,6 +213,146 @@ ui <- dashboardPage(
 
 # Define server 
 server <- function(input, output) {
+  blackBoxInputs <- function(){
+    inSector <- "d:/PPRK/1_sector.csv"
+    inIntermediateDemand <- "d:/PPRK/2_intermediate_demand.csv"
+    inFinalDemandComp <- "d:/PPRK/3_final_demand_component.csv"
+    inFinalDemand <- "d:/PPRK/4_final_demand.csv"
+    inAddedValueComp <- "d:/PPRK/5_value_added_component.csv"
+    inAddedValue <- "d:/PPRK/6_value_added.csv"     
+    inLabour <- "d:/PPRK/7_satellite_labour.csv"
+    inEnergy <- "d:/PPRK/8_satellite_energy.csv"
+    inWaste <- "d:/PPRK/9_satellite_waste.csv"
+    inEmissionFactorEnergiTable <- "d:/PPRK/10_emission_factor_energy.csv"
+    inEmissionFactorLandWasteTable <- "d:/PPRK/11_emission_factor_waste.csv"
+    
+    sector <- read.table(inSector, header=FALSE, sep=";")
+    indem <- read.table(inIntermediateDemand, header=FALSE,  dec=",", sep=";")
+    findem <- read.table(inFinalDemand, header=FALSE, dec=",", sep=";")
+    addval <- read.table(inAddedValue, header=FALSE, dec=",", sep=";")
+    labour <- read.table(inLabour, header=TRUE, dec=",", sep=";")
+    energy <- read.table(inEnergy, header=TRUE, dec=",", sep=";")
+    waste <- read.table(inWaste, header=TRUE, dec=",", sep=";")
+    ef_energy <- read.table(inEmissionFactorEnergiTable, header=TRUE, dec=",", sep=";")
+    ef_waste <- read.table(inEmissionFactorLandWasteTable, header=TRUE, dec=",", sep=";")
+    findemcom <- read.table(inFinalDemandComp, header=FALSE, dec=",", sep=";")
+    addvalcom <- read.table(inAddedValueComp, header=FALSE, dec=",", sep=";")
+    
+    # Row explicit definition
+    incomeRow <- 2
+    
+    indem_matrix <- as.matrix(indem)
+    addval_matrix <- as.matrix(addval)
+    dimensi <- ncol(indem_matrix)
+    
+    indem_colsum <- colSums(indem_matrix)
+    addval_colsum <- colSums(addval_matrix)
+    fin_con <- 1/(indem_colsum+addval_colsum)
+    fin_con[is.infinite(fin_con)] <- 0
+    tinput_invers <- diag(fin_con)
+    A <- indem_matrix %*% tinput_invers
+    I <- as.matrix(diag(dimensi))
+    I_A <- I-A
+    leontief <- solve(I_A)
+    
+    # Backward Linkage
+    DBL <- colSums(leontief)
+    DBL <- DBL/(mean(DBL))
+    # Forward Linkage
+    DFL <- rowSums(leontief)
+    DFL <- DFL/(mean(DFL))
+    # GDP
+    GDP <- colSums(addval_matrix[2:6,])
+    # Multiplier Output
+    multiplierOutput <- colSums(leontief)
+    # Multiplier Income
+    income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+    income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+    InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+    multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+    multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+    multiplierIncome[is.na(multiplierIncome)] <- 0
+    # Labour
+    labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+    labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+    InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+    multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+    multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+    multiplierLabour[is.na(multiplierLabour)] <- 0
+    # Multiplier Energy Used
+    energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+    energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+    multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+    multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+    multiplierEnergy[is.na(multiplierEnergy)] <- 0
+    # Multiplier Waste Product
+    waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+    waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+    multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+    multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+    multiplierWaste[is.na(multiplierWaste)] <- 0
+    # Ratio Wages / Business Surplus
+    ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
+    ratio_ws[is.na(ratio_ws)] <- 0
+    ratio_ws[ratio_ws == Inf] <- 0
+    colnames(ratio_ws) <- "ratio_ws"
+    # Koefisien Intensitas Energi
+    # total sectoral energy cons / sectoral GDP
+    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:6,])
+    # Koefisien Produk Limbah
+    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:6,])
+    # Emission from energy
+    f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
+    em_energy <- as.matrix(energy[,4:12]) %*% f_energy_diag
+    em_energy_total <- rowSums(em_energy)
+    # Emission from waste
+    f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
+    em_waste <- as.matrix(waste[,4:12]) %*% f_waste_diag
+    em_waste_total <- rowSums(em_waste)
+    # Wages
+    wages <- as.matrix(t(addval[2,]))
+    colnames(wages) <- "wages"
+    
+    # Income per capita
+    income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
+      
+    result <- cbind(sector,
+                    DBL,
+                    DFL, 
+                    GDP, 
+                    multiplierOutput, 
+                    multiplierIncome,
+                    multiplierLabour,
+                    multiplierEnergy,
+                    multiplierWaste,
+                    wages,
+                    ratio_ws, 
+                    coef_energy,
+                    coef_waste,
+                    em_energy_total,
+                    em_waste_total
+                    )
+    colnames(result)[1] <- "Sektor"
+    
+    list_table <- list(result=result, 
+                       sector=sector, 
+                       indem=indem, 
+                       findem=findem, 
+                       addval=addval, 
+                       labour=labour, 
+                       energy=energy, 
+                       findemcom=findemcom, 
+                       addvalcom=addvalcom,
+                       waste=waste,
+                       ef_waste=ef_waste,
+                       ef_energy=ef_energy,
+                       income_per_capita=income_per_capita
+                    ) 
+    return(list_table)
+  }
+  
   allInputs <- eventReactive(input$button, {
     inSector <- input$sector
     if(is.null(inSector))
@@ -354,6 +526,7 @@ server <- function(input, output) {
   })
   
   output$plotResults <- renderPlot({
+    # sec <- blackBoxInputs()
     sec <- allInputs()
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
@@ -471,6 +644,7 @@ server <- function(input, output) {
   
   output$tableResults <- renderTable({
     sec <- allInputs()
+    # sec <- blackBoxInputs()
     analysisResult <- sec$result
     
     if(input$pprkResults == "PDRB"){
@@ -523,9 +697,11 @@ server <- function(input, output) {
   })
   
   output$downloadTable <- downloadHandler(
-    filename = input$pprkResults, 
+    filename = input$pprkResults,
+    contentType = "text/csv",
     content = function(file) {
       sec <- allInputs()
+      # sec <- blackBoxInputs()
       analysisResult <- sec$result
       
       if(input$pprkResults == "PDRB"){
@@ -575,12 +751,13 @@ server <- function(input, output) {
       } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
         tables <- data.frame(NODATA="")
       }
-      write.csv(tables, file)
+      write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
     }
   )
   
   output$tableIO <- renderTable({
     sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -625,6 +802,7 @@ server <- function(input, output) {
   
   allInputsBAU <- eventReactive(input$buttonBAU, {
     sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
