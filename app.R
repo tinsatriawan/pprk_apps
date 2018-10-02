@@ -525,6 +525,13 @@ server <- function(input, output) {
     list_table
   })
   
+  output$sectorSelection <- renderUI({
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
+    analysisResult <- sec$result
+    selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
+  })
+  
   output$plotResults <- renderPlot({
     # sec <- blackBoxInputs()
     sec <- allInputs()
@@ -611,9 +618,6 @@ server <- function(input, output) {
       removeUI(selector = '#pdrb')
       removeUI(selector = '#capita')
       
-      output$sectorSelection <- renderUI({
-        selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
-      })
       
       multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
       tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
@@ -692,7 +696,8 @@ server <- function(input, output) {
     } else if(input$pprkResults == "Pendapatan per kapita"){
       return(NULL)
     } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
-      return(NULL)  
+      tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste)) 
+      tables
     }
   })
   
@@ -1196,6 +1201,7 @@ server <- function(input, output) {
   
   output$tableIOBAU <- renderTable({
     sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
