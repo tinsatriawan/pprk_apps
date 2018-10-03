@@ -903,6 +903,8 @@ server <- function(input, output) {
         coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
         impact$cons[,3] <- coeff_matrix %*% TO.matrix
       }
+      impact$cons[is.na(impact$cons)] <- 0
+      impact$emission[is.na(impact$emission)] <- 0
       return(impact)
     }
     
@@ -1357,6 +1359,8 @@ server <- function(input, output) {
         coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
         impact$cons[,3] <- coeff_matrix %*% TO.matrix
       }
+      impact$cons[is.na(impact$cons)] <- 0
+      impact$emission[is.na(impact$emission)] <- 0
       return(impact)
     }
 
