@@ -174,8 +174,11 @@ body <- dashboardBody(
     tabItem(tabName = "pageFive",
             uiOutput("yearSelection"),
             plotOutput("plotResultsBAU"),
+            tableOutput('tableResultsBAU'),
             hr(),
-            tags$div(id='bauplaceholder')
+            tags$div(id='bauplaceholder'),
+            hr(),
+            downloadButton('downloadTableBAU', 'Download Table (.csv)')
     ),
     tabItem(tabName = "pageSix",
             uiOutput("yearIOSelection"),
@@ -183,16 +186,7 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "pageSeven",
             selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040), selected=2015),
-            dataTableOutput("interactiveFD"),
-            fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("waste1", "Tabel Produksi Limbah 1", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("waste2", "Tabel Produksi Limbah 2", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
-            actionButton("buttonInter", "Submit")
+            dataTableOutput("interactiveFD")
     ),
     ###*tab-intervention####
     tabItem(tabName = "pageEight",
@@ -1208,6 +1202,90 @@ server <- function(input, output) {
     }
     
   })
+  
+  output$tableResultsBAU <- renderTable({
+    results <- allInputsBAU()
+    GDP_table <- results$GDP_table
+    income_percapita_table <- results$income_percapita_table  
+    income_table <- results$income_table
+    labour_table <- results$labour_table
+    energy_consumption_table <- results$energy_consumption_table 
+    energy_emission_table <- results$energy_emission_table 
+    waste_consumption_table <- results$waste_consumption_table  
+    waste_emission_table <- results$waste_emission_table 
+    total_emission_table <- results$total_emission_table
+    
+    if(input$bauResults == "Proyeksi PDRB"){
+      tables <- GDP_table[GDP_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Upah per Kapita"){
+      return(NULL)
+    } else if(input$bauResults == "Proyeksi Upah Gaji"){
+      tables <- income_table[income_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
+      tables <- labour_table[labour_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
+      tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
+      tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Buangan Limbah"){
+      tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
+      tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Total Emisi"){
+      return(NULL)
+    }
+  })  
+
+  output$downloadTableBAU <- downloadHandler(
+    filename = input$bauResults,
+    contentType = "text/csv",
+    content = function(file) {
+      GDP_table <- results$GDP_table
+      income_percapita_table <- results$income_percapita_table  
+      income_table <- results$income_table
+      labour_table <- results$labour_table
+      energy_consumption_table <- results$energy_consumption_table 
+      energy_emission_table <- results$energy_emission_table 
+      waste_consumption_table <- results$waste_consumption_table  
+      waste_emission_table <- results$waste_emission_table 
+      total_emission_table <- results$total_emission_table
+      
+      if(input$bauResults == "Proyeksi PDRB"){
+        tables <- GDP_table[GDP_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Upah per Kapita"){
+        return(NULL)
+      } else if(input$bauResults == "Proyeksi Upah Gaji"){
+        tables <- income_table[income_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
+        tables <- labour_table[labour_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
+        tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
+        tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Buangan Limbah"){
+        tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
+        tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+        
+      } else if(input$bauResults == "Proyeksi Total Emisi"){
+        return(NULL)
+      }
+      write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
+    }
+  )  
   
   output$yearIOSelection <- renderUI({
     selectInput("selectedIOYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
