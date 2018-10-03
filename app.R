@@ -1,4 +1,4 @@
-# initiate library
+###*initiate library####
 library(shiny)
 library(shinydashboard)
 library(shinyBS)
@@ -7,14 +7,15 @@ library(fmsb)
 library(ggplot2)
 library(DT)
 
-# header
+###*header####
 header <- dashboardHeader(title="PPRK", titleWidth = "300px")
 
-# sidebar
+###*sidebar####
 sidebar <- dashboardSidebar(width = "300px",
   sidebarMenu(
     menuItem("Home", icon = icon("home"), tabName = "home"),
-    menuItem("Historis", icon = icon("history"),
+    ###sidebar-historis####
+    menuItem("Historis", icon = icon("history"), 
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               selectInput("pprkResults",
@@ -51,6 +52,7 @@ sidebar <- dashboardSidebar(width = "300px",
               # )
               menuSubItem("I-O Table", tabName = "pageThree")
     ),
+    ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
               menuSubItem("Input", tabName = "pageFour"),
               sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
@@ -76,17 +78,18 @@ sidebar <- dashboardSidebar(width = "300px",
                         ),
               menuSubItem("I-O Table", tabName = "pageSix")
     ),
+    ###sidebar-intervention####
     menuItem("Skenario Intervensi", icon = icon("random"), 
               menuSubItem("Input", tabName = "pageSeven"),
               actionButton("addScenario", "Tambah Skenario"),
               fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
-              # fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
-              # fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("waste1", "Tabel Produksi Limbah 1", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("waste2", "Tabel Produksi Limbah 2", buttonLabel="Browse...", placeholder="No file selected"),
-              # fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
-              # fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
+              fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("buttonInter", "Submit"),
               actionButton("delScenario", "Hapus Skenario"),
               menuSubItem("Results", tabName = "pageEight"),
@@ -109,26 +112,28 @@ sidebar <- dashboardSidebar(width = "300px",
   )
 )
 
-# body
+###*body####
 body <- dashboardBody(
+  ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
       jumbotron("PPRK Tools", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
       hr(),
       fluidRow(
-        column(4, thumbnail_label(image = 'history-solid.svg', label = 'Historis',
+        column(4, thumbnail_label(image = 'history.png', label = 'Historis',
                                   content = 'Bagian pertama dari alat bantu ini menyediakan antar muka di mana pengguna dapat memasukkan data-data yang diperlukan. Setelah kebutuhan data dipenuhi, akan dihasilkan angka-angka dan indeks yang merupakan beberapa indikator umum ekonomi regional serta indikator PPRK, yakni emisi, upah dan gaji, dan jumlah kebutuhan tenaga kerja. Hasil-hasil tersebut tersaji dalam bentuk grafik dan tabel yang menunjukkan nilai total maupun nilai sektoral. Seluruh hasil tersebut dapat diunduh dan dianalisis lebih lanjut sesuai dengan kebutuhan pengguna.',
-                                  button_link = '', button_label = 'Click me')
+                                  button_link = '#shiny-tab-pageOne', button_label = 'Click me')
         ),
-        column(4, thumbnail_label(image = 'exchange-alt-solid.svg', label = 'Skenario Bisnis Seperti Biasa',
+        column(4, thumbnail_label(image = 'exchange.png', label = 'Skenario Bisnis Seperti Biasa',
                                   content = 'Modul ini memuat fitur-fitur untuk membuat proyeksi dampak sosial, lingkungan, dan ekonomi di masa depan berdasarkan persentase pertumbuhan PDRB dambaan tahunan yang ditentukan oleh pengguna. Proyeksi dibangun berdasarkan asumsi bahwa pertumbuhan PDRB dicapai dengan meningkatkan permintaan akhir seluruh sektor penggerak ekonomi sebesar persentase peningkatan PDRB yang ditargetkan. Secara umum, Struktur ekonomi daerah dianggap tidak mengalami perubahan yang berarti. Atas dasar inilah, proyeksi dampak yang dihasilkan dapat dikatakan sebagai dampak dari Skenario Bisnis Seperti Biasa. Hasil-hasil proyeksi emisi dari sumber lain yang belum turut diperhitungkan (eksogen terhadap model ini) dapat diinput pada bagian ini.',
-                                  button_link = '', button_label = 'Click me')),
-        column(4, thumbnail_label(image = 'random-solid.svg', label = 'Skenario Intervensi',
+                                  button_link = '#shiny-tab-pageFour', button_label = 'Click me')),
+        column(4, thumbnail_label(image = 'random.png', label = 'Skenario Intervensi',
                                   content = 'Dampak sosial, ekonomi, dan lingkungan dari aksi mitigasi perubahan iklim yang dicanangkan dianalisis secara kuantitatif pada bagian ini. Dampak sosial, ekonomi, dan lingkungan dipicu oleh perubahan permintaan akhir (konsumsi) terhadap output satu atau lebih sektor ekonomi daerah yang merupakan konsekuensi dari suatu aksi mitigasi. Selain itu, perubahan nilai emisi akibat perubahan modus pemenuhan kebutuhan energi dan/atau pengelolaan limbah dihitung berdasarkan tabel input satelit baru yang menggambarkan kondisi setelah intervensi diterapkan.',
-                                  button_link = '', button_label = 'Click me'))
+                                  button_link = '#shiny-tab-pageSeven', button_label = 'Click me'))
 
       )
     ),
+    ###*tab-historis####
     tabItem(tabName = "pageOne",
             # h2("Page 1"),
             fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
@@ -163,9 +168,9 @@ body <- dashboardBody(
             # h2("Page 3"),
             div(style="overflow-x: scroll", tableOutput('tableIO'))
     ),
-    
     # tabItem(tabName = "pageFour"
     # ),
+    ###*tab-bau####
     tabItem(tabName = "pageFive",
             uiOutput("yearSelection"),
             plotOutput("plotResultsBAU"),
@@ -189,9 +194,13 @@ body <- dashboardBody(
             fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
             actionButton("buttonInter", "Submit")
     ),
+    ###*tab-intervention####
     tabItem(tabName = "pageEight",
             uiOutput("yearInterSelection"),
-            plotOutput("plotResultsInter")
+            h3("Skenario Intervensi"),
+            plotOutput("plotResultsInter"),
+            h3("Skenario Seperti Biasa"),
+            plotOutput("plotResultsInterBAU")
     ),
     tabItem(tabName = "pageNine",
             uiOutput("yearIOInterSelection"),
@@ -206,9 +215,7 @@ body <- dashboardBody(
   )
 )
 
-
-# Setup UI shiny
-# Dashboard page
+###*setup dashboard page####
 ui <- dashboardPage(
   skin = 'green', 
   header,
@@ -216,7 +223,7 @@ ui <- dashboardPage(
   body
 )
 
-# Define server 
+###*define server#### 
 server <- function(input, output) {
   blackBoxInputs <- function(){
     inSector <- "d:/PPRK/1_sector.csv"
@@ -1274,39 +1281,46 @@ server <- function(input, output) {
     sat_Waste <- resultsBAU$waste_consumption_table
     sat_Labour <- resultsBAU$labour_table
     
-    # inEnergy1 <- input$enery1
-    # if(is.null(inEnergy1))
-    #   return(NULL)  
-    # 
-    # inEnergy2 <- input$enery2
-    # if(is.null(inEnergy2))
-    #   return(NULL)  
-    # 
-    # inEnergy3 <- input$enery3
-    # if(is.null(inEnergy3))
-    #   return(NULL)  
-    # 
-    # inEnergy4 <- input$enery4
-    # if(is.null(inEnergy4))
-    #   return(NULL)  
-    # 
-    # inWaste1 <- input$waste1
-    # if(is.null(inEnergy1))
-    #   return(NULL)  
-    # 
-    # inWaste2 <- input$waste2
-    # if(is.null(inWaste2))
-    #   return(NULL)  
-    # 
-    # inWaste3 <- input$waste3
-    # if(is.null(inWaste3))
-    #   return(NULL)  
-    # 
-    # inWaste4 <- input$waste4
-    # if(is.null(inWaste4))
-    #   return(NULL)  
-    # 
-    # sector <- read.table(inSector$datapath, header=FALSE, sep=";")
+    inEnergy1 <- input$energy1
+    if(is.null(inEnergy1))
+      return(NULL)
+
+    inEnergy2 <- input$energy2
+    if(is.null(inEnergy2))
+      return(NULL)
+
+    inEnergy3 <- input$energy3
+    if(is.null(inEnergy3))
+      return(NULL)
+
+    inEnergy4 <- input$energy4
+    if(is.null(inEnergy4))
+      return(NULL)
+
+    inWaste1 <- input$waste1
+    if(is.null(inEnergy1))
+      return(NULL)
+
+    inWaste2 <- input$waste2
+    if(is.null(inWaste2))
+      return(NULL)
+
+    inWaste3 <- input$waste3
+    if(is.null(inWaste3))
+      return(NULL)
+
+    inWaste4 <- input$waste4
+    if(is.null(inWaste4))
+      return(NULL)
+
+    sat_Energy1 <- read.table(inEnergy1$datapath, header=TRUE, dec=",", sep=";")
+    sat_Energy2 <- read.table(inEnergy2$datapath, header=TRUE, dec=",", sep=";")
+    sat_Energy3 <- read.table(inEnergy3$datapath, header=TRUE, dec=",", sep=";")
+    sat_Energy4 <- read.table(inEnergy4$datapath, header=TRUE, dec=",", sep=";")
+    sat_Waste1 <- read.table(inWaste1$datapath, header=TRUE, dec=",", sep=";")
+    sat_Waste2 <- read.table(inWaste2$datapath, header=TRUE, dec=",", sep=";")
+    sat_Waste3 <- read.table(inWaste3$datapath, header=TRUE, dec=",", sep=";")
+    sat_Waste4 <- read.table(inWaste4$datapath, header=TRUE, dec=",", sep=";")
     
     m.satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame(), sat.tbl = data.frame()){ 
       if(sat.type == "energy" | sat.type == "waste"){
@@ -1370,27 +1384,6 @@ server <- function(input, output) {
       finDem_edit <- data.frame(cbind(finDem_edit, rep(0, length(finDem_edit))), stringsAsFactors = FALSE) # Generate modification 'interface' which consists of two column: the first is to keep the value while the second implies the Boolean value lock.
       propRecord <- finDem_edit$finDem_edit
       
-      # repeat{
-      #   # condition check
-      #   # if the total of the values with 1-lock is lower, the difference is to be distributed across the unlocked value
-      #   # else, no value shall be redistributed
-      #   lock_value <- sum(finDem_edit[finDem_edit$V2==1, "finDem_edit"])
-      #   v_left <- ori_finDem-lock_value
-      #   if(v_left > 0){# redistribution scheme
-      #     # proportion of redistribution
-      #     rowsToNull <- which(finDem_edit$V2==1)
-      #     denominator <- sum(propRecord[setdiff(1:nrow(finDem_edit), rowsToNull)])
-      #     prop_redist <- propRecord/denominator
-      #     prop_redist[rowsToNull] <- 0
-      #     finDem_edit[setdiff(1:nrow(finDem_edit), rowsToNull), "finDem_edit"] <- prop_redist[setdiff(1:nrow(finDem_edit), rowsToNull)]*v_left
-      #   }
-      #   finDem_edit <- edit(finDem_edit)
-      #   # control point
-      #   control <- data.frame(note= "Do you want to keep changes and proceed?", value = 0, stringsAsFactors = FALSE)
-      #   control <- edit(control)
-      #   if(control$value == 1) break
-      # }
-      
       mfDemandSeries<- as.matrix(cbind(mfDemandSeries, finDem_edit$finDem_edit))
       colnames(mfDemandSeries) <- paste0("y", seq(startT, startT+tu*stepT, by = stepT))
       
@@ -1402,8 +1395,8 @@ server <- function(input, output) {
     # generate lookup table to record details on which step uses which satellite table
     satAccounts <- data.frame(step= 0:stepN, 
                               year= seq(startT, endT, by = stepT),
-                              satEnergy = c("sat_Energy[sat_Energy$year==2010,]", "sat_Energy[sat_Energy$year==2015,]", "sat_Energy[sat_Energy$year==2020,]", "sat_Energy[sat_Energy$year==2025,]", "sat_Energy[sat_Energy$year==2030,]"),
-                              satWaste =  c("sat_Waste[sat_Waste$year==2010,]", "sat_Waste[sat_Waste$year==2015,]", "sat_Waste[sat_Waste$year==2020,]", "sat_Waste[sat_Waste$year==2025,]", "sat_Waste[sat_Waste$year==2030,]"),
+                              satEnergy = c("sat_Energy", "sat_Energy1", "sat_Energy2", "sat_Energy3", "sat_Energy4"),
+                              satWaste =  c("sat_Waste", "sat_Waste1", "sat_Waste2", "sat_Waste3", "sat_Waste4"),
                               stringsAsFactors = FALSE)
     # new satellite tables \ends====
     
@@ -1426,18 +1419,18 @@ server <- function(input, output) {
       m.tOUseries <- cbind(m.tOUseries, m.prjOU)
       # Time relevant colnames
       m.T_prj <- startT+tu*stepT
-      m.T_prj <- paste0("y", T_prj)
+      m.T_prj <- paste0("y", m.T_prj)
       # calculation of m.addValueSeries
-      eval(parse(text=paste0("m.addValueSeries$", T_prj, " <-  coef_primInput %*% diag(as.vector(m.prjOU), ncol = dimensi, nrow= dimensi)")))
+      eval(parse(text=paste0("m.addValueSeries$", m.T_prj, " <-  coef_primInput %*% diag(as.vector(m.prjOU), ncol = dimensi, nrow= dimensi)")))
       # calculation of m.GDP
-      eval(parse(text = paste0("m.GDPseries$", T_prj, "<- colSums(m.addValueSeries$", T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
+      eval(parse(text = paste0("m.GDPseries$", m.T_prj, "<- colSums(m.addValueSeries$", m.T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
       # calculation of m.impactLabour
-      eval(parse(text= paste0("m.impactLabour$", T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(m.prjOU))")))
+      eval(parse(text= paste0("m.impactLabour$", m.T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(m.prjOU))")))
       
       # calculation of m.impactEnergy
-      eval(parse(text= paste0("m.impactEnergy$", T_prj, " <- m.satelliteImpact('energy', TO.matrix = as.matrix(m.prjOU), Em.lookup =energy_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satEnergy"], ")")))
+      eval(parse(text= paste0("m.impactEnergy$", m.T_prj, " <- m.satelliteImpact('energy', TO.matrix = as.matrix(m.prjOU), Em.lookup=energy_Em, sat.tbl=",  satAccounts[satAccounts$step==tu, "satEnergy"], ")")))
       # calculation of m.impactWaste
-      eval(parse(text= paste0("m.impactWaste$", T_prj, " <- m.satelliteImpact('waste', TO.matrix = as.matrix(m.prjOU), Em.lookup =waste_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satWaste"], ")")))
+      eval(parse(text= paste0("m.impactWaste$", m.T_prj, " <- m.satelliteImpact('waste', TO.matrix = as.matrix(m.prjOU), Em.lookup=waste_Em, sat.tbl=",  satAccounts[satAccounts$step==tu, "satWaste"], ")")))
       
     }
     # Looping series to recalculate the new "^m." variables \ends=====
@@ -1657,6 +1650,62 @@ server <- function(input, output) {
     
   })
 
+  output$plotResultsInterBAU <- renderPlot({
+    results <- allInputsBAU()
+    GDP_table <- results$GDP_table
+    income_percapita_table <- results$income_percapita_table  
+    income_table <- results$income_table
+    labour_table <- results$labour_table
+    energy_consumption_table <- results$energy_consumption_table 
+    energy_emission_table <- results$energy_emission_table 
+    waste_consumption_table <- results$waste_consumption_table  
+    waste_emission_table <- results$waste_emission_table 
+    total_emission_table <- results$total_emission_table
+    
+    if(input$interResults == "Proyeksi PDRB"){
+      graph <- GDP_table[GDP_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=GDP)) + 
+        geom_bar(colour="blue", stat="identity") + 
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Upah per Kapita"){
+      ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+    } else if(input$interResults == "Proyeksi Upah Gaji"){
+      graph <- income_table[income_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=income)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      
+    } else if(input$interResults == "Proyeksi Tenaga Kerja"){
+      graph <- labour_table[labour_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=labour)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Konsumsi Energi"){
+      graph <- energy_consumption_table[energy_consumption_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
+      graph <- energy_emission_table[energy_emission_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=Temission)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Buangan Limbah"){
+      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Emisi Terkait Buangan Limbah"){
+      graph <- waste_emission_table[waste_emission_table$year==input$selectedInterYear,]
+      ggplot(data=graph, aes(x=sector, y=Temission)) +
+        geom_bar(colour="blue", stat="identity") +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$interResults == "Proyeksi Total Emisi"){
+      ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+    }
+    
+  })
+  
   output$yearIOInterSelection <- renderUI({
     selectInput("selectedIOInterYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
   })  
@@ -1708,5 +1757,5 @@ server <- function(input, output) {
 
 }
 
-# Run the application 
+###*run the apps#### 
 shinyApp(ui = ui, server = server)

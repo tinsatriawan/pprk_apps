@@ -144,18 +144,18 @@ for(tu in stepTweak:stepN){
   m.tOUseries <- cbind(m.tOUseries, m.prjOU)
   # Time relevant colnames
   m.T_prj <- startT+tu*stepT
-  m.T_prj <- paste0("y", T_prj)
+  m.T_prj <- paste0("y", m.T_prj)
   # calculation of m.addValueSeries
-  eval(parse(text=paste0("m.addValueSeries$", T_prj, " <-  coef_primInput %*% diag(as.vector(m.prjOU), ncol = dimensi, nrow= dimensi)")))
+  eval(parse(text=paste0("m.addValueSeries$", m.T_prj, " <-  coef_primInput %*% diag(as.vector(m.prjOU), ncol = dimensi, nrow= dimensi)")))
   # calculation of m.GDP
-  eval(parse(text = paste0("m.GDPseries$", T_prj, "<- colSums(m.addValueSeries$", T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
+  eval(parse(text = paste0("m.GDPseries$", m.T_prj, "<- colSums(m.addValueSeries$", m.T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
   # calculation of m.impactLabour
-  eval(parse(text= paste0("m.impactLabour$", T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(m.prjOU))")))
+  eval(parse(text= paste0("m.impactLabour$", m.T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(m.prjOU))")))
   
   # calculation of m.impactEnergy
-  eval(parse(text= paste0("m.impactEnergy$", T_prj, " <- m.satelliteImpact('energy', TO.matrix = as.matrix(m.prjOU), Em.lookup =energy_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satEnergy"], ")")))
+  eval(parse(text= paste0("m.impactEnergy$", m.T_prj, " <- m.satelliteImpact('energy', TO.matrix = as.matrix(m.prjOU), Em.lookup =energy_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satEnergy"], ")")))
   # calculation of m.impactWaste
-  eval(parse(text= paste0("m.impactWaste$", T_prj, " <- m.satelliteImpact('waste', TO.matrix = as.matrix(m.prjOU), Em.lookup =waste_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satWaste"], ")")))
+  eval(parse(text= paste0("m.impactWaste$", m.T_prj, " <- m.satelliteImpact('waste', TO.matrix = as.matrix(m.prjOU), Em.lookup =waste_Em, sat.tbl =",  satAccounts[satAccounts$step==tu, "satWaste"], ")")))
   
 }
 # Looping series to recalculate the new "^m." variables \ends=====
