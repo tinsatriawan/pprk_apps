@@ -1,7 +1,7 @@
 ###*initiate library####
 library(shiny)
 library(shinydashboard)
-library(shinyBS)
+# library(shinyBS)
 library(shinyLP)
 library(fmsb)
 library(ggplot2)
@@ -18,28 +18,30 @@ sidebar <- dashboardSidebar(width = "300px",
     menuItem("Historis", icon = icon("history"), 
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
-              selectInput("pprkResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("PDRB",
-                                  "Backward Linkage",
-                                  "Forward Linkage",
-                                  "Angka Pengganda Pendapatan Rumah Tangga",
-                                  "Angka Pengganda Tenaga Kerja",
-                                  "Angka Pengganda Output", 
-                                  "Angka Pengganda Energi", 
-                                  "Angka Pengganda Buangan Limbah", 
-                                  # "Land Productivity Coefficient",
-                                  "Koefisien Intensitas Energi", 
-                                  "Koefisien Produk Limbah",  
-                                  "Perbandingan Angka Pengganda",
-                                  # "Total Emission", 
-                                  "Emisi dari Penggunaan Energi",
-                                  "Emisi dari Limbah", 
-                                  "Upah gaji",
-                                  "Rasio Upah gaji per Surplus Usaha",
-                                  "Pendapatan per kapita"
-                                  )
-                        ),
+              selectInput("categorySector", label="Sektor",
+                choices=c("Ekonomi", "Energy", "Limbah")
+                          ),
+              selectInput("pprkResults", label="Pilih output yang ingin ditampilkan",
+                choices=c("PDRB",
+                          "Backward Linkage",
+                          "Forward Linkage",
+                          "Angka Pengganda Pendapatan Rumah Tangga",
+                          "Angka Pengganda Tenaga Kerja",
+                          "Angka Pengganda Output", 
+                          "Angka Pengganda Energi", 
+                          "Angka Pengganda Buangan Limbah", 
+                          # "Land Productivity Coefficient",
+                          "Koefisien Intensitas Energi", 
+                          "Koefisien Produk Limbah",  
+                          "Perbandingan Angka Pengganda",
+                          # "Total Emission", 
+                          "Emisi dari Penggunaan Energi",
+                          "Emisi dari Limbah", 
+                          "Upah gaji",
+                          "Rasio Upah gaji per Surplus Usaha",
+                          "Pendapatan per kapita"
+                        )
+              )
               # actionButton("ioTable", "Show I-O Table"),
               # mainPanel(
               #   bsModal("modalExample",
@@ -50,7 +52,7 @@ sidebar <- dashboardSidebar(width = "300px",
               #           # downloadButton('downloadPlot', 'Download')
               #           )
               # )
-              menuSubItem("I-O Table", tabName = "pageThree")
+              # menuSubItem("I-O Table", tabName = "pageThree")
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
@@ -136,40 +138,56 @@ body <- dashboardBody(
     ###*tab-historis####
     tabItem(tabName = "pageOne",
             # h2("Page 1"),
-            fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected"),
-            # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-            # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected"),
-            fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected"),
-            numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000),
-            actionButton("button", "Submit")
+              fluidRow(column(width = 3,
+                box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
+                ),
+                box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
+                ),
+                box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
+                ),
+                # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
+                box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
+                ),
+                actionButton("button", "Submit")
+              ),
+              column(width = 9,
+                box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
+                  div(style="overflow-x: scroll", dataTableOutput('tableIO'))
+                )
+              )
+            )
     ),
     
     tabItem(tabName = "pageTwo",
             # h2("Page 2"),
             uiOutput("sectorSelection"),
             plotOutput("plotResults"),
-            tableOutput('tableResults'),
+            hr(),
+            dataTableOutput('tableResults'),
             hr(), 
             tags$div(id='placeholder'),
             hr(),
             downloadButton('downloadTable', 'Download Table (.csv)')
     ),
       
-    tabItem(tabName = "pageThree",
+    # tabItem(tabName = "pageThree"
             # h2("Page 3"),
-            div(style="overflow-x: scroll", tableOutput('tableIO'))
-    ),
-    # tabItem(tabName = "pageFour"
     # ),
+    tabItem(tabName = "pageFour"
+    ),
     ###*tab-bau####
     tabItem(tabName = "pageFive",
             uiOutput("yearSelection"),
@@ -532,15 +550,15 @@ server <- function(input, output) {
   })
   
   output$sectorSelection <- renderUI({
-    # sec <- blackBoxInputs()
-    sec <- allInputs()
+    sec <- blackBoxInputs()
+    # sec <- allInputs()
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
   
   output$plotResults <- renderPlot({
-    # sec <- blackBoxInputs()
-    sec <- allInputs()
+    sec <- blackBoxInputs()
+    # sec <- allInputs()
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
@@ -652,9 +670,9 @@ server <- function(input, output) {
   
   })
   
-  output$tableResults <- renderTable({
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+  output$tableResults <- renderDataTable({
+    # sec <- allInputs()
+    sec <- blackBoxInputs()
     analysisResult <- sec$result
     
     if(input$pprkResults == "PDRB"){
@@ -711,8 +729,8 @@ server <- function(input, output) {
     filename = input$pprkResults,
     contentType = "text/csv",
     content = function(file) {
-      sec <- allInputs()
-      # sec <- blackBoxInputs()
+      # sec <- allInputs()
+      sec <- blackBoxInputs()
       analysisResult <- sec$result
       
       if(input$pprkResults == "PDRB"){
@@ -766,9 +784,9 @@ server <- function(input, output) {
     }
   )
   
-  output$tableIO <- renderTable({
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+  output$tableIO <- renderDataTable({
+    # sec <- allInputs()
+    sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -809,11 +827,11 @@ server <- function(input, output) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     
     io_table
-  }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')
+  }, options=list(pageLength=50), rownames=FALSE)
   
   allInputsBAU <- eventReactive(input$buttonBAU, {
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    # sec <- allInputs()
+    sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -1292,8 +1310,8 @@ server <- function(input, output) {
   })
   
   output$tableIOBAU <- renderTable({
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    # sec <- allInputs()
+    sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -1793,7 +1811,8 @@ server <- function(input, output) {
   })  
   
   output$tableIOInter <- renderTable({
-    sec <- allInputs()
+    # sec <- allInputs()
+    sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
