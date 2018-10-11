@@ -19,28 +19,27 @@ sidebar <- dashboardSidebar(width = "300px",
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               selectInput("categorySector", label="Sektor",
-                choices=c("Ekonomi", "Energy", "Limbah")
-                          ),
-              selectInput("pprkResults", label="Pilih output yang ingin ditampilkan",
-                choices=c("PDRB",
-                          "Backward Linkage",
-                          "Forward Linkage",
-                          "Angka Pengganda Pendapatan Rumah Tangga",
-                          "Angka Pengganda Tenaga Kerja",
-                          "Angka Pengganda Output", 
-                          "Angka Pengganda Energi", 
-                          "Angka Pengganda Buangan Limbah", 
-                          # "Land Productivity Coefficient",
-                          "Koefisien Intensitas Energi", 
-                          "Koefisien Produk Limbah",  
-                          "Perbandingan Angka Pengganda",
-                          # "Total Emission", 
-                          "Emisi dari Penggunaan Energi",
-                          "Emisi dari Limbah", 
-                          "Upah gaji",
-                          "Rasio Upah gaji per Surplus Usaha",
-                          "Pendapatan per kapita"
-                        )
+                choices=c("Ekonomi", "Energi", "Limbah")
+              ),
+              conditionalPanel(
+                condition="input.categorySector=='Ekonomi'",
+                selectInput("pprkResults", label="Pilih output yang ingin ditampilkan",
+                  choices=c("PDRB", "Backward Linkage", "Forward Linkage", "Angka Pengganda Pendapatan Rumah Tangga", "Angka Pengganda Tenaga Kerja", "Angka Pengganda Output", 
+                            "Upah gaji", "Rasio Upah gaji per Surplus Usaha", "Pendapatan per kapita", "Perbandingan Angka Pengganda"
+                          )
+                )
+              ),
+              conditionalPanel(
+                condition="input.categorySector=='Energi'",
+                selectInput("pprkEnergy", label="Pilih output yang ingin ditampilkan",
+                  choices=c("Angka Pengganda Energi", "Koefisien Intensitas Energi", "Emisi dari Penggunaan Energi")
+                )
+              ),
+              conditionalPanel(
+                condition="input.categorySector=='Limbah'",
+                selectInput("pprkWaste", label="Pilih output yang ingin ditampilkan",
+                  choices=c("Angka Pengganda Buangan Limbah", "Koefisien Produk Limbah", "Emisi dari Limbah")
+                )
               )
               # actionButton("ioTable", "Show I-O Table"),
               # mainPanel(
@@ -64,7 +63,7 @@ sidebar <- dashboardSidebar(width = "300px",
               fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("buttonBAU", "Submit"),
-              menuSubItem("Results", tabName = "pageFive"),
+              menuSubItem("Results"),
               selectInput("bauResults",
                         label="Pilih output yang ingin ditampilkan",
                         choices=c("Proyeksi PDRB", 
@@ -77,13 +76,21 @@ sidebar <- dashboardSidebar(width = "300px",
                                   "Proyeksi Emisi Terkait Buangan Limbah",
                                   "Proyeksi Total Emisi"
                                   )
-                        ),
-              menuSubItem("I-O Table", tabName = "pageSix")
+                        )
     ),
     ###sidebar-intervention####
     menuItem("Skenario Intervensi", icon = icon("random"), 
               menuSubItem("Input", tabName = "pageSeven"),
-              actionButton("addScenario", "Tambah Skenario"),
+              selectInput("interResults",
+                        label="Pilih tipe intervensi",
+                        choices=c("Permintaan Akhir", 
+                                  "Tabel Satelit Sektor Energi",
+                                  "Tabel Satelit Sektor Limbah"
+                                  )
+                        ),
+              textInput("scenarioName", "Nama skenario", value=""),
+              selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2010),
+              
               fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
@@ -93,7 +100,6 @@ sidebar <- dashboardSidebar(width = "300px",
               fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
               fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("buttonInter", "Submit"),
-              actionButton("delScenario", "Hapus Skenario"),
               menuSubItem("Results", tabName = "pageEight"),
               selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -107,8 +113,7 @@ sidebar <- dashboardSidebar(width = "300px",
                                   "Proyeksi Emisi Terkait Buangan Limbah",
                                   "Proyeksi Total Emisi"
                                   )
-                        ),
-              menuSubItem("I-O Table", tabName = "pageNine")
+                        )
     ),
     menuItem("Help", icon = icon("question-circle"), tabName="help")
   )
@@ -138,58 +143,65 @@ body <- dashboardBody(
     ###*tab-historis####
     tabItem(tabName = "pageOne",
             # h2("Page 1"),
-              fluidRow(column(width = 3,
-                box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
+              fluidRow(
+                column(width = 3,
+                  box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                    fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
+                  ),
+                  box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                    fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
+                  ),
+                  box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                    fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                    fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
+                  ),
+                  # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
+                  box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                    numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
+                  ),
+                  actionButton("button", "Submit")
                 ),
-                box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
-                ),
-                box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
-                ),
-                # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
-                box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
-                ),
-                actionButton("button", "Submit")
-              ),
-              column(width = 9,
-                box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
-                  div(style="overflow-x: scroll", dataTableOutput('tableIO'))
+                column(width = 9,
+                  box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
+                    div(style="overflow-x: scroll", dataTableOutput('tableIO'))
+                  )
                 )
+            )
+    ),
+    tabItem(tabName = "pageTwo",
+            # h2("Page 2"),
+            conditionalPanel(
+              condition="input.pprkResults=='Perbandingan Angka Pengganda'",
+              uiOutput("sectorSelection")
+            ),
+            conditionalPanel(
+              condition="input.pprkResults!='Pendapatan per kapita'",
+              plotOutput("plotResults")
+            ),
+            hr(),
+            fluidRow(
+              column(width=7,
+                box(width=NULL,
+                  dataTableOutput('tableResults'),
+                  downloadButton('downloadTable', 'Download Table (.csv)')
+                )
+              ),
+              column(width=5,
+                tags$div(id='placeholder'),
+                hr()
               )
             )
     ),
-    
-    tabItem(tabName = "pageTwo",
-            # h2("Page 2"),
-            uiOutput("sectorSelection"),
-            plotOutput("plotResults"),
-            hr(),
-            dataTableOutput('tableResults'),
-            hr(), 
-            tags$div(id='placeholder'),
-            hr(),
-            downloadButton('downloadTable', 'Download Table (.csv)')
-    ),
-      
-    # tabItem(tabName = "pageThree"
-            # h2("Page 3"),
-    # ),
-    tabItem(tabName = "pageFour"
-    ),
     ###*tab-bau####
-    tabItem(tabName = "pageFive",
+    tabItem(tabName = "pageFour",
             uiOutput("yearSelection"),
             plotOutput("plotResultsBAU"),
             tableOutput('tableResultsBAU'),
@@ -197,10 +209,6 @@ body <- dashboardBody(
             tags$div(id='bauplaceholder'),
             hr(),
             downloadButton('downloadTableBAU', 'Download Table (.csv)')
-    ),
-    tabItem(tabName = "pageSix",
-            uiOutput("yearIOSelection"),
-            div(style="overflow-x: scroll", tableOutput('tableIOBAU'))
     ),
     tabItem(tabName = "pageSeven",
             selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040), selected=2015),
@@ -213,10 +221,6 @@ body <- dashboardBody(
             plotOutput("plotResultsInter"),
             h3("Skenario Seperti Biasa"),
             plotOutput("plotResultsInterBAU")
-    ),
-    tabItem(tabName = "pageNine",
-            uiOutput("yearIOInterSelection"),
-            div(style="overflow-x: scroll", tableOutput('tableIOInter'))
     ),
     tabItem(tabName = "help",
               tags$div(class = "header", checked = NA,
@@ -251,7 +255,7 @@ server <- function(input, output) {
     inEmissionFactorLandWasteTable <- "d:/PPRK/11_emission_factor_waste.csv"
     
     sector <- read.table(inSector, header=FALSE, sep=";")
-    indem <- read.table(inIntermediateDemand, header=FALSE,  dec=",", sep=";")
+    indem <- read.table(inIntermediateDemand, header=FALSE, dec=",", sep=";")
     findem <- read.table(inFinalDemand, header=FALSE, dec=",", sep=";")
     addval <- read.table(inAddedValue, header=FALSE, dec=",", sep=";")
     labour <- read.table(inLabour, header=TRUE, dec=",", sep=";")
@@ -259,11 +263,11 @@ server <- function(input, output) {
     waste <- read.table(inWaste, header=TRUE, dec=",", sep=";")
     ef_energy <- read.table(inEmissionFactorEnergiTable, header=TRUE, dec=",", sep=";")
     ef_waste <- read.table(inEmissionFactorLandWasteTable, header=TRUE, dec=",", sep=";")
-    findemcom <- read.table(inFinalDemandComp, header=FALSE, dec=",", sep=";")
-    addvalcom <- read.table(inAddedValueComp, header=FALSE, dec=",", sep=";")
+    findemcom <- read.table(inFinalDemandComp, header=FALSE, sep=";")
+    addvalcom <- read.table(inAddedValueComp, header=FALSE, sep=";")
     
-    # Row explicit definition
-    incomeRow <- 2
+    # Row explicit definition for Income (Wages & Salary)
+    income_row <- 2
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
@@ -290,7 +294,7 @@ server <- function(input, output) {
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
-    income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+    income_coef <- tinput_invers %*% as.matrix(addval_matrix[income_row,])
     income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
     InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
     multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
@@ -340,7 +344,7 @@ server <- function(input, output) {
     colnames(wages) <- "wages"
     
     # Income per capita
-    income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
+    income_per_capita <- sum(as.matrix(addval_matrix[income_row,])) / input$popDensTable
       
     result <- cbind(sector,
                     DBL,
@@ -563,111 +567,126 @@ server <- function(input, output) {
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
     
-    if(input$pprkResults == "PDRB"){
-      graph <- subset(analysisResult, select = c(Sektor, GDP))
-      GDPvalues <- as.matrix(analysisResult$GDP)
-      GDPTotal <- colSums(GDPvalues)
-      insertUI(
-        selector="#placeholder",
-        ui = tags$div(
-          valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
-          id='pdrb'
+    if(input$categorySector=="Ekonomi"){
+      if(input$pprkResults == "PDRB"){
+        graph <- subset(analysisResult, select = c(Sektor, GDP))
+        GDPvalues <- as.matrix(analysisResult$GDP)
+        GDPTotal <- colSums(GDPvalues)
+        insertUI(
+          selector="#placeholder",
+          ui = tags$div(
+            valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
+            id='pdrb'
+          )
         )
-      )
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Backward Linkage"){
-      graph <- subset(analysisResult, select = c(Sektor, DBL))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Forward Linkage"){
-      graph <- subset(analysisResult, select = c(Sektor, DFL))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Angka Pengganda Output"){
-      graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
-      graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Angka Pengganda Energi"){
-      graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
-      graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
-      graph <- subset(analysisResult, select = c(Sektor, multiplierWaste))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
-      graph <- subset(analysisResult, select = c(Sektor, coef_energy))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Koefisien Produk Limbah"){
-      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
-      graph <- subset(analysisResult, select = c(Sektor, em_energy_total))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Emisi dari Limbah"){
-      graph <- subset(analysisResult, select = c(Sektor, em_waste_total))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Upah gaji"){
-      graph <- subset(analysisResult, select = c(Sektor, wages))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
-      graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
-    } else if(input$pprkResults == "Pendapatan per kapita"){
-      removeUI(selector = '#pdrb')
-      insertUI(
-        selector="#placeholder",
-        ui = tags$div(
-          valueBox(paste0(income_per_capita), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
-          id='capita'
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Backward Linkage"){
+        graph <- subset(analysisResult, select = c(Sektor, DBL))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Forward Linkage"){
+        graph <- subset(analysisResult, select = c(Sektor, DFL))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Angka Pengganda Output"){
+        graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+        graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+        graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita') 
+      } else if(input$pprkResults == "Upah gaji"){
+        graph <- subset(analysisResult, select = c(Sektor, wages))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+        graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkResults == "Pendapatan per kapita"){
+        removeUI(selector = '#pdrb')
+        insertUI(
+          selector="#placeholder",
+          ui = tags$div(
+            valueBox(paste0(income_per_capita), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
+            id='capita'
+          )
         )
-      )
-    }
-    
-    if(input$pprkResults == "Perbandingan Angka Pengganda"){
-      removeUI(selector = '#pdrb')
-      removeUI(selector = '#capita')
+      } 
       
+      if(input$pprkResults == "Perbandingan Angka Pengganda"){
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+        
+        
+        multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
+        tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
+        tabel_radar <- tabel_radarchart
+        tabel_radar$Sektor <- NULL
+        tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
+                                     multiplierOutput=max(multiplierTable$multiplierOutput), 
+                                     multiplierLabour=max(multiplierTable$multiplierLabour), 
+                                     multiplierEnergy=max(multiplierTable$multiplierEnergy),
+                                     multiplierWaste=max(multiplierTable$multiplierWaste) 
+                                     )
+        tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
+                                     multiplierOutput=min(multiplierTable$multiplierOutput),  
+                                     multiplierLabour=min(multiplierTable$multiplierLabour),  
+                                     multiplierEnergy=min(multiplierTable$multiplierEnergy),
+                                     multiplierWaste=min(multiplierTable$multiplierWaste) 
+                                     )
+        tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
+        radarchart(tabel_radar)
+      } else {
+        colnames(graph) <- c("Sektor", "Analisis")
+        ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
+          geom_bar(colour="blue", stat="identity") + 
+          coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      }
+    } else if(input$categorySector=="Energi"){
+      if(input$pprkEnergy == "Angka Pengganda Energi"){
+        graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkEnergy == "Koefisien Intensitas Energi"){
+        graph <- subset(analysisResult, select = c(Sektor, coef_energy))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkEnergy == "Emisi dari Penggunaan Energi"){
+        graph <- subset(analysisResult, select = c(Sektor, em_energy_total))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } 
       
-      multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
-      tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
-      tabel_radar <- tabel_radarchart
-      tabel_radar$Sektor <- NULL
-      tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
-                                   multiplierOutput=max(multiplierTable$multiplierOutput), 
-                                   multiplierLabour=max(multiplierTable$multiplierLabour), 
-                                   multiplierEnergy=max(multiplierTable$multiplierEnergy),
-                                   multiplierWaste=max(multiplierTable$multiplierWaste) 
-                                   )
-      tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
-                                   multiplierOutput=min(multiplierTable$multiplierOutput),  
-                                   multiplierLabour=min(multiplierTable$multiplierLabour),  
-                                   multiplierEnergy=min(multiplierTable$multiplierEnergy),
-                                   multiplierWaste=min(multiplierTable$multiplierWaste) 
-                                   )
-      tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
-      radarchart(tabel_radar)
+      colnames(graph) <- c("Sektor", "Analisis")
+      ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
+        geom_bar(colour="blue", stat="identity") + 
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
     } else {
+      if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
+        graph <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      } else if(input$pprkWaste == "Koefisien Produk Limbah"){
+        graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita') 
+      } else if(input$pprkWaste == "Emisi dari Limbah"){
+        graph <- subset(analysisResult, select = c(Sektor, em_waste_total))
+        removeUI(selector = '#pdrb')
+        removeUI(selector = '#capita')
+      }
+      
       colnames(graph) <- c("Sektor", "Analisis")
       ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
         geom_bar(colour="blue", stat="identity") + 
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
     }
-  
   })
   
   output$tableResults <- renderDataTable({
@@ -675,55 +694,61 @@ server <- function(input, output) {
     sec <- blackBoxInputs()
     analysisResult <- sec$result
     
-    if(input$pprkResults == "PDRB"){
-      tables <- subset(analysisResult, select = c(Sektor, GDP))
-      tables
-    } else if(input$pprkResults == "Backward Linkage"){
-      tables <- subset(analysisResult, select = c(Sektor, DBL))
-      tables
-    } else if(input$pprkResults == "Forward Linkage"){
-      tables <- subset(analysisResult, select = c(Sektor, DFL))
-      tables
-    } else if(input$pprkResults == "Angka Pengganda Output"){
-      tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
-      tables
-    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
-      tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
-      tables
-    } else if(input$pprkResults == "Angka Pengganda Energi"){
-      tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
-      tables
-    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
-      tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
-      tables
-    } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
-      tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
-      tables
-    } else if(input$pprkResults == "Koefisien Intensitas Energi"){
-      tables <- subset(analysisResult, select = c(Sektor, coef_energy))
-      tables
-    } else if(input$pprkResults == "Koefisien Produk Limbah"){
-      tables <- subset(analysisResult, select = c(Sektor, coef_waste))
-      tables
-    } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
-      tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
-      tables
-    } else if(input$pprkResults == "Emisi dari Limbah"){
-      tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
-      tables
-    } else if(input$pprkResults == "Upah gaji"){
-      tables <- subset(analysisResult, select = c(Sektor, wages))
-      tables
-    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
-      tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
-      tables
-    } else if(input$pprkResults == "Pendapatan per kapita"){
-      return(NULL)
-    } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
-      tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste)) 
-      tables
+    if(input$categorySector=="Ekonomi"){
+      if(input$pprkResults == "PDRB"){
+        tables <- subset(analysisResult, select = c(Sektor, GDP))
+        tables
+      } else if(input$pprkResults == "Backward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DBL))
+        tables
+      } else if(input$pprkResults == "Forward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DFL))
+        tables
+      } else if(input$pprkResults == "Angka Pengganda Output"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+        tables
+      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+        tables
+      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+        tables
+      } else if(input$pprkResults == "Upah gaji"){
+        tables <- subset(analysisResult, select = c(Sektor, wages))
+        tables
+      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+        tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+        tables
+      } else if(input$pprkResults == "Pendapatan per kapita"){
+        return(NULL)
+      } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+        tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste)) 
+        tables
+      }
+    } else if(input$categorySector=="Energi"){
+      if(input$pprkEnergy == "Angka Pengganda Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+        tables
+      } else if(input$pprkEnergy == "Koefisien Intensitas Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+        tables
+      } else if(input$pprkEnergy == "Emisi dari Penggunaan Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+        tables
+      }
+    } else {
+      if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+        tables
+      }  else if(input$pprkWaste == "Koefisien Produk Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+        tables
+      }  else if(input$pprkWaste == "Emisi dari Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+        tables
+      } 
     }
-  })
+  }, rownames=FALSE)
   
   output$downloadTable <- downloadHandler(
     filename = input$pprkResults,
@@ -733,52 +758,44 @@ server <- function(input, output) {
       sec <- blackBoxInputs()
       analysisResult <- sec$result
       
-      if(input$pprkResults == "PDRB"){
-        tables <- subset(analysisResult, select = c(Sektor, GDP))
-        
-      } else if(input$pprkResults == "Backward Linkage"){
-        tables <- subset(analysisResult, select = c(Sektor, DBL))
-        
-      } else if(input$pprkResults == "Forward Linkage"){
-        tables <- subset(analysisResult, select = c(Sektor, DFL))
-        
-      } else if(input$pprkResults == "Angka Pengganda Output"){
-        tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
-        
-      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
-        tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
-        
-      } else if(input$pprkResults == "Angka Pengganda Energi"){
-        tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
-        
-      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
-        tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
-        
-      } else if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
-        tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
-        
-      } else if(input$pprkResults == "Koefisien Intensitas Energi"){
-        tables <- subset(analysisResult, select = c(Sektor, coef_energy))
-        
-      } else if(input$pprkResults == "Koefisien Produk Limbah"){
-        tables <- subset(analysisResult, select = c(Sektor, coef_waste))
-        
-      } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
-        tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
-        
-      } else if(input$pprkResults == "Emisi dari Limbah"){
-        tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
-        
-      } else if(input$pprkResults == "Upah gaji"){
-        tables <- subset(analysisResult, select = c(Sektor, wages))
-        
-      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
-        tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
-        
-      } else if(input$pprkResults == "Pendapatan per kapita"){
-        tables <- data.frame(NODATA="")
-      } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
-        tables <- data.frame(NODATA="")
+      if(input$categorySector=="Ekonomi"){
+        if(input$pprkResults == "PDRB"){
+          tables <- subset(analysisResult, select = c(Sektor, GDP))
+        } else if(input$pprkResults == "Backward Linkage"){
+          tables <- subset(analysisResult, select = c(Sektor, DBL))
+        } else if(input$pprkResults == "Forward Linkage"){
+          tables <- subset(analysisResult, select = c(Sektor, DFL))
+        } else if(input$pprkResults == "Angka Pengganda Output"){
+          tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+        } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+          tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+        } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+          tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+        } else if(input$pprkResults == "Upah gaji"){
+          tables <- subset(analysisResult, select = c(Sektor, wages))
+        } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+          tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+        } else if(input$pprkResults == "Pendapatan per kapita"){
+          tables <- data.frame(NODATA="")
+        } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+          tables <- data.frame(NODATA="")
+        }
+      } else if(input$categorySector=="Energi"){
+        if(input$pprkResults == "Angka Pengganda Energi"){
+          tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+        } else if(input$pprkResults == "Koefisien Intensitas Energi"){
+          tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+        } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
+          tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+        } 
+      } else {
+        if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
+          tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+        } else if(input$pprkResults == "Koefisien Produk Limbah"){
+          tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+        } else if(input$pprkResults == "Emisi dari Limbah"){
+          tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+        }
       }
       write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
     }
@@ -1305,10 +1322,6 @@ server <- function(input, output) {
     }
   )  
   
-  output$yearIOSelection <- renderUI({
-    selectInput("selectedIOYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
-  })
-  
   output$tableIOBAU <- renderTable({
     # sec <- allInputs()
     sec <- blackBoxInputs()
@@ -1806,54 +1819,7 @@ server <- function(input, output) {
     
   })
   
-  output$yearIOInterSelection <- renderUI({
-    selectInput("selectedIOInterYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
-  })  
-  
-  output$tableIOInter <- renderTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
-    sector <- sec$sector
-    indem <- sec$indem
-    findem <- sec$findem
-    addval <- sec$addval
-    findemcom <- sec$findemcom
-    addvalcom <- sec$addvalcom
-    
-    io_table <- cbind(sector, indem)
-    colnames(io_table) <- c("Sektor", t(sector))
-    io_table$`Total Permintaan Antara` <- rowSums(indem)
-    
-    colnames(findem) <- c(t(findemcom))
-    findem$`Total Permintaan Akhir` <- rowSums(findem)
-    io_table <- cbind(io_table, findem)
-    
-    total_indem <- colSums(indem)
-    out_indem <- sum(total_indem)
-    total_findem <- colSums(findem)
-    out_findem <- sum(total_findem)
-    total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
-    
-    colnames(total_all_indem) <- colnames(io_table)
-    io_table<-rbind(io_table, total_all_indem)
-    
-    totalrow_addval <- rowSums(addval)
-    totalcol_addval <- colSums(addval)
-    total_addval <- sum(totalrow_addval)
-    addval_table <- cbind(addvalcom, addval, totalrow_addval)
-    total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
-    
-    remaining_col <- ncol(io_table) - ncol(total_addval_table) 
-    for(i in 1:remaining_col){
-      eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
-      eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
-    }
-    colnames(addval_table) <- colnames(io_table)
-    colnames(total_addval_table) <- colnames(io_table)
-    io_table <- rbind(io_table, addval_table, total_addval_table)
-    
-    io_table
-  }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
+  # output$tableIOInter <- renderTable({ }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
 
 }
