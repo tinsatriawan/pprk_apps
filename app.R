@@ -5,6 +5,7 @@ library(shinydashboard)
 library(shinyLP)
 library(fmsb)
 library(ggplot2)
+# library(RColorBrewer)
 library(DT)
 
 ###*header####
@@ -57,7 +58,6 @@ sidebar <- dashboardSidebar(width = "300px",
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
               menuSubItem("Input", tabName = "pageFour"),
               sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
-              numericInput("timeStep", "Rentang waktu", min=1, max=30, value=5),
               selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
               selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
               fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
@@ -202,13 +202,25 @@ body <- dashboardBody(
     ),
     ###*tab-bau####
     tabItem(tabName = "pageFour",
-            uiOutput("yearSelection"),
+            conditionalPanel(
+              condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
+              uiOutput("yearSelection")
+            ),
             plotOutput("plotResultsBAU"),
-            tableOutput('tableResultsBAU'),
             hr(),
-            tags$div(id='bauplaceholder'),
-            hr(),
-            downloadButton('downloadTableBAU', 'Download Table (.csv)')
+            fluidRow(
+              column(width=7,
+                box(width=NULL,
+                  dataTableOutput('tableResultsBAU'),
+                  downloadButton('downloadTableBAU', 'Download Table (.csv)')
+                )
+              ),
+              column(width=5,
+                tags$div(id='bauplaceholder'),
+                hr()
+              )
+            )
+            
     ),
     tabItem(tabName = "pageSeven",
             selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040), selected=2015),
@@ -623,7 +635,6 @@ server <- function(input, output) {
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
         
-        
         multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
         tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
         tabel_radar <- tabel_radarchart
@@ -644,8 +655,8 @@ server <- function(input, output) {
         radarchart(tabel_radar)
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
-        ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
-          geom_bar(colour="blue", stat="identity") + 
+        ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
+          geom_bar(stat="identity", colour="black") + theme_minimal() + 
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       }
     } else if(input$categorySector=="Energi"){
@@ -664,8 +675,8 @@ server <- function(input, output) {
       } 
       
       colnames(graph) <- c("Sektor", "Analisis")
-      ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
+        geom_bar(colour="black", stat="identity") + theme_minimal() +  
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
     } else {
       if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
@@ -683,8 +694,8 @@ server <- function(input, output) {
       }
       
       colnames(graph) <- c("Sektor", "Analisis")
-      ggplot(data=graph, aes(x=Sektor, y=Analisis)) + 
-        geom_bar(colour="blue", stat="identity") + 
+      ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
+        geom_bar(colour="black", stat="identity") + theme_minimal() +  
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
     }
   })
@@ -855,31 +866,33 @@ server <- function(input, output) {
     addval <- sec$addval
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
-    sat_Labour <- sec$labour
-    sat_Energy <- sec$energy
-    energy_Em <- sec$ef_energy
-    sat_Waste <-sec$waste
-    waste_Em <- sec$ef_waste
+    labour <- sec$labour
+    energy <- sec$energy
+    ef_energy <- sec$ef_energy
+    waste <-sec$waste
+    ef_waste <- sec$ef_waste
     
-    importRow <- 1
-    incomeRow <- 2
-    profitRow <- 3
+    import_row <- 1
+    income_row <- 2
+    profit_row <- 3
     
-    inPopTable <- input$populationTable
-    if(is.null(inPopTable))
-      return(NULL)
+    # inPopTable <- input$populationTable
+    # if(is.null(inPopTable))
+    #   return(NULL)
+    # 
+    # inEmOtherTable <- input$emissionSectorRADTable
+    # if(is.null(inEmOtherTable))
+    #   return(NULL)
     
-    inEmOtherTable <- input$emissionSectorRADTable
-    if(is.null(inEmOtherTable))
-      return(NULL)
+    # population <- read.table(inPopTable$datapath, header=TRUE, dec=",", sep=";")
+    # otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, dec=",", sep=";")
     
-    population <- read.table(inPopTable$datapath, header=TRUE, dec=",", sep=";")
-    otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, dec=",", sep=";")
+    population <- read.table("d:/PPRK/12_populationRev.csv", header=TRUE, dec=",", sep=";")
+    otherEm <- read.table("d:/PPRK/13_emission_from_otherRev.csv", header=TRUE, dec=",", sep=";")
     
-    G_rate <- as.numeric(input$gdpRate)
-    endT <- as.numeric(input$dateTo)
+    gdpRate <- as.numeric(input$gdpRate)
     startT <- as.numeric(input$dateFrom)
-    stepT <- as.numeric(input$timeStep)
+    endT <- as.numeric(input$dateTo)
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
@@ -895,21 +908,23 @@ server <- function(input, output) {
     I_A <- I-A
     leontief <- solve(I_A)
     
-    mult_matrix <- function(input.mx = matrix(), column = 5){
-      res_mx <- matrix(c(rep(as.numeric(input.mx), column)), nrow = nrow(input.mx), ncol = column)
-      return(res_mx)
-    }
+    # mult_matrix <- function(input_mx = matrix(), column = 5){
+    #   res_mx <- matrix(c(rep(as.numeric(input_mx), column)), nrow = nrow(input_mx), ncol = column)
+    #   return(res_mx)
+    # }
     
-    satelliteImpact <- function(sat.type = "energy", TO.matrix = matrix(), Em.lookup = data.frame()){ 
-      if(sat.type == "energy" | sat.type == "waste"){
+    satelliteImpact <- function(sat_type = "energy", tbl_sat = data.frame(), tbl_output_matrix = matrix(), emission_lookup = data.frame()){ 
+      if(sat_type == "energy" | sat_type == "waste"){
         impact <- list() # impact$cons; impact$emission
-        if(sat.type == "energy") impact$cons <- sat_Energy else impact$cons <- sat_Waste
+        # if(sat_type == "energy") impact$cons <- energy else impact$cons <- waste
+        impact$cons <- tbl_sat
         
         prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
+        impact$cons[, 4:ncol(impact$cons)] <- prop
         
         coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
         coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-        impact$cons[,3] <- coeff_matrix %*% TO.matrix
+        impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
         colnames(impact$cons)[3] <- "Tconsumption"
         
         impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
@@ -917,7 +932,7 @@ server <- function(input, output) {
         order_cname <- names(impact$cons)[4:ncol(impact$cons)]
         em_f <- numeric()
         for(m in 1: length(order_cname)){
-          em_f <- c(em_f, Em.lookup[which(Em.lookup[,1]==order_cname[m]), 2])
+          em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
         }
         em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
         
@@ -927,230 +942,217 @@ server <- function(input, output) {
         colnames(impact$emission)[3] <- "Temission"
       } else { # for labour case
         impact <- list()
-        impact$cons <- sat_Labour
+        impact$cons <- tbl_sat
         coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
         coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-        impact$cons[,3] <- coeff_matrix %*% TO.matrix
+        impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
       }
       impact$cons[is.na(impact$cons)] <- 0
       impact$emission[is.na(impact$emission)] <- 0
       return(impact)
     }
     
-    coef_primInput <- addval_matrix %*% tinput_invers # imports, value added, etc.
+    coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
 
-    # Calculation of Final demand projection====
+    # Calculation of final demand projection====
     findem_matrix <- as.matrix(findem)
-    agg_fDem_matrix <- as.matrix(rowSums(findem_matrix))
+    findem_rowsum <- as.matrix(rowSums(findem_matrix))
     
-    prop_finDemand <- findem/agg_fDem_matrix
+    findem_proportion <- findem/findem_rowsum
+    findem_proportion[is.na(findem_proportion)] <- 0
     
-    coef_Grise <- (100+G_rate)/100
+    coef_grise <- (100+gdpRate)/100
     
-    stepN <- (endT-startT)/stepT
+    stepN <- endT-startT
     for(s in 1:stepN){
-      
       if(s == 1){
         # GDP compile table
         GDPseries <- data.frame(sector.id=1:nrow(sector), sector = sector[,1], stringsAsFactors = FALSE)
-        eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), importRow),])")))
-        fDemandSeries <- agg_fDem_matrix
+        eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), import_row),])")))
+        findem_series <- findem_rowsum
         tStamps <- paste0("y", startT)
-        tOUseries <- leontief %*% agg_fDem_matrix
-        # blank lists for keeping intDemandSeries; addValueSeries; fDCompSeries
+        tOutputSeries <- leontief %*% findem_rowsum
+        # blank lists for keeping intDemandSeries; addValueSeries; finDemCompSeries
         intDemandSeries <- list()
         addValueSeries <- list()
-        fDCompSeries <- list()
+        finDemCompSeries <- list()
         impactLabour <- list()
         impactEnergy <- list()
         impactWaste <- list()
         # Add first values to the lists. Lists values are all matrices
         eval(parse(text= paste0("intDemandSeries$y", startT, " <- indem_matrix")))
         eval(parse(text= paste0("addValueSeries$y", startT, " <- addval_matrix")))
-        eval(parse(text= paste0("fDCompSeries$y", startT, " <- findem_matrix")))
-        eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', TO.matrix = as.matrix(tOUseries))")))
-        eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', TO.matrix = as.matrix(tOUseries), Em.lookup = energy_Em)")))
-        eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', TO.matrix = as.matrix(tOUseries), Em.lookup = waste_Em)")))
+        eval(parse(text= paste0("finDemCompSeries$y", startT, " <- findem_matrix")))
+        eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
+        eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
+        eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
         print("first year data load has been successfully conducted")
       }
-      prjFinDem <- coef_Grise * fDemandSeries[, s]
-      fDemandSeries <- cbind(fDemandSeries, prjFinDem)
-      prjOU <- leontief %*% prjFinDem
-      tOUseries <- cbind(tOUseries, prjOU)
+      projFinDem <- coef_grise * findem_series[, s]
+      findem_series <- cbind(findem_series, projFinDem)
+      projOutput <- leontief %*% projFinDem
+      tOutputSeries <- cbind(tOutputSeries, projOutput)
       # notes on the year
-      T_prj <- startT+s*stepT
-      T_prj <- paste0("y", T_prj)
-      tStamps <- c(tStamps, T_prj)
+      projT <- startT+s
+      projT <- paste0("y", projT)
+      tStamps <- c(tStamps, projT)
       # add additional values to the list
-      eval(parse(text=paste0("fDCompSeries$", T_prj, " <- as.matrix(prop_finDemand*prjFinDem)"))) # contains NaN
-      eval(parse(text=paste0("intDemandSeries$", T_prj, " <-  A %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
-      eval(parse(text=paste0("addValueSeries$", T_prj, " <-  coef_primInput %*% diag(as.vector(prjOU), ncol = dimensi, nrow= dimensi)")))
+      eval(parse(text=paste0("finDemCompSeries$", projT, " <- as.matrix(findem_proportion*projFinDem)"))) # contains NaN
+      eval(parse(text=paste0("intDemandSeries$", projT, " <-  A %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
+      eval(parse(text=paste0("addValueSeries$", projT, " <-  coef_primary_input %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
       # GDP projection
-      eval(parse(text = paste0("GDPseries$", T_prj, "<- colSums(addValueSeries$", T_prj, "[setdiff(1:nrow(addval_matrix), importRow),])")))
+      eval(parse(text = paste0("GDPseries$", projT, "<- colSums(addValueSeries$", projT, "[setdiff(1:nrow(addval_matrix), import_row),])")))
       # Impact projection
-      eval(parse(text= paste0("impactLabour$", T_prj, " <- satelliteImpact('labour', TO.matrix = as.matrix(prjOU))")))
-      eval(parse(text= paste0("impactEnergy$", T_prj, " <- satelliteImpact('energy', TO.matrix = as.matrix(prjOU), Em.lookup = energy_Em)")))
-      eval(parse(text= paste0("impactWaste$", T_prj, " <- satelliteImpact('waste', TO.matrix = as.matrix(prjOU), Em.lookup = waste_Em)")))
+      eval(parse(text= paste0("impactLabour$", projT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(projOutput))")))
+      eval(parse(text= paste0("impactEnergy$", projT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_energy)")))
+      eval(parse(text= paste0("impactWaste$", projT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_waste)")))
     }
-    colnames(fDemandSeries) <- as.character(tStamps)
-    colnames(tOUseries) <- as.character(tStamps)
+    colnames(findem_series) <- as.character(tStamps)
+    colnames(tOutputSeries) <- as.character(tStamps)
     
-    finalDemandSeriesTable<- cbind(sector, fDemandSeries)
+    finalDemandSeriesTable<- cbind(sector, findem_series)
     
     # 1. GDP (ind. 1)
-    GDP_ou <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
+    GDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
     for(c in 3:ncol(GDPseries)){
       add.row <- GDPseries[, c(1,2, c)]
       names(add.row) <- c("id.sector", "sector", "GDP")
-      add.row$year <- startT + (c-3)*stepT
-      add.row <- add.row[, colnames(GDP_ou)]
-      GDP_ou <- data.frame(rbind(GDP_ou, add.row), stringsAsFactors = FALSE)
-      
+      add.row$year <- startT + (c-3)
+      add.row <- add.row[, colnames(GDPOutput)]
+      GDPOutput <- data.frame(rbind(GDPOutput, add.row), stringsAsFactors = FALSE)
     }
-    GDP_ou <- GDP_ou[GDP_ou$year != 0, ] # remove initial values
+    GDPOutput <- GDPOutput[GDPOutput$year != 0, ] # remove initial values
     
     # 2. Income per capita (ind. 9)
-    incCap_ou <- data.frame(year = 0, Income.per.capita = 0)
+    incomePerCapitaOutput <- data.frame(year = 0, Income.per.capita = 0)
     for(t in 0: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       pop_curr <- population[which(population[, 1] == t_curr), 2]
-      inc_curr <- sum(addValueSeries[[t+1]][incomeRow,])
+      inc_curr <- sum(addValueSeries[[t+1]][income_row,])
       inc_capita <- inc_curr/pop_curr
       add.row <- data.frame(cbind(t_curr, inc_capita))
-      names(add.row) <- names(incCap_ou)
-      incCap_ou <- data.frame(rbind(incCap_ou, add.row), stringsAsFactors = FALSE)
-      
+      names(add.row) <- names(incomePerCapitaOutput)
+      incomePerCapitaOutput <- data.frame(rbind(incomePerCapitaOutput, add.row), stringsAsFactors = FALSE)
     }
-    incCap_ou <- incCap_ou[incCap_ou$year != 0, ]
+    incomePerCapitaOutput <- incomePerCapitaOutput[incomePerCapitaOutput$year != 0, ]
     
     # 3. Wages or Income (ind. 7)
-    inc_ou <- data.frame(year = 0, id.sector = 0, sector= "", income = 0, stringsAsFactors = FALSE)
+    incomeOutput <- data.frame(year = 0, id.sector = 0, sector= "", income = 0, stringsAsFactors = FALSE)
     id.sc <- 1:dimensi
     sc.name <- sector[,1]
     for(t in 0: stepN){
-      t_curr <- startT + t*stepT
-      inc_curr <- data.frame(addValueSeries[[t+1]][incomeRow,])
+      t_curr <- startT + t
+      inc_curr <- data.frame(addValueSeries[[t+1]][income_row,])
       add.row <- data.frame(cbind(t_curr, id.sc, sc.name, inc_curr), stringsAsFactors = FALSE)
-      names(add.row) <- names(inc_ou)
-      inc_ou <- data.frame(rbind(inc_ou, add.row), stringsAsFactors = FALSE)
-      
+      names(add.row) <- names(incomeOutput)
+      incomeOutput <- data.frame(rbind(incomeOutput, add.row), stringsAsFactors = FALSE)
     }
-    inc_ou <- inc_ou[inc_ou$year != 0, ]
+    incomeOutput <- incomeOutput[incomeOutput$year != 0, ]
     
     # 4. Labour (ind. number 10)
-    labour_ou <- data.frame(year = 0, id.sector = 0, sector= "", labour = 0, stringsAsFactors = FALSE)
+    labourOutput <- data.frame(year = 0, id.sector = 0, sector= "", labour = 0, stringsAsFactors = FALSE)
     for(t in 0: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       add.row <- data.frame(impactLabour[[t+1]][[1]])
-      names(add.row) <- names(labour_ou)[2:4]
+      names(add.row) <- names(labourOutput)[2:4]
       add.row$year <- t_curr
-      add.row <- add.row[, names(labour_ou)]
-      labour_ou <- data.frame(rbind(labour_ou, add.row), stringsAsFactors = FALSE)
-      
+      add.row <- add.row[, names(labourOutput)]
+      labourOutput <- data.frame(rbind(labourOutput, add.row), stringsAsFactors = FALSE)
     }
-    labour_ou <- labour_ou[labour_ou$year != 0, ]
+    labourOutput <- labourOutput[labourOutput$year != 0, ]
     
     # 5. Energy cons (indicator number 2)
-    enCons_ou <- impactEnergy[[1]][[1]]
-    enCons_ou$year <- startT
-    enCons_ou <- enCons_ou[, c("year", names(impactEnergy[[1]][[1]]))]
-    
+    energyConsOutput <- impactEnergy[[1]][[1]]
+    energyConsOutput$year <- startT
+    energyConsOutput <- energyConsOutput[, c("year", names(impactEnergy[[1]][[1]]))]
     for(t in 1: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       add.row <- data.frame(impactEnergy[[t+1]][[1]]) # [[2]] for emission
       add.row$year <- t_curr
-      add.row <- add.row[, names(enCons_ou)]
-      enCons_ou <- data.frame(rbind(enCons_ou, add.row), stringsAsFactors = FALSE)
-      
+      add.row <- add.row[, names(energyConsOutput)]
+      energyConsOutput <- data.frame(rbind(energyConsOutput, add.row), stringsAsFactors = FALSE)
     }
-    names(enCons_ou)[2:3] <- c("id.sector", "sector")
-    # enCons_ou <- enCons_ou[enCons_ou$year != 0, ]
+    names(energyConsOutput)[2:3] <- c("id.sector", "sector")
+    # energyConsOutput <- energyConsOutput[energyConsOutput$year != 0, ]
     
     # 6. Energy emission (indicator number 3)
-    enEms_ou <- impactEnergy[[1]][[2]]
-    enEms_ou$year <- startT
-    enEms_ou <- enEms_ou[, c("year", names(impactEnergy[[1]][[2]]))]
-    
+    energyEmissionOutput <- impactEnergy[[1]][[2]]
+    energyEmissionOutput$year <- startT
+    energyEmissionOutput <- energyEmissionOutput[, c("year", names(impactEnergy[[1]][[2]]))]
     for(t in 1: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       add.row <- data.frame(impactEnergy[[t+1]][[2]]) # [[2]] for emission
       add.row$year <- t_curr
-      add.row <- add.row[, names(enEms_ou)]
-      enEms_ou <- data.frame(rbind(enEms_ou, add.row), stringsAsFactors = FALSE)
-      
+      add.row <- add.row[, names(energyEmissionOutput)]
+      energyEmissionOutput <- data.frame(rbind(energyEmissionOutput, add.row), stringsAsFactors = FALSE)
     }
-    names(enEms_ou)[2:3] <- c("id.sector", "sector")
-    # enEms_ou <- enEms_ou[enEms_ou$year != 0, ]
+    names(energyEmissionOutput)[2:3] <- c("id.sector", "sector")
+    # energyEmissionOutput <- energyEmissionOutput[energyEmissionOutput$year != 0, ]
     
     # 7. Waste cons (indicator number 2)
-    wsDisp_ou <- impactWaste[[1]][[1]]
-    wsDisp_ou$year <- startT
-    wsDisp_ou <- wsDisp_ou[, c("year", names(impactWaste[[1]][[1]]))]
-    
+    wasteDispOutput <- impactWaste[[1]][[1]]
+    wasteDispOutput$year <- startT
+    wasteDispOutput <- wasteDispOutput[, c("year", names(impactWaste[[1]][[1]]))]
     for(t in 1: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       add.row <- data.frame(impactWaste[[t+1]][[1]]) # [[2]] for emission
       add.row$year <- t_curr
-      add.row <- add.row[, names(wsDisp_ou)]
-      wsDisp_ou <- data.frame(rbind(wsDisp_ou, add.row), stringsAsFactors = FALSE)
+      add.row <- add.row[, names(wasteDispOutput)]
+      wasteDispOutput <- data.frame(rbind(wasteDispOutput, add.row), stringsAsFactors = FALSE)
       
     }
-    names(wsDisp_ou)[2:3] <- c("id.sector", "sector")
-    # wsDisp_ou <- wsDisp_ou[wsDisp_ou$year != 0, ]
+    names(wasteDispOutput)[2:3] <- c("id.sector", "sector")
+    # wasteDispOutput <- wasteDispOutput[wasteDispOutput$year != 0, ]
     
     # 8. Waste emission (indicator number 3)
-    wsEms_ou <- impactWaste[[1]][[2]]
-    wsEms_ou$year <- startT
-    wsEms_ou <- wsEms_ou[, c("year", names(impactWaste[[1]][[2]]))]
-    
+    wasteEmissionOutput <- impactWaste[[1]][[2]]
+    wasteEmissionOutput$year <- startT
+    wasteEmissionOutput <- wasteEmissionOutput[, c("year", names(impactWaste[[1]][[2]]))]
     for(t in 1: stepN){
-      t_curr <- startT + t*stepT
+      t_curr <- startT + t
       add.row <- data.frame(impactWaste[[t+1]][[2]]) # [[2]] for emission
       add.row$year <- t_curr
-      add.row <- add.row[, names(wsEms_ou)]
-      wsEms_ou <- data.frame(rbind(wsEms_ou, add.row), stringsAsFactors = FALSE)
-      
+      add.row <- add.row[, names(wasteEmissionOutput)]
+      wasteEmissionOutput <- data.frame(rbind(wasteEmissionOutput, add.row), stringsAsFactors = FALSE)
     }
-    names(wsEms_ou)[2:3] <- c("id.sector", "sector")
-    # wsEms_ou <- wsEms_ou[wsEms_ou$year != 0, ]
+    names(wasteEmissionOutput)[2:3] <- c("id.sector", "sector")
+    # wasteEmissionOutput <- wasteEmissionOutput[wasteEmissionOutput$year != 0, ]
     
     # 9. Total Emission
-    tEm_ou <- otherEm
-    emission_Econs <- numeric()
-    emission_IndWaste <- numeric()
+    totalEmissionOutput <- otherEm
+    emissionEnergyCons <- numeric()
+    emissionIndWaste <- numeric()
     for(t in 0: stepN){
-      t_curr <- startT + t*stepT
-      add_MEcons <- sum(enEms_ou[enEms_ou$year==t_curr, "Temission"])
-      add_MWdisp <- sum(wsEms_ou[wsEms_ou$year==t_curr, "Temission"])
-      emission_Econs <- c(emission_Econs, add_MEcons)
-      emission_IndWaste <- c(emission_IndWaste, add_MWdisp)
+      t_curr <- startT + t
+      add_MEcons <- sum(energyEmissionOutput[energyEmissionOutput$year==t_curr, "Temission"])
+      add_MWdisp <- sum(wasteEmissionOutput[wasteEmissionOutput$year==t_curr, "Temission"])
+      emissionEnergyCons <- c(emissionEnergyCons, add_MEcons)
+      emissionIndWaste <- c(emissionIndWaste, add_MWdisp)
     }
-    tEm_ou$emission_EnergyCons <- emission_Econs
-    tEm_ou$emission_WasteDisp <- emission_IndWaste
-    tEm_ou$TotalEmission <- rowSums(tEm_ou[, 2:ncol(tEm_ou)])
-    tEm_ou$CummulativeEmission <- cumsum(tEm_ou$TotalEmission)
+    totalEmissionOutput$emissionEnergyCons <- emissionEnergyCons
+    totalEmissionOutput$emissionWasteDisp <- emissionIndWaste
+    totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
+    totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
     
-    list_bau <- list(GDP_table = GDP_ou,
-                     income_percapita_table = incCap_ou,
-                     income_table = inc_ou,
-                     labour_table = labour_ou,
-                     energy_consumption_table = enCons_ou,
-                     energy_emission_table = enEms_ou,
-                     waste_consumption_table = wsDisp_ou,
-                     waste_emission_table = wsEms_ou,
-                     total_emission_table = tEm_ou,
-                     FDSeries = fDemandSeries,
-                     GDP_rate = G_rate,
+    list_bau <- list(GDP_table = GDPOutput,
+                     income_percapita_table = incomePerCapitaOutput,
+                     income_table = incomeOutput,
+                     labour_table = labourOutput,
+                     energy_consumption_table = energyConsOutput,
+                     energy_emission_table = energyEmissionOutput,
+                     waste_consumption_table = wasteDispOutput,
+                     waste_emission_table = wasteEmissionOutput,
+                     total_emission_table = totalEmissionOutput,
+                     FDSeries = findem_series,
+                     GDP_rate = gdpRate,
                      dateTo = endT,
-                     dateFrom = startT,
-                     timeStep = stepT
+                     dateFrom = startT
                     ) 
-    
     list_bau
   })
   
   output$yearSelection <- renderUI({
-    selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
+    selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
   })
   
   output$plotResultsBAU <- renderPlot({
@@ -1238,7 +1240,7 @@ server <- function(input, output) {
     
   })
   
-  output$tableResultsBAU <- renderTable({
+  output$tableResultsBAU <- renderDataTable({
     results <- allInputsBAU()
     GDP_table <- results$GDP_table
     income_percapita_table <- results$income_percapita_table  
@@ -1276,7 +1278,7 @@ server <- function(input, output) {
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       return(NULL)
     }
-  })  
+  }, options=list(pageLength=50), rownames=FALSE)  
 
   output$downloadTableBAU <- downloadHandler(
     filename = input$bauResults,
@@ -1299,22 +1301,16 @@ server <- function(input, output) {
         return(NULL)
       } else if(input$bauResults == "Proyeksi Upah Gaji"){
         tables <- income_table[income_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
         tables <- labour_table[labour_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
         tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
         tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Buangan Limbah"){
         tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
         tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Total Emisi"){
         return(NULL)
       }
