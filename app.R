@@ -9,7 +9,7 @@ library(ggplot2)
 library(DT)
 
 ###*header####
-header <- dashboardHeader(title="PPRK", titleWidth = "300px")
+header <- dashboardHeader(title="RECI-ELUW", titleWidth = "300px")
 
 ###*sidebar####
 sidebar <- dashboardSidebar(width = "300px",
@@ -19,7 +19,7 @@ sidebar <- dashboardSidebar(width = "300px",
     menuItem("Historis", icon = icon("history"), 
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
-              selectInput("categorySector", label="Sektor",
+              selectInput("categorySector", label="Kategori",
                 choices=c("Ekonomi", "Energi", "Limbah")
               ),
               conditionalPanel(
@@ -81,7 +81,7 @@ sidebar <- dashboardSidebar(width = "300px",
     ###sidebar-intervention####
     menuItem("Skenario Intervensi", icon = icon("random"), 
               menuSubItem("Input", tabName = "pageSeven"),
-              selectInput("interResults",
+              selectInput("interTableOutput",
                         label="Pilih tipe intervensi",
                         choices=c("Permintaan Akhir", 
                                   "Tabel Satelit Sektor Energi",
@@ -90,30 +90,8 @@ sidebar <- dashboardSidebar(width = "300px",
                         ),
               textInput("scenarioName", "Nama skenario", value=""),
               selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2010),
-              
-              fileInput("energy1", "Tabel Sumber Energi 1", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("energy2", "Tabel Sumber Energi 2", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("energy3", "Tabel Sumber Energi 3", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("energy4", "Tabel Sumber Energi 4", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("waste1", "Tabel Produksi Limbah 1", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("waste2", "Tabel Produksi Limbah 2", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("waste3", "Tabel Produksi Limbah 3", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("waste4", "Tabel Produksi Limbah 4", buttonLabel="Browse...", placeholder="No file selected"),
-              actionButton("buttonInter", "Submit"),
-              menuSubItem("Results", tabName = "pageEight"),
-              selectInput("interResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi"
-                                  )
-                        )
+              uiOutput("selectizeSector"),
+              menuSubItem("Results", tabName = "pageEight")
     ),
     menuItem("Help", icon = icon("question-circle"), tabName="help")
   )
@@ -124,7 +102,7 @@ body <- dashboardBody(
   ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
-      jumbotron("PPRK Tools", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
+      jumbotron("Reducing Carbon Intensity of Energy, Land-use, and Waste", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
       hr(),
       fluidRow(
         column(4, thumbnail_label(image = 'history.png', label = 'Historis',
@@ -222,17 +200,52 @@ body <- dashboardBody(
             )
             
     ),
-    tabItem(tabName = "pageSeven",
-            selectInput("yearStart", "Tahun awal intervensi:", choices = c(1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040), selected=2015),
-            dataTableOutput("interactiveFD")
-    ),
     ###*tab-intervention####
+    tabItem(tabName = "pageSeven",
+            # render multiple table and slider
+            uiOutput("rowIntervention"),
+            hr(),
+            actionButton("buttonInter", "Submit")
+    ),
     tabItem(tabName = "pageEight",
-            uiOutput("yearInterSelection"),
-            h3("Skenario Intervensi"),
+            fluidRow(
+              valueBoxOutput("percentOfEmRed"),
+              valueBoxOutput("percentOfGDPGrowth"),
+              valueBoxOutput("deltaEmRed")
+            ),
+            hr(),
+            plotOutput("curveEmRed"),
+            selectInput("interResults",
+                        label="Pilih output yang ingin ditampilkan",
+                        choices=c("Proyeksi PDRB", 
+                                  "Proyeksi Upah per Kapita",
+                                  "Proyeksi Upah Gaji",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Konsumsi Energi",
+                                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                                  "Proyeksi Buangan Limbah",
+                                  "Proyeksi Emisi Terkait Buangan Limbah",
+                                  "Proyeksi Total Emisi"
+                                  )
+                        ),
+            conditionalPanel(
+              condition="input.interResults!='Proyeksi Upah per Kapita' & input.interResults!='Proyeksi Total Emisi'",
+              uiOutput("yearSelectionInter")
+            ),
             plotOutput("plotResultsInter"),
-            h3("Skenario Seperti Biasa"),
-            plotOutput("plotResultsInterBAU")
+            hr(),
+            fluidRow(
+              column(width=7,
+                box(width=NULL,
+                  dataTableOutput('tableResultsInter'),
+                  downloadButton('downloadTableInter', 'Download Table (.csv)')
+                )
+              ),
+              column(width=5,
+                tags$div(id='interplaceholder'),
+                hr()
+              )
+            )
     ),
     tabItem(tabName = "help",
               tags$div(class = "header", checked = NA,
@@ -566,15 +579,15 @@ server <- function(input, output) {
   })
   
   output$sectorSelection <- renderUI({
-    sec <- blackBoxInputs()
-    # sec <- allInputs()
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
   
   output$plotResults <- renderPlot({
-    sec <- blackBoxInputs()
-    # sec <- allInputs()
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
@@ -701,8 +714,8 @@ server <- function(input, output) {
   })
   
   output$tableResults <- renderDataTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     analysisResult <- sec$result
     
     if(input$categorySector=="Ekonomi"){
@@ -765,8 +778,8 @@ server <- function(input, output) {
     filename = input$pprkResults,
     contentType = "text/csv",
     content = function(file) {
-      # sec <- allInputs()
-      sec <- blackBoxInputs()
+      sec <- allInputs()
+      # sec <- blackBoxInputs()
       analysisResult <- sec$result
       
       if(input$categorySector=="Ekonomi"){
@@ -813,8 +826,8 @@ server <- function(input, output) {
   )
   
   output$tableIO <- renderDataTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -858,8 +871,8 @@ server <- function(input, output) {
   }, options=list(pageLength=50), rownames=FALSE)
   
   allInputsBAU <- eventReactive(input$buttonBAU, {
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -1010,7 +1023,8 @@ server <- function(input, output) {
     colnames(findem_series) <- as.character(tStamps)
     colnames(tOutputSeries) <- as.character(tStamps)
     
-    finalDemandSeriesTable<- cbind(sector, findem_series)
+    finalDemandSeriesTable <- cbind(sector, findem_series)
+    colnames(finalDemandSeriesTable) <- c("Sector", as.character(tStamps)) 
     
     # 1. GDP (ind. 1)
     GDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
@@ -1140,10 +1154,10 @@ server <- function(input, output) {
                      labour_table = labourOutput,
                      energy_consumption_table = energyConsOutput,
                      energy_emission_table = energyEmissionOutput,
-                     waste_consumption_table = wasteDispOutput,
+                     waste_disposal_table = wasteDispOutput,
                      waste_emission_table = wasteEmissionOutput,
                      total_emission_table = totalEmissionOutput,
-                     FDSeries = findem_series,
+                     FDSeries = finalDemandSeriesTable,
                      GDP_rate = gdpRate,
                      dateTo = endT,
                      dateFrom = startT
@@ -1296,7 +1310,6 @@ server <- function(input, output) {
       
       if(input$bauResults == "Proyeksi PDRB"){
         tables <- GDP_table[GDP_table$year==input$selectedYear,]
-        
       } else if(input$bauResults == "Proyeksi Upah per Kapita"){
         return(NULL)
       } else if(input$bauResults == "Proyeksi Upah Gaji"){
@@ -1319,8 +1332,8 @@ server <- function(input, output) {
   )  
   
   output$tableIOBAU <- renderTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -1363,23 +1376,80 @@ server <- function(input, output) {
     io_table
   }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
-  observe({
-    resultsBAU <- allInputsBAU()
-    fd_table <- resultsBAU[[10]]
-    output$interactiveFD <- renderDataTable({
-      datatable(fd_table, selection='none', editable=TRUE, options=list(pageLength=50))
-    })
-    proxy = dataTableProxy('interactiveFD')
-    observeEvent(input$x1_cell_edit, {
-      info = input$x1_cell_edit
-      str(info)
-      i = info$row
-      j = info$col + 1  # column index offset by 1
-      v = info$value
-      fd_table[i, j] <<- DT::coerceValue(v, fd_table[i, j])
-      replaceData(proxy, fd_table, resetPaging = FALSE, rownames = FALSE)
-    })
+  # observe({
+  #   resultsBAU <- allInputsBAU()
+  #   fd_table <- resultsBAU[[10]]
+  #   output$interactiveFD <- renderDataTable({
+  #     datatable(fd_table, selection='none', editable=TRUE, options=list(pageLength=50))
+  #   })
+  #   proxy = dataTableProxy('interactiveFD')
+  #   observeEvent(input$x1_cell_edit, {
+  #     info = input$x1_cell_edit
+  #     str(info)
+  #     i = info$row
+  #     j = info$col + 1  # column index offset by 1
+  #     v = info$value
+  #     fd_table[i, j] <<- DT::coerceValue(v, fd_table[i, j])
+  #     replaceData(proxy, fd_table, resetPaging = FALSE, rownames = FALSE)
+  #   })
+  # })
+  
+  output$selectizeSector <- renderUI({
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
+    analysisResult <- sec$result
+    selectizeInput('selectMultiSector', 'Sektor', choices=list(
+      Sektor=as.character(analysisResult$Sektor)
+    ), multiple=TRUE)
   })
+  
+  output$rowIntervention <- renderUI({
+    tableReactive <- function(table){
+      renderDataTable({ table })
+    }
+    
+    resultOfBAU <- allInputsBAU()
+    finalDemandSeriesTable <- resultOfBAU$FDSeries
+    energy_consumption_table <- resultOfBAU$energy_consumption_table
+    waste_disposal_table <- resultOfBAU$waste_disposal_table
+    
+    output = tagList()
+    
+    if(input$interTableOutput=="Permintaan Akhir"){
+      selectedSector <- input$selectMultiSector
+      lenSelSector <- length(selectedSector)
+      
+      startCol <- grep(paste0("y", input$yearInter), colnames(finalDemandSeriesTable))
+      finDemCol <- ncol(finalDemandSeriesTable)
+      
+      if(lenSelSector != 0){
+        numOfTable  = sapply(1:lenSelSector, function(i){ finalDemandSeriesTable[i,c(1, startCol:finDemCol)] })
+        numOfSlider = sapply(1:lenSelSector, function(i){ paste0("intervensi", i) })
+           
+        for(i in 1:lenSelSector){
+          output[[i]] = tagList()
+          output[[i]][[1]] = div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]) )
+          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=paste0("Intervensi ", i), min=0, max=100, post=" %", value=0, step=.5)
+        }
+        
+        # lapply(1:lenSelSector, function(i){
+        #   div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]))
+        # })
+      }
+      
+    } else if(input$interResults=="Tabel Satelit Sektor Energi"){
+  
+    } else {
+      
+    }
+    
+    output
+    
+  })
+  
+  output$yearSelectionInter <- renderUI({
+    selectInput("selectedYearInter", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
+  })  
   
   allInputsInter <- eventReactive(input$buttonInter, {
     resultsBAU <- allInputsBAU()
@@ -1691,75 +1761,9 @@ server <- function(input, output) {
     
     list_intervensi
   })
-
-  output$yearInterSelection <- renderUI({
-    selectInput("selectedInterYear", "Tahun", "Pilih tahun", choices=c(2010, 2015, 2020, 2025, 2030))
-  })
     
   output$plotResultsInter <- renderPlot({
-    results <- allInputsInter()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table
-    labour_table <- results$labour_table
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
-    
-    if(input$interResults == "Proyeksi PDRB"){
-      graph <- GDP_table[GDP_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=GDP)) + 
-        geom_bar(colour="blue", stat="identity") + 
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
-    } else if(input$interResults == "Proyeksi Upah per Kapita"){
-      ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
-
-    } else if(input$interResults == "Proyeksi Upah Gaji"){
-      graph <- income_table[income_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=income)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Tenaga Kerja"){
-      graph <- labour_table[labour_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=labour)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Konsumsi Energi"){
-      graph <- energy_consumption_table[energy_consumption_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
-      graph <- energy_emission_table[energy_emission_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Buangan Limbah"){
-      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Emisi Terkait Buangan Limbah"){
-      graph <- waste_emission_table[waste_emission_table$year==input$selectedInterYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-
-    } else if(input$interResults == "Proyeksi Total Emisi"){
-      ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
-    }
-    
-  })
-
-  output$plotResultsInterBAU <- renderPlot({
+    # results <- allInputsInter()
     results <- allInputsBAU()
     GDP_table <- results$GDP_table
     income_percapita_table <- results$income_percapita_table  
@@ -1772,52 +1776,152 @@ server <- function(input, output) {
     total_emission_table <- results$total_emission_table
     
     if(input$interResults == "Proyeksi PDRB"){
-      graph <- GDP_table[GDP_table$year==input$selectedInterYear,]
+      graph <- GDP_table[GDP_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=GDP)) + 
         geom_bar(colour="blue", stat="identity") + 
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      
     } else if(input$interResults == "Proyeksi Upah per Kapita"){
       ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+
     } else if(input$interResults == "Proyeksi Upah Gaji"){
-      graph <- income_table[income_table$year==input$selectedInterYear,]
+      graph <- income_table[income_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=income)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+
     } else if(input$interResults == "Proyeksi Tenaga Kerja"){
-      graph <- labour_table[labour_table$year==input$selectedInterYear,]
+      graph <- labour_table[labour_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=labour)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+
     } else if(input$interResults == "Proyeksi Konsumsi Energi"){
-      graph <- energy_consumption_table[energy_consumption_table$year==input$selectedInterYear,]
+      graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+
     } else if(input$interResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
-      graph <- energy_emission_table[energy_emission_table$year==input$selectedInterYear,]
+      graph <- energy_emission_table[energy_emission_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=Temission)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+
     } else if(input$interResults == "Proyeksi Buangan Limbah"){
-      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedInterYear,]
+      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+
     } else if(input$interResults == "Proyeksi Emisi Terkait Buangan Limbah"){
-      graph <- waste_emission_table[waste_emission_table$year==input$selectedInterYear,]
+      graph <- waste_emission_table[waste_emission_table$year==input$selectedYearInter,]
       ggplot(data=graph, aes(x=sector, y=Temission)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+
     } else if(input$interResults == "Proyeksi Total Emisi"){
       ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
     }
     
   })
   
+  output$tableResultsInter <- renderDataTable({
+    results <- allInputsBAU()
+    GDP_table <- results$GDP_table
+    income_percapita_table <- results$income_percapita_table  
+    income_table <- results$income_table
+    labour_table <- results$labour_table
+    energy_consumption_table <- results$energy_consumption_table 
+    energy_emission_table <- results$energy_emission_table 
+    waste_consumption_table <- results$waste_consumption_table  
+    waste_emission_table <- results$waste_emission_table 
+    total_emission_table <- results$total_emission_table
+    
+    if(input$bauResults == "Proyeksi PDRB"){
+      tables <- GDP_table[GDP_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Upah per Kapita"){
+      return(NULL)
+    } else if(input$bauResults == "Proyeksi Upah Gaji"){
+      tables <- income_table[income_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
+      tables <- labour_table[labour_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
+      tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
+      tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Buangan Limbah"){
+      tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
+      tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+      tables
+    } else if(input$bauResults == "Proyeksi Total Emisi"){
+      return(NULL)
+    }
+  }, options=list(pageLength=50), rownames=FALSE)  
+
+  output$downloadTableInter <- downloadHandler(
+    filename = input$interResults,
+    contentType = "text/csv",
+    content = function(file) {
+      GDP_table <- results$GDP_table
+      income_percapita_table <- results$income_percapita_table  
+      income_table <- results$income_table
+      labour_table <- results$labour_table
+      energy_consumption_table <- results$energy_consumption_table 
+      energy_emission_table <- results$energy_emission_table 
+      waste_consumption_table <- results$waste_consumption_table  
+      waste_emission_table <- results$waste_emission_table 
+      total_emission_table <- results$total_emission_table
+      
+      if(input$bauResults == "Proyeksi PDRB"){
+        tables <- GDP_table[GDP_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Upah per Kapita"){
+        return(NULL)
+      } else if(input$bauResults == "Proyeksi Upah Gaji"){
+        tables <- income_table[income_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
+        tables <- labour_table[labour_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
+        tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
+        tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Buangan Limbah"){
+        tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
+        tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+      } else if(input$bauResults == "Proyeksi Total Emisi"){
+        return(NULL)
+      }
+      write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
+    }
+  )  
+  
   # output$tableIOInter <- renderTable({ }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
-
+  output$percentOfEmRed <- renderValueBox({
+    valueBox(
+      paste0("0 %"), "Persentasi Penurunan Emisi", color="purple"
+    )
+  })
+  
+  output$percentOfGDPGrowth <- renderValueBox({
+    valueBox(
+      paste0("0 %"), "Persentasi Pertumbuhan PDRB", color="yellow"
+    )
+  })
+  
+  output$deltaEmRed <- renderValueBox({
+    valueBox(
+      paste0("0 %"), "Emisi Bersih"
+    )
+  })
 }
 
 ###*run the apps#### 
