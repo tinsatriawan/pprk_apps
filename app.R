@@ -210,8 +210,7 @@ body <- dashboardBody(
     tabItem(tabName = "pageEight",
             fluidRow(
               valueBoxOutput("percentOfEmRed"),
-              valueBoxOutput("percentOfGDPGrowth"),
-              valueBoxOutput("deltaEmRed")
+              valueBoxOutput("percentOfGDPGrowth")
             ),
             hr(),
             plotOutput("curveEmRed"),
@@ -579,15 +578,15 @@ server <- function(input, output, session) {
   })
   
   output$sectorSelection <- renderUI({
-    sec <- blackBoxInputs()
-    # sec <- allInputs()
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
   
   output$plotResults <- renderPlot({
-    sec <- blackBoxInputs()
-    # sec <- allInputs()
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
@@ -714,8 +713,8 @@ server <- function(input, output, session) {
   })
   
   output$tableResults <- renderDataTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     analysisResult <- sec$result
     
     if(input$categorySector=="Ekonomi"){
@@ -778,8 +777,8 @@ server <- function(input, output, session) {
     filename = input$pprkResults,
     contentType = "text/csv",
     content = function(file) {
-      # sec <- allInputs()
-      sec <- blackBoxInputs()
+      sec <- allInputs()
+      # sec <- blackBoxInputs()
       analysisResult <- sec$result
       
       if(input$categorySector=="Ekonomi"){
@@ -826,8 +825,8 @@ server <- function(input, output, session) {
   )
   
   output$tableIO <- renderDataTable({
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -871,8 +870,8 @@ server <- function(input, output, session) {
   }, options=list(pageLength=50), rownames=FALSE)
   
   allInputsBAU <- eventReactive(input$buttonBAU, {
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -889,19 +888,19 @@ server <- function(input, output, session) {
     income_row <- 2
     profit_row <- 3
     
-    # inPopTable <- input$populationTable
-    # if(is.null(inPopTable))
-    #   return(NULL)
-    # 
-    # inEmOtherTable <- input$emissionSectorRADTable
-    # if(is.null(inEmOtherTable))
-    #   return(NULL)
+    inPopTable <- input$populationTable
+    if(is.null(inPopTable))
+      return(NULL)
     
-    # population <- read.table(inPopTable$datapath, header=TRUE, dec=",", sep=";")
-    # otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, dec=",", sep=";")
+    inEmOtherTable <- input$emissionSectorRADTable
+    if(is.null(inEmOtherTable))
+      return(NULL)
+
+    population <- read.table(inPopTable$datapath, header=TRUE, dec=",", sep=";")
+    otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, dec=",", sep=";")
     
-    population <- read.table("d:/PPRK/12_populationRev.csv", header=TRUE, dec=",", sep=";")
-    otherEm <- read.table("d:/PPRK/13_emission_from_otherRev.csv", header=TRUE, dec=",", sep=";")
+    # population <- read.table("d:/PPRK/12_populationRev.csv", header=TRUE, dec=",", sep=";")
+    # otherEm <- read.table("d:/PPRK/13_emission_from_otherRev.csv", header=TRUE, dec=",", sep=";")
     
     gdpRate <- as.numeric(input$gdpRate)
     startT <- as.numeric(input$dateFrom)
@@ -1025,6 +1024,7 @@ server <- function(input, output, session) {
     
     finalDemandSeriesTable <- cbind(sector, findem_series)
     colnames(finalDemandSeriesTable) <- c("Sector", as.character(tStamps)) 
+    values$finalDemandSeriesTableInv <- finalDemandSeriesTable
     
     # 1. GDP (ind. 1)
     GDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
@@ -1360,8 +1360,8 @@ server <- function(input, output, session) {
   # })
   
   output$selectizeSector <- renderUI({
-    sec <- blackBoxInputs()
-    # sec <- allInputs()
+    # sec <- blackBoxInputs()
+    sec <- allInputs()
     analysisResult <- sec$result
     selectizeInput('selectMultiSector', 'Sektor', choices=list(
       Sektor=as.character(analysisResult$Sektor)
@@ -1402,7 +1402,7 @@ server <- function(input, output, session) {
   #   }
   # })
   
-  finalDemandSeriesTableInv <- data.frame()
+  values <- reactiveValues(finalDemandSeriesTableInv=data.frame())
   output$rowIntervention <- renderUI({
     # tableReactive <- function(table){
     #   renderDataTable({ table })
@@ -1410,7 +1410,6 @@ server <- function(input, output, session) {
 
     resultOfBAU <- allInputsBAU()
     finalDemandSeriesTable <- resultOfBAU$FDSeries
-    finalDemandSeriesTableTemp <- resultOfBAU$FDSeries
     # energy_consumption_table <- resultOfBAU$energy_consumption_table
     # waste_disposal_table <- resultOfBAU$waste_disposal_table
 
@@ -1444,15 +1443,9 @@ server <- function(input, output, session) {
               label=paste0("Intervensi ", i),
               value=valInv
             )
-            finalDemandSeriesTableTemp[i,  startCol] = valInv
-            for(j in (startCol+1):finDemCol){
-              nextValInv <- (input[[paste0("sliderInt", i)]][1] / 100 * selectedSectorFinDem[, j]) + selectedSectorFinDem[, j]
-              finalDemandSeriesTableTemp[i,  j] = nextValInv
-            }
-            print(finalDemandSeriesTableTemp)
+            values$finalDemandSeriesTableInv[i,  startCol] = valInv
           })          
         }
-    
         # lapply(1:lenSelSector, function(i){
         #   div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]))
         # })
@@ -1460,8 +1453,7 @@ server <- function(input, output, session) {
     # } else if(input$interTableOutput=="Tabel Satelit Sektor Energi"){
     # } else {
     }
-
-    finalDemandSeriesTableInv <- finalDemandSeriesTableTemp
+    
     output
   })
   
@@ -1470,8 +1462,8 @@ server <- function(input, output, session) {
   })  
   
   allInputsInter <- eventReactive(input$buttonInter, {
-    # sec <- allInputs()
-    sec <- blackBoxInputs()
+    sec <- allInputs()
+    # sec <- blackBoxInputs()
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -1516,9 +1508,7 @@ server <- function(input, output, session) {
     startT <- bauResults$dateFrom
     
     yearIntervention <- as.numeric(input$yearInter)
-    mfinalDemandSeriesTable <- finalDemandSeriesTableInv
-    
-    print(finalDemandSeriesTableInv)
+    mfinalDemandSeriesTable <- values$finalDemandSeriesTableInv
     
     mSatelliteImpact <- function(sat_type = "energy", tbl_sat = data.frame(), table_output_matrix = matrix(), emission_lookup = data.frame(), yearInt= 2010){ 
       # second arg is the total output matrix calculated earlier
@@ -1568,6 +1558,8 @@ server <- function(input, output, session) {
         coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
         impact$cons[,3] <- coeff_matrix %*% table_output_matrix
       }
+      impact$cons[is.na(impact$cons)] <- 0
+      impact$emission[is.na(impact$emission)] <- 0
       return(impact)
     }
     
@@ -1600,11 +1592,11 @@ server <- function(input, output, session) {
       # calculation of mGDPseries
       eval(parse(text = paste0("mGDPseries$", mProjT, "<- colSums(mAddValueSeries$", mProjT, "[setdiff(1:nrow(addval_matrix), importRow),])")))
       # calculation of mImpactLabour
-      eval(parse(text= paste0("mImpactLabour$", mProjT, " <- mSatelliteImpact('labour', tbl_sat=labour, tbl_output_matrix = as.matrix(mProjOutput), yearInt=yearIntervention)")))
+      eval(parse(text= paste0("mImpactLabour$", mProjT, " <- mSatelliteImpact('labour', tbl_sat=labour, table_output_matrix = as.matrix(mProjOutput), yearInt=yearIntervention)")))
       # calculation of mImpactEnergy
-      eval(parse(text= paste0("mImpactEnergy$", mProjT, " <- mSatelliteImpact('energy', tbl_sat=energy, tbl_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_energy, yearInt=yearIntervention)")))
+      eval(parse(text= paste0("mImpactEnergy$", mProjT, " <- mSatelliteImpact('energy', tbl_sat=energy, table_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_energy, yearInt=yearIntervention)")))
       # calculation of mImpactWaste
-      eval(parse(text= paste0("mImpactWaste$", mProjT, " <- mSatelliteImpact('waste', tbl_sat=waste, tbl_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_waste, yearInt=yearIntervention)")))
+      eval(parse(text= paste0("mImpactWaste$", mProjT, " <- mSatelliteImpact('waste', tbl_sat=waste, table_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_waste, yearInt=yearIntervention)")))
     }
     
     
@@ -1615,7 +1607,6 @@ server <- function(input, output, session) {
       add.row$year <- startT + (c-3)
       add.row <- add.row[, colnames(mGDPOuput)]
       mGDPOuput <- data.frame(rbind(mGDPOuput, add.row), stringsAsFactors = FALSE)
-      
     }
     mGDPOuput <- mGDPOuput[mGDPOuput$year != 0, ] # remove initial values
     # 2. Income per capita (ind. 9)
@@ -1629,7 +1620,6 @@ server <- function(input, output, session) {
       add.row <- data.frame(cbind(t_curr, inc_capita))
       names(add.row) <- names(mIncomePerCapitaOutput)
       mIncomePerCapitaOutput <- data.frame(rbind(mIncomePerCapitaOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     mIncomePerCapitaOutput <- mIncomePerCapitaOutput[mIncomePerCapitaOutput$year != 0, ]
     
@@ -1643,7 +1633,6 @@ server <- function(input, output, session) {
       add.row <- data.frame(cbind(t_curr, id.sc, sc.name, inc_curr), stringsAsFactors = FALSE)
       names(add.row) <- names(mIncomeOutput)
       mIncomeOutput <- data.frame(rbind(mIncomeOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     mIncomeOutput <- mIncomeOutput[mIncomeOutput$year != 0, ]
     
@@ -1656,7 +1645,6 @@ server <- function(input, output, session) {
       add.row$year <- t_curr
       add.row <- add.row[, names(mLabourOutput)]
       mLabourOutput <- data.frame(rbind(mLabourOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     mLabourOutput <- mLabourOutput[mLabourOutput$year != 0, ]
     
@@ -1671,7 +1659,6 @@ server <- function(input, output, session) {
       add.row$year <- t_curr
       add.row <- add.row[, names(mEnergyConsOutput)]
       mEnergyConsOutput <- data.frame(rbind(mEnergyConsOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     names(mEnergyConsOutput)[2:3] <- c("id.sector", "sector")
     # mEnergyConsOutput <- mEnergyConsOutput[mEnergyConsOutput$year != 0, ]
@@ -1687,7 +1674,6 @@ server <- function(input, output, session) {
       add.row$year <- t_curr
       add.row <- add.row[, names(mEnergyEmissionOutput)]
       mEnergyEmissionOutput <- data.frame(rbind(mEnergyEmissionOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     names(mEnergyEmissionOutput)[2:3] <- c("id.sector", "sector")
     # mEnergyEmissionOutput <- mEnergyEmissionOutput[mEnergyEmissionOutput$year != 0, ]
@@ -1703,7 +1689,6 @@ server <- function(input, output, session) {
       add.row$year <- t_curr
       add.row <- add.row[, names(mWasteDispOutput)]
       mWasteDispOutput <- data.frame(rbind(mWasteDispOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     names(mWasteDispOutput)[2:3] <- c("id.sector", "sector")
     # mWasteDispOutput <- mWasteDispOutput[mWasteDispOutput$year != 0, ]
@@ -1719,7 +1704,6 @@ server <- function(input, output, session) {
       add.row$year <- t_curr
       add.row <- add.row[, names(mWasteEmissionOutput)]
       mWasteEmissionOutput <- data.frame(rbind(mWasteEmissionOutput, add.row), stringsAsFactors = FALSE)
-      
     }
     names(mWasteEmissionOutput)[2:3] <- c("id.sector", "sector")
     # mWasteEmissionOutput <- mWasteEmissionOutput[mWasteEmissionOutput$year != 0, ]
@@ -1741,14 +1725,15 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
     
     list_intervensi <- list(GDP_table = mGDPOuput,
-                         income_percapita_table = mIncomePerCapitaOutput,
-                         income_table = mIncomeOutput,
-                         labour_table = mLabourOutput,
-                         energy_consumption_table = mEnergyConsOutput,
-                         energy_emission_table = mEnergyEmissionOutput,
-                         waste_consumption_table = mWasteDispOutput,
-                         waste_emission_table = mWasteEmissionOutput,
-                         total_emission_table = mTotalEmissionOutput
+                            mGDPseries = mGDPseries,  
+                            income_percapita_table = mIncomePerCapitaOutput,
+                            income_table = mIncomeOutput,
+                            labour_table = mLabourOutput,
+                            energy_consumption_table = mEnergyConsOutput,
+                            energy_emission_table = mEnergyEmissionOutput,
+                            waste_consumption_table = mWasteDispOutput,
+                            waste_emission_table = mWasteEmissionOutput,
+                            total_emission_table = mTotalEmissionOutput
                         ) 
     
     list_intervensi
@@ -1890,21 +1875,65 @@ server <- function(input, output, session) {
   # output$tableIOInter <- renderTable({ }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
   output$percentOfEmRed <- renderValueBox({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+    
+    emissionBAU <- resBAU$total_emission_table
+    emissionInv <- resInv$total_emission_table
+    
+    yearIntervention <- input$yearInter
+    
+    totalEmissionBAU <- emissionBAU[which(emissionBAU$Year==yearIntervention),]$TotalEmission
+    totalEmissionInv <- emissionInv[which(emissionInv$Year==yearIntervention),]$TotalEmission
+    
+    percentEm <- ((totalEmissionInv - totalEmissionBAU) / totalEmissionBAU) * 100
+    
     valueBox(
-      paste0("0 %"), "Persentasi Penurunan Emisi", color="purple"
+      paste0(percentEm, " %"), "Persentase Penurunan Emisi", color="purple"
     )
   })
   
   output$percentOfGDPGrowth <- renderValueBox({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+    
+    GDPseriesBAU <- resBAU$GDPSeries
+    GDPseriesInv <- resInv$GDP_table
+    
+    yearIntervention <- input$yearInter
+    
+    totalGDPBAU <- sum(GDPseriesBAU[, which(colnames(GDPseriesBAU) == paste0("y", yearIntervention))])
+    selectedGDP <- GDPseriesInv[GDPseriesInv$year==yearIntervention,]
+    GDPvalues <- as.matrix(selectedGDP$GDP)
+    totalGDPInv <- colSums(GDPvalues)
+    
+    percentGDP <- ((totalGDPInv - totalGDPBAU) / totalGDPBAU) * 100
+    
     valueBox(
-      paste0("0 %"), "Persentasi Pertumbuhan PDRB", color="yellow"
+      paste0(percentGDP, " %"), "Persentase Pertumbuhan PDRB", color="yellow"
     )
   })
   
-  output$deltaEmRed <- renderValueBox({
-    valueBox(
-      paste0("0 %"), "Emisi Bersih"
-    )
+  output$curveEmRed <- renderPlot({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+    
+    emissionBAU <- resBAU$total_emission_table
+    emissionInv <- resInv$total_emission_table
+    
+    yearIntervention <- input$yearInter
+    
+    cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
+    cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
+    
+    cumSumBAU$Scenario<-"BAU"
+    cumSumInv$Scenario<-"INV"
+    
+    tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+    
+    ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
+            geom_line(aes(color=Scenario))+
+            geom_point(aes(color=Scenario))
   })
 }
 
