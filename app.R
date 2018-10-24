@@ -9,7 +9,7 @@ library(ggplot2)
 library(DT)
 
 ###*header####
-header <- dashboardHeader(title="RED-CLEW", titleWidth = "300px")
+header <- dashboardHeader(title="RED-CLUW", titleWidth = "300px")
 
 ###*sidebar####
 sidebar <- dashboardSidebar(width = "300px",
@@ -209,11 +209,13 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "pageEight",
             fluidRow(
-              valueBoxOutput("percentOfEmRed"),
-              valueBoxOutput("percentOfGDPGrowth")
+              valueBoxOutput(width=6, "percentOfEmRed"),
+              valueBoxOutput(width=6, "percentOfGDPGrowth")
             ),
             hr(),
             plotOutput("curveEmRed"),
+            plotOutput("curveGDPGrowth"),
+            hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
                         choices=c("Proyeksi PDRB", 
@@ -1600,15 +1602,15 @@ server <- function(input, output, session) {
     }
     
     
-    mGDPOuput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
+    mGDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
     for(c in 3:ncol(mGDPseries)){
       add.row <- mGDPseries[, c(1,2, c)]
       names(add.row) <- c("id.sector", "sector", "GDP")
       add.row$year <- startT + (c-3)
-      add.row <- add.row[, colnames(mGDPOuput)]
-      mGDPOuput <- data.frame(rbind(mGDPOuput, add.row), stringsAsFactors = FALSE)
+      add.row <- add.row[, colnames(mGDPOutput)]
+      mGDPOutput <- data.frame(rbind(mGDPOutput, add.row), stringsAsFactors = FALSE)
     }
-    mGDPOuput <- mGDPOuput[mGDPOuput$year != 0, ] # remove initial values
+    mGDPOutput <- mGDPOutput[mGDPOutput$year != 0, ] # remove initial values
     # 2. Income per capita (ind. 9)
     
     mIncomePerCapitaOutput <- data.frame(year = 0, Income.per.capita = 0)
@@ -1724,7 +1726,7 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
     
-    list_intervensi <- list(GDP_table = mGDPOuput,
+    list_intervensi <- list(GDP_table = mGDPOutput,
                             mGDPseries = mGDPseries,  
                             income_percapita_table = mIncomePerCapitaOutput,
                             income_table = mIncomeOutput,
@@ -1886,7 +1888,7 @@ server <- function(input, output, session) {
     totalEmissionBAU <- emissionBAU[which(emissionBAU$Year==yearIntervention),]$TotalEmission
     totalEmissionInv <- emissionInv[which(emissionInv$Year==yearIntervention),]$TotalEmission
     
-    percentEm <- ((totalEmissionInv - totalEmissionBAU) / totalEmissionBAU) * 100
+    percentEm <- ((totalEmissionInv - totalEmissionBAU) / totalEmissionBAU) * 100 * -1 # minus as a contrast value
     
     valueBox(
       paste0(percentEm, " %"), "Persentase Penurunan Emisi", color="purple"
@@ -1933,7 +1935,37 @@ server <- function(input, output, session) {
     
     ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
             geom_line(aes(color=Scenario))+
-            geom_point(aes(color=Scenario))
+            geom_point(aes(color=Scenario))+
+            ggtitle("Grafik Proyeksi Nilai Emisi Kumulatif")
+  })
+  
+  output$curveGDPGrowth <- renderPlot({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+    
+    gdpBAU <- resBAU$GDP_table
+    gdpInv <- resInv$GDP_table
+    
+    yearIntervention <- input$yearInter
+    
+    totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
+    totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
+    
+    cumSumBAU <- cumsum(totalGDPBAUPerYear)
+    cumSumInv <- cumsum(totalGDPInvPerYear)
+    
+    cumSumBAU$Scenario <- "BAU"
+    cumSumInv$Scenario <- "INV"
+    
+    colnames(cumSumBAU)[2] <- "CummulativeGDP"
+    colnames(cumSumInv)[2] <- "CummulativeGDP"
+    
+    tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+    
+    ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
+            geom_line(aes(color=Scenario))+
+            geom_point(aes(color=Scenario))+
+            ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
   })
 }
 
