@@ -267,30 +267,33 @@ ui <- dashboardPage(
 
 ###*define server#### 
 server <- function(input, output, session) {
+  # debug mode
+  debugMode <- 0
+  
   blackBoxInputs <- function(){
-    inSector <- "d:/PPRK/1_sector.csv"
-    inIntermediateDemand <- "d:/PPRK/2_intermediate_demand.csv"
-    inFinalDemandComp <- "d:/PPRK/3_final_demand_component.csv"
-    inFinalDemand <- "d:/PPRK/4_final_demand.csv"
-    inAddedValueComp <- "d:/PPRK/5_value_added_component.csv"
-    inAddedValue <- "d:/PPRK/6_value_added.csv"     
-    inLabour <- "d:/PPRK/7_satellite_labour.csv"
-    inEnergy <- "d:/PPRK/8_satellite_energy.csv"
-    inWaste <- "d:/PPRK/9_satellite_waste.csv"
-    inEmissionFactorEnergiTable <- "d:/PPRK/10_emission_factor_energy.csv"
-    inEmissionFactorLandWasteTable <- "d:/PPRK/11_emission_factor_waste.csv"
+    inSector <- "input/1_sector.csv"
+    inIntermediateDemand <- "input/2_intermediate_demand.csv"
+    inFinalDemandComp <- "input/3_final_demand_component.csv"
+    inFinalDemand <- "input/4_final_demand.csv"
+    inAddedValueComp <- "input/5_value_added_component.csv"
+    inAddedValue <- "input/6_value_added.csv"     
+    inLabour <- "input/7_satellite_labour.csv"
+    inEnergy <- "input/8_satellite_energy.csv"
+    inWaste <- "input/9_satellite_waste.csv"
+    inEmissionFactorEnergiTable <- "input/10_emission_factor_energy.csv"
+    inEmissionFactorLandWasteTable <- "input/11_emission_factor_waste.csv"
     
-    sector <- read.table(inSector, header=FALSE, sep=";")
-    indem <- read.table(inIntermediateDemand, header=FALSE, dec=",", sep=";")
-    findem <- read.table(inFinalDemand, header=FALSE, dec=",", sep=";")
-    addval <- read.table(inAddedValue, header=FALSE, dec=",", sep=";")
-    labour <- read.table(inLabour, header=TRUE, dec=",", sep=";")
-    energy <- read.table(inEnergy, header=TRUE, dec=",", sep=";")
-    waste <- read.table(inWaste, header=TRUE, dec=",", sep=";")
-    ef_energy <- read.table(inEmissionFactorEnergiTable, header=TRUE, dec=",", sep=";")
-    ef_waste <- read.table(inEmissionFactorLandWasteTable, header=TRUE, dec=",", sep=";")
-    findemcom <- read.table(inFinalDemandComp, header=FALSE, sep=";")
-    addvalcom <- read.table(inAddedValueComp, header=FALSE, sep=";")
+    sector <- read.table(inSector, header=FALSE, sep=",")
+    indem <- read.table(inIntermediateDemand, header=FALSE, sep=",")
+    findem <- read.table(inFinalDemand, header=FALSE, sep=",")
+    addval <- read.table(inAddedValue, header=FALSE, sep=",")
+    labour <- read.table(inLabour, header=TRUE, sep=",")
+    energy <- read.table(inEnergy, header=TRUE, sep=",")
+    waste <- read.table(inWaste, header=TRUE, sep=",")
+    ef_energy <- read.table(inEmissionFactorEnergiTable, header=TRUE, sep=",")
+    ef_waste <- read.table(inEmissionFactorLandWasteTable, header=TRUE, sep=",")
+    findemcom <- read.table(inFinalDemandComp, header=FALSE, sep=",")
+    addvalcom <- read.table(inAddedValueComp, header=FALSE, sep=",")
     
     # Row explicit definition for Income (Wages & Salary)
     income_row <- 2
@@ -407,6 +410,7 @@ server <- function(input, output, session) {
     return(list_table)
   }
   
+  ###*historical input####
   allInputs <- eventReactive(input$button, {
     inSector <- input$sector
     if(is.null(inSector))
@@ -452,17 +456,17 @@ server <- function(input, output, session) {
     if(is.null(inAddedValueComp))
       return(NULL)  
     
-    sector <- read.table(inSector$datapath, header=FALSE, sep=";")
-    indem <- read.table(inIntermediateDemand$datapath, header=FALSE,  dec=",", sep=";")
-    findem <- read.table(inFinalDemand$datapath, header=FALSE, dec=",", sep=";")
-    addval <- read.table(inAddedValue$datapath, header=FALSE, dec=",", sep=";")
-    labour <- read.table(inLabour$datapath, header=TRUE, dec=",", sep=";")
-    energy <- read.table(inEnergy$datapath, header=TRUE, dec=",", sep=";")
-    waste <- read.table(inWaste$datapath, header=TRUE, dec=",", sep=";")
-    ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, dec=",", sep=";")
-    ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, dec=",", sep=";")
-    findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, dec=",", sep=";")
-    addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, dec=",", sep=";")
+    sector <- read.table(inSector$datapath, header=FALSE, sep=",")
+    indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
+    findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
+    addval <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
+    labour <- read.table(inLabour$datapath, header=TRUE, sep=",")
+    energy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
+    waste <- read.table(inWaste$datapath, header=TRUE, sep=",")
+    ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
+    ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+    findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
+    addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
     
     # Row explicit definition
     incomeRow <- 2
@@ -580,15 +584,21 @@ server <- function(input, output, session) {
   })
   
   output$sectorSelection <- renderUI({
-    # sec <- blackBoxInputs()
-    sec <- allInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
   
   output$plotResults <- renderPlot({
-    # sec <- blackBoxInputs()
-    sec <- allInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
@@ -715,8 +725,11 @@ server <- function(input, output, session) {
   })
   
   output$tableResults <- renderDataTable({
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     analysisResult <- sec$result
     
     if(input$categorySector=="Ekonomi"){
@@ -779,8 +792,11 @@ server <- function(input, output, session) {
     filename = input$pprkResults,
     contentType = "text/csv",
     content = function(file) {
-      sec <- allInputs()
-      # sec <- blackBoxInputs()
+      if(debugMode){
+        sec <- blackBoxInputs()
+      } else {
+        sec <- allInputs()
+      }
       analysisResult <- sec$result
       
       if(input$categorySector=="Ekonomi"){
@@ -827,8 +843,11 @@ server <- function(input, output, session) {
   )
   
   output$tableIO <- renderDataTable({
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -871,9 +890,26 @@ server <- function(input, output, session) {
     io_table
   }, options=list(pageLength=50), rownames=FALSE)
   
+  ###*bau input####
   allInputsBAU <- eventReactive(input$buttonBAU, {
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+      population <- read.table("input/12_populationRev.csv", header=TRUE, sep=",")
+      otherEm <- read.table("input/13_emission_from_otherRev.csv", header=TRUE, sep=",")
+    } else {
+      sec <- allInputs()
+      inPopTable <- input$populationTable
+      if(is.null(inPopTable))
+        return(NULL)
+      
+      inEmOtherTable <- input$emissionSectorRADTable
+      if(is.null(inEmOtherTable))
+        return(NULL)
+
+      population <- read.table(inPopTable$datapath, header=TRUE, sep=",")
+      otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, sep=",")
+
+    }
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
@@ -889,20 +925,6 @@ server <- function(input, output, session) {
     import_row <- 1
     income_row <- 2
     profit_row <- 3
-    
-    inPopTable <- input$populationTable
-    if(is.null(inPopTable))
-      return(NULL)
-    
-    inEmOtherTable <- input$emissionSectorRADTable
-    if(is.null(inEmOtherTable))
-      return(NULL)
-
-    population <- read.table(inPopTable$datapath, header=TRUE, dec=",", sep=";")
-    otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, dec=",", sep=";")
-    
-    # population <- read.table("d:/PPRK/12_populationRev.csv", header=TRUE, dec=",", sep=";")
-    # otherEm <- read.table("d:/PPRK/13_emission_from_otherRev.csv", header=TRUE, dec=",", sep=";")
     
     gdpRate <- as.numeric(input$gdpRate)
     startT <- as.numeric(input$dateFrom)
@@ -1362,8 +1384,11 @@ server <- function(input, output, session) {
   # })
   
   output$selectizeSector <- renderUI({
-    # sec <- blackBoxInputs()
-    sec <- allInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     analysisResult <- sec$result
     selectizeInput('selectMultiSector', 'Sektor', choices=list(
       Sektor=as.character(analysisResult$Sektor)
@@ -1463,9 +1488,13 @@ server <- function(input, output, session) {
     selectInput("selectedYearInter", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
   })  
   
+  ###*intervention input####
   allInputsInter <- eventReactive(input$buttonInter, {
-    sec <- allInputs()
-    # sec <- blackBoxInputs()
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
