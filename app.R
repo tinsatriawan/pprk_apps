@@ -300,6 +300,7 @@ server <- function(input, output, session) {
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
+    num_addval <- nrow(addval_matrix)
     dimensi <- ncol(indem_matrix)
     
     indem_colsum <- colSums(indem_matrix)
@@ -319,7 +320,7 @@ server <- function(input, output, session) {
     DFL <- rowSums(leontief)
     DFL <- DFL/(mean(DFL))
     # GDP
-    GDP <- colSums(addval_matrix[2:6,])
+    GDP <- colSums(addval_matrix[2:num_addval,])
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
@@ -357,16 +358,16 @@ server <- function(input, output, session) {
     colnames(ratio_ws) <- "ratio_ws"
     # Koefisien Intensitas Energi
     # total sectoral energy cons / sectoral GDP
-    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:6,])
+    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
     # Koefisien Produk Limbah
-    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:6,])
+    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
     # Emission from energy
     f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
-    em_energy <- as.matrix(energy[,4:12]) %*% f_energy_diag
+    em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag
     em_energy_total <- rowSums(em_energy)
     # Emission from waste
     f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
-    em_waste <- as.matrix(waste[,4:12]) %*% f_waste_diag
+    em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag
     em_waste_total <- rowSums(em_waste)
     # Wages
     wages <- as.matrix(t(addval[2,]))
@@ -473,6 +474,7 @@ server <- function(input, output, session) {
     
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
+    num_addval <- nrow(addval_matrix)
     dimensi <- ncol(indem_matrix)
     
     indem_colsum <- colSums(indem_matrix)
@@ -492,7 +494,7 @@ server <- function(input, output, session) {
     DFL <- rowSums(leontief)
     DFL <- DFL/(mean(DFL))
     # GDP
-    GDP <- colSums(addval_matrix[2:6,])
+    GDP <- colSums(addval_matrix[2:num_addval,])
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
     # Multiplier Income
@@ -530,16 +532,16 @@ server <- function(input, output, session) {
     colnames(ratio_ws) <- "ratio_ws"
     # Koefisien Intensitas Energi
     # total sectoral energy cons / sectoral GDP
-    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:6,])
+    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
     # Koefisien Produk Limbah
-    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:6,])
+    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
     # Emission from energy
     f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
-    em_energy <- as.matrix(energy[,4:12]) %*% f_energy_diag
+    em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag # need to count ncol
     em_energy_total <- rowSums(em_energy)
     # Emission from waste
     f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
-    em_waste <- as.matrix(waste[,4:12]) %*% f_waste_diag
+    em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag # need to count ncol
     em_waste_total <- rowSums(em_waste)
     # Wages
     wages <- as.matrix(t(addval[2,]))
