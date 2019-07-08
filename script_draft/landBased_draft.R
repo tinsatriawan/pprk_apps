@@ -21,7 +21,7 @@ simYear_serie <- seq(year_IO+step, year_simEnd, step)
 # reading inputs
 landDis <- landDis_file %>% read_xlsx(sheet = 1, col_names = TRUE)
 landCov <- landCov_file %>% read_xlsx(sheet = 1,col_names = TRUE)
-# currently not run: prod_adjust.m <- prod_adjust_file %>% read_xlsx(sheet = 1, col_names = FALSE)
+# currently not run: prod_adjust.m <- prod_adjust_file %>% read_xlsx(sheet = 1, col_names = FALSE) %>% matrix(nrow= nrow(.), ncol= ncol(.))
 # INPUTS \ENDS----
 
 # Derive the productivity values for the IO year
