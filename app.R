@@ -7,12 +7,15 @@ library(fmsb)
 library(ggplot2)
 # library(RColorBrewer)
 library(DT)
+library(plotly)
+
+source("land.R")
 
 ###*header####
 header <- dashboardHeader(title="RED-CLUW", titleWidth = "300px")
 
 ###*sidebar####
-sidebar <- dashboardSidebar(width = "300px",
+sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
   sidebarMenu(
     menuItem("Home", icon = icon("home"), tabName = "home"),
     ###sidebar-historis####
@@ -20,7 +23,7 @@ sidebar <- dashboardSidebar(width = "300px",
               menuSubItem("Input", tabName = "pageOne"),
               menuSubItem("Results", tabName = "pageTwo"),
               selectInput("categorySector", label="Kategori",
-                choices=c("Ekonomi", "Energi", "Limbah")
+                choices=c("Ekonomi", "Energi", "Limbah", "Lahan")
               ),
               conditionalPanel(
                 condition="input.categorySector=='Ekonomi'",
@@ -40,6 +43,12 @@ sidebar <- dashboardSidebar(width = "300px",
                 condition="input.categorySector=='Limbah'",
                 selectInput("pprkWaste", label="Pilih output yang ingin ditampilkan",
                   choices=c("Angka Pengganda Buangan Limbah", "Koefisien Produk Limbah", "Emisi dari Limbah")
+                )
+              ),
+              conditionalPanel(
+                condition="input.categorySector=='Lahan'",
+                selectInput("pprkLand", label="Pilih output yang ingin ditampilkan",
+                  choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                 )
               )
               # actionButton("ioTable", "Show I-O Table"),
@@ -74,7 +83,8 @@ sidebar <- dashboardSidebar(width = "300px",
                                   "Proyeksi Emisi Terkait Konsumsi Energi",
                                   "Proyeksi Buangan Limbah",
                                   "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi"
+                                  "Proyeksi Total Emisi",
+                                  "Proyeksi Intensitas Emisi"
                                   )
                         )
     ),
@@ -92,8 +102,8 @@ sidebar <- dashboardSidebar(width = "300px",
               selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
               uiOutput("selectizeSector"),
               menuSubItem("Results", tabName = "pageEight")
-    ),
-    menuItem("Help", icon = icon("question-circle"), tabName="help")
+    )
+    # menuItem("Help", icon = icon("question-circle"), tabName="help")
   )
 )
 
@@ -102,7 +112,7 @@ body <- dashboardBody(
   ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
-      jumbotron("Reducing Carbon Intensity of Energy, Land-use, and Waste", "Alat bantu perencanaan untuk dampak sosio-ekonomi dari aksi mitigasi perubahan iklim", button = FALSE),
+      jumbotron(img(src="home.png"), " ", button = FALSE),
       hr(),
       fluidRow(
         column(4, thumbnail_label(image = 'history.png', label = 'Historis',
@@ -168,7 +178,7 @@ body <- dashboardBody(
             fluidRow(
               column(width=7,
                 box(width=NULL,
-                  dataTableOutput('tableResults'),
+                  div(style="overflow-x: scroll", dataTableOutput('tableResults')),
                   downloadButton('downloadTable', 'Download Table (.csv)')
                 )
               ),
@@ -247,19 +257,19 @@ body <- dashboardBody(
                 hr()
               )
             )
-    ),
-    tabItem(tabName = "help",
-              tags$div(class = "header", checked = NA,
-              tags$p("Ini Help. Image letakkan di folder www"),
-              tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
-            )
     )
+    # tabItem(tabName = "help",
+    #           tags$div(class = "header", checked = NA,
+    #           tags$p("Ini Help. Image letakkan di folder www"),
+    #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
+    #         )
+    # )
   )
 )
 
 ###*setup dashboard page####
 ui <- dashboardPage(
-  skin = 'green', 
+  skin = 'blue', 
   header,
   sidebar,
   body
@@ -268,20 +278,20 @@ ui <- dashboardPage(
 ###*define server#### 
 server <- function(input, output, session) {
   # debug mode
-  debugMode <- 0
+  debugMode <- 1
   
   blackBoxInputs <- function(){
-    inSector <- "input/1_sector.csv"
-    inIntermediateDemand <- "input/2_intermediate_demand.csv"
-    inFinalDemandComp <- "input/3_final_demand_component.csv"
-    inFinalDemand <- "input/4_final_demand.csv"
-    inAddedValueComp <- "input/5_value_added_component.csv"
-    inAddedValue <- "input/6_value_added.csv"     
-    inLabour <- "input/7_satellite_labour.csv"
-    inEnergy <- "input/8_satellite_energy.csv"
-    inWaste <- "input/9_satellite_waste.csv"
-    inEmissionFactorEnergiTable <- "input/10_emission_factor_energy.csv"
-    inEmissionFactorLandWasteTable <- "input/11_emission_factor_waste.csv"
+    inSector <- "input/input_tablesJambi/1_sector.csv"
+    inIntermediateDemand <- "input/input_tablesJambi/2_intermediate_demand.csv"
+    inFinalDemandComp <- "input/input_tablesJambi/3_final_demand_component.csv"
+    inFinalDemand <- "input/input_tablesJambi/4_final_demand.csv"
+    inAddedValueComp <- "input/input_tablesJambi/5_value_added_component.csv"
+    inAddedValue <- "input/input_tablesJambi/6_value_added.csv"     
+    inLabour <- "input/input_tablesJambi/7_satellite_labour.csv"
+    inEnergy <- "input/input_tablesJambi/8_satellite_energy.csv"
+    inWaste <- "input/input_tablesJambi/9_satellite_waste.csv"
+    inEmissionFactorEnergiTable <- "input/input_tablesJambi/10_emission_factor_energy.csv"
+    inEmissionFactorLandWasteTable <- "input/input_tablesJambi/11_emission_factor_waste.csv"
     
     sector <- read.table(inSector, header=FALSE, sep=",")
     indem <- read.table(inIntermediateDemand, header=FALSE, sep=",")
@@ -704,6 +714,22 @@ server <- function(input, output, session) {
       ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
         geom_bar(colour="black", stat="identity") + theme_minimal() +  
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    } else if(input$categorySector=="Lahan"){
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+      if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+        graph <- land_rc
+        colnames(graph) <- c("Sektor", "Kategori", "LRC")
+        ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) + 
+          geom_bar(colour="black", stat="identity")+ coord_flip() +  
+          guides(fill=FALSE) + xlab("Sectors") + ylab("Koefisien Kebutuhan Lahan")
+      } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+        graph <- land_pc
+        colnames(graph) <- c("Sektor", "Kategori", "LPC")
+        ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) + 
+          geom_bar(colour="black", stat="identity")+ coord_flip() +  
+          guides(fill=FALSE) + xlab("Sektor") + ylab("Koefisien Produktivitas Lahan")
+      }
     } else {
       if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
         graph <- subset(analysisResult, select = c(Sektor, multiplierWaste))
@@ -776,6 +802,22 @@ server <- function(input, output, session) {
         tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
         tables
       }
+    } else if (input$categorySector=="Lahan"){
+      if(input$pprkLand == "Matriks Distribusi Lahan"){
+        # removeUI(selector = '#plotResults')
+        tables <- land_dm
+        tables
+      } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+        tables <- land_rc
+        tables
+      } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+        tables <- land_pc
+        tables
+      } else {
+        # removeUI(selector = '#plotResults')
+        tables <- land_demand
+        tables
+      }
     } else {
       if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
         tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
@@ -788,7 +830,7 @@ server <- function(input, output, session) {
         tables
       } 
     }
-  }, rownames=FALSE)
+  }, options=list(pageLength=50), rownames=FALSE)
   
   output$downloadTable <- downloadHandler(
     filename = input$pprkResults,
@@ -896,8 +938,8 @@ server <- function(input, output, session) {
   allInputsBAU <- eventReactive(input$buttonBAU, {
     if(debugMode){
       sec <- blackBoxInputs()
-      population <- read.table("input/12_populationRev.csv", header=TRUE, sep=",")
-      otherEm <- read.table("input/13_emission_from_otherRev.csv", header=TRUE, sep=",")
+      population <- read.table("input/input_tablesJambi/12_population.csv", header=TRUE, sep=",")
+      otherEm <- read.table("input/input_tablesJambi/13_emission_from_other.csv", header=TRUE, sep=",")
     } else {
       sec <- allInputs()
       inPopTable <- input$populationTable
@@ -1228,10 +1270,13 @@ server <- function(input, output, session) {
           id='baupdrb'
         )
       )
-      ggplot(data=graph, aes(x=sector, y=GDP)) + 
-        geom_bar(colour="blue", stat="identity") + 
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+      # ggplot(data=graph, aes(x=sector, y=GDP)) + 
+      #   geom_bar(colour="blue", stat="identity") + 
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
+      colnames(GDP_all) = c("year", "PDRB")
+      ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
+      # plot_ly(GDP_all, x = ~year, y = ~PDRB, type = 'scatter', mode = 'lines')
       
     } else if(input$bauResults == "Proyeksi Upah per Kapita"){
       removeUI(selector = '#baupdrb')
@@ -1240,51 +1285,74 @@ server <- function(input, output, session) {
     } else if(input$bauResults == "Proyeksi Upah Gaji"){
       removeUI(selector = '#baupdrb')
       graph <- income_table[income_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=income)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+      # ggplot(data=graph, aes(x=sector, y=income)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
+      colnames(GDP_all) = c("year", "PDRB")
+      ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
       
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
       removeUI(selector = '#baupdrb')
       graph <- labour_table[labour_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=labour)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      # ggplot(data=graph, aes(x=sector, y=labour)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      labour_all <- aggregate(x = labour_table$labour, by = list(labour_table$year), FUN = sum)
+      colnames(labour_all) = c("year", "Labour")
+      ggplot(data=labour_all, aes(x=year, y=Labour, group=1)) + geom_line() + geom_point()
       
       
     } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
       removeUI(selector = '#baupdrb')
       graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      
+      # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      energy_all <- aggregate(x = energy_consumption_table$Tconsumption, by = list(energy_consumption_table$year), FUN = sum)
+      colnames(energy_all) = c("year", "Energy")
+      ggplot(data=energy_all, aes(x=year, y=Energy, group=1)) + geom_line() + geom_point()
 
     } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       removeUI(selector = '#baupdrb')
       graph <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      # ggplot(data=graph, aes(x=sector, y=Temission)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      em_energy_all <- aggregate(x = energy_emission_table$Temission, by = list(energy_emission_table$year), FUN = sum)
+      colnames(em_energy_all) = c("year", "EmEnergy")
+      ggplot(data=em_energy_all, aes(x=year, y=EmEnergy, group=1)) + geom_line() + geom_point()
 
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
       removeUI(selector = '#baupdrb')
       graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      waste_all <- aggregate(x = waste_consumption_table$Tconsumption, by = list(waste_consumption_table$year), FUN = sum)
+      colnames(waste_all) = c("year", "Waste")
+      ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
 
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       removeUI(selector = '#baupdrb')
       graph <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
-        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      # ggplot(data=graph, aes(x=sector, y=Temission)) +
+      #   geom_bar(colour="blue", stat="identity") +
+      #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      em_waste_all <- aggregate(x = waste_emission_table$Temission, by = list(waste_emission_table$year), FUN = sum)
+      colnames(em_waste_all) = c("year", "EmWaste")
+      ggplot(data=em_waste_all, aes(x=year, y=EmWaste, group=1)) + geom_line() + geom_point()
 
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       removeUI(selector = '#baupdrb')
       ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      
+    } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
+      GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
+      colnames(GDP_all) = c("year", "PDRB")
+      GDP_all$emisi <- total_emission_table$TotalEmission
+      GDP_all$intensitas <- GDP_all$PDRB / GDP_all$emisi
+      ggplot(data=GDP_all, aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
     }
     
   })
@@ -1325,6 +1393,8 @@ server <- function(input, output, session) {
       tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
       tables
     } else if(input$bauResults == "Proyeksi Total Emisi"){
+      return(NULL)
+    } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
   }, options=list(pageLength=50), rownames=FALSE)  
