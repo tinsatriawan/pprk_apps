@@ -5,9 +5,13 @@ library(shinydashboard)
 library(shinyLP)
 library(fmsb)
 library(ggplot2)
+library(plotly)
+#library(ggradar)
 # library(RColorBrewer)
 library(DT)
-library(plotly)
+library(dplyr)
+library(formattable)
+
 
 source("land.R")
 
@@ -172,7 +176,7 @@ body <- dashboardBody(
             ),
             conditionalPanel(
               condition="input.pprkResults!='Pendapatan per kapita'",
-              plotOutput("plotResults")
+              plotlyOutput("plotlyResults")
             ),
             hr(),
             fluidRow(
@@ -194,7 +198,7 @@ body <- dashboardBody(
               condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
               uiOutput("yearSelection")
             ),
-            plotOutput("plotResultsBAU"),
+            plotlyOutput("plotlyResultsBAU"),
             hr(),
             fluidRow(
               column(width=7,
@@ -223,8 +227,8 @@ body <- dashboardBody(
               valueBoxOutput(width=6, "percentOfGDPGrowth")
             ),
             hr(),
-            plotOutput("curveEmRed"),
-            plotOutput("curveGDPGrowth"),
+            plotlyOutput("curveEmRed"),
+            plotlyOutput("curveGDPGrowth"),
             hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -243,7 +247,7 @@ body <- dashboardBody(
               condition="input.interResults!='Proyeksi Upah per Kapita' & input.interResults!='Proyeksi Total Emisi'",
               uiOutput("yearSelectionInter")
             ),
-            plotOutput("plotResultsInter"),
+            plotlyOutput("plotlyResultsInter"),
             hr(),
             fluidRow(
               column(width=7,
@@ -605,7 +609,7 @@ server <- function(input, output, session) {
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
   
-  output$plotResults <- renderPlot({
+  output$plotlyResults <- renderPlotly({
     if(debugMode){
       sec <- blackBoxInputs()
     } else {
@@ -689,11 +693,19 @@ server <- function(input, output, session) {
                                      )
         tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
         radarchart(tabel_radar)
+        #tabel_radar %>% add_rownames(var="")
+        #ggradar(tabel_radar)
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
-        ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
-          geom_bar(stat="identity", colour="black") + theme_minimal() + 
+        gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+          geom_bar(stat="identity", colour="black") + theme_minimal() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+        ggplotly(gplot)
+        # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
+        #   add_bars(orientation = 'h',name=~Sektor) %>%
+        #   layout(barmode = 'stack',
+        #          xaxis = list(title = "Nilai"),
+        #          yaxis = list(title ="Sektor"))
       }
     } else if(input$categorySector=="Energi"){
       if(input$pprkEnergy == "Angka Pengganda Energi"){
@@ -711,24 +723,42 @@ server <- function(input, output, session) {
       } 
       
       colnames(graph) <- c("Sektor", "Analisis")
-      ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
-        geom_bar(colour="black", stat="identity") + theme_minimal() +  
+      gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+        geom_bar(colour="black", stat="identity") + theme_minimal() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot1)
+      # plot_ly(graph, x=~Nilai, y=~Sektor, fill=~Sektor) %>%
+      #   add_bars(orientation = 'h',name=~Sektor) %>%
+      #   layout(barmode = 'stack',
+      #          xaxis = list(title = "Nilai"),
+      #          yaxis = list(title ="Sektor"))
     } else if(input$categorySector=="Lahan"){
       removeUI(selector = '#pdrb')
       removeUI(selector = '#capita')
       if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
         graph <- land_rc
         colnames(graph) <- c("Sektor", "Kategori", "LRC")
-        ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) + 
-          geom_bar(colour="black", stat="identity")+ coord_flip() +  
+        gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
+          geom_bar(colour="black", stat="identity")+ coord_flip() +
           guides(fill=FALSE) + xlab("Sectors") + ylab("Koefisien Kebutuhan Lahan")
+        ggplotly(gplot2)
+        # plot_ly(graph, x=~LRC, y=~Sektor, fill=~Kategori) %>%
+        #   add_bars(orientation = 'h',name=~Kategori) %>%
+        #   layout(barmode = 'stack',
+        #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
+        #          yaxis = list(title ="Sectors"))
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
         graph <- land_pc
         colnames(graph) <- c("Sektor", "Kategori", "LPC")
-        ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) + 
-          geom_bar(colour="black", stat="identity")+ coord_flip() +  
+        gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
+          geom_bar(colour="black", stat="identity")+ coord_flip() +
           guides(fill=FALSE) + xlab("Sektor") + ylab("Koefisien Produktivitas Lahan")
+        ggplotly(gplot2)
+        # plot_ly(graph, x=~LPC, y=~Sektor, fill=~Kategori) %>%
+        #   add_bars(orientation = 'h',name=~Kategori) %>%
+        #   layout(barmode = 'stack',
+        #          xaxis = list(title = "Koefisien Produktivitas Lahan"),
+        #          yaxis = list(title ="Sektor"))
       }
     } else {
       if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
@@ -746,9 +776,15 @@ server <- function(input, output, session) {
       }
       
       colnames(graph) <- c("Sektor", "Analisis")
-      ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) + 
-        geom_bar(colour="black", stat="identity") + theme_minimal() +  
+      gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+        geom_bar(colour="black", stat="identity") + theme_minimal() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot3)
+      # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
+      #   add_bars(orientation = 'h',name=~Sektor) %>%
+      #   layout(barmode = 'stack',
+      #          xaxis = list(title = "Nilai"),
+      #          yaxis = list(title ="Sektor"))
     }
   })
   
@@ -804,7 +840,7 @@ server <- function(input, output, session) {
       }
     } else if (input$categorySector=="Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
-        # removeUI(selector = '#plotResults')
+        # removeUI(selector = '#plotlyResults')
         tables <- land_dm
         tables
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
@@ -814,7 +850,7 @@ server <- function(input, output, session) {
         tables <- land_pc
         tables
       } else {
-        # removeUI(selector = '#plotResults')
+        # removeUI(selector = '#plotlyResults')
         tables <- land_demand
         tables
       }
@@ -830,8 +866,8 @@ server <- function(input, output, session) {
         tables
       } 
     }
-  }, options=list(pageLength=50), rownames=FALSE)
-  
+  }, extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
+
   output$downloadTable <- downloadHandler(
     filename = input$pprkResults,
     contentType = "text/csv",
@@ -930,9 +966,12 @@ server <- function(input, output, session) {
     colnames(addval_table) <- colnames(io_table)
     colnames(total_addval_table) <- colnames(io_table)
     io_table <- rbind(io_table, addval_table, total_addval_table)
-    
     io_table
-  }, options=list(pageLength=50), rownames=FALSE)
+    
+    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+      formatStyle('Sektor',target = "row",backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
+            formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880")
+  })
   
   ###*bau input####
   allInputsBAU <- eventReactive(input$buttonBAU, {
@@ -1246,7 +1285,7 @@ server <- function(input, output, session) {
     selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
   })
   
-  output$plotResultsBAU <- renderPlot({
+  output$plotlyResultsBAU <- renderPlotly({
     results <- allInputsBAU()
     GDP_table <- results$GDP_table
     income_percapita_table <- results$income_percapita_table  
@@ -1275,12 +1314,14 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
-      ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
+      gplot4<-ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot4)
       # plot_ly(GDP_all, x = ~year, y = ~PDRB, type = 'scatter', mode = 'lines')
       
     } else if(input$bauResults == "Proyeksi Upah per Kapita"){
       removeUI(selector = '#baupdrb')
-      ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+      gplot5<-ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot5)
       
     } else if(input$bauResults == "Proyeksi Upah Gaji"){
       removeUI(selector = '#baupdrb')
@@ -1290,7 +1331,8 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
-      ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
+      gplot6<-ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point
+      ggplotly(gplot6)
       
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
       removeUI(selector = '#baupdrb')
@@ -1300,7 +1342,8 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       labour_all <- aggregate(x = labour_table$labour, by = list(labour_table$year), FUN = sum)
       colnames(labour_all) = c("year", "Labour")
-      ggplot(data=labour_all, aes(x=year, y=Labour, group=1)) + geom_line() + geom_point()
+      gplot7<-ggplot(data=labour_all, aes(x=year, y=Labour, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot7)
       
       
     } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
@@ -1311,7 +1354,8 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       energy_all <- aggregate(x = energy_consumption_table$Tconsumption, by = list(energy_consumption_table$year), FUN = sum)
       colnames(energy_all) = c("year", "Energy")
-      ggplot(data=energy_all, aes(x=year, y=Energy, group=1)) + geom_line() + geom_point()
+      gplot8<-ggplot(data=energy_all, aes(x=year, y=Energy, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot8)
 
     } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       removeUI(selector = '#baupdrb')
@@ -1321,7 +1365,8 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       em_energy_all <- aggregate(x = energy_emission_table$Temission, by = list(energy_emission_table$year), FUN = sum)
       colnames(em_energy_all) = c("year", "EmEnergy")
-      ggplot(data=em_energy_all, aes(x=year, y=EmEnergy, group=1)) + geom_line() + geom_point()
+      gplot9<-ggplot(data=em_energy_all, aes(x=year, y=EmEnergy, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot9)
 
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
       removeUI(selector = '#baupdrb')
@@ -1331,7 +1376,8 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       waste_all <- aggregate(x = waste_consumption_table$Tconsumption, by = list(waste_consumption_table$year), FUN = sum)
       colnames(waste_all) = c("year", "Waste")
-      ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
+      gplot10<-ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot10)
 
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       removeUI(selector = '#baupdrb')
@@ -1341,18 +1387,20 @@ server <- function(input, output, session) {
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       em_waste_all <- aggregate(x = waste_emission_table$Temission, by = list(waste_emission_table$year), FUN = sum)
       colnames(em_waste_all) = c("year", "EmWaste")
-      ggplot(data=em_waste_all, aes(x=year, y=EmWaste, group=1)) + geom_line() + geom_point()
+      gplot11<-ggplot(data=em_waste_all, aes(x=year, y=EmWaste, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot11)
 
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       removeUI(selector = '#baupdrb')
-      ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
-      
+      gplot12<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot12)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
       GDP_all$emisi <- total_emission_table$TotalEmission
       GDP_all$intensitas <- GDP_all$PDRB / GDP_all$emisi
-      ggplot(data=GDP_all, aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+      gplot13<-ggplot(data=GDP_all, aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot13)
     }
     
   })
@@ -1397,7 +1445,7 @@ server <- function(input, output, session) {
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
-  }, options=list(pageLength=50), rownames=FALSE)  
+  }, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
 
   output$downloadTableBAU <- downloadHandler(
     filename = input$bauResults,
@@ -1842,7 +1890,7 @@ server <- function(input, output, session) {
     list_intervensi
   })
     
-  output$plotResultsInter <- renderPlot({
+  output$plotlyResultsInter <- renderPlotly({
     results <- allInputsInter()
     GDP_table <- results$GDP_table
     income_percapita_table <- results$income_percapita_table  
@@ -1856,43 +1904,52 @@ server <- function(input, output, session) {
     
     if(input$interResults == "Proyeksi PDRB"){
       graph <- GDP_table[GDP_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=GDP)) + 
+      gplot14<-ggplot(data=graph, aes(x=sector, y=GDP)) + 
         geom_bar(colour="blue", stat="identity") + 
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot14)
     } else if(input$interResults == "Proyeksi Upah per Kapita"){
-      ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+      gplot15<-ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot15)
     } else if(input$interResults == "Proyeksi Upah Gaji"){
       graph <- income_table[income_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=income)) +
+      gplot16<-ggplot(data=graph, aes(x=sector, y=income)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot16)
     } else if(input$interResults == "Proyeksi Tenaga Kerja"){
       graph <- labour_table[labour_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=labour)) +
+      gplot17<-ggplot(data=graph, aes(x=sector, y=labour)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot17)
     } else if(input$interResults == "Proyeksi Konsumsi Energi"){
       graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+      gplot18<-ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot18)
     } else if(input$interResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       graph <- energy_emission_table[energy_emission_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
+      gplot19<-ggplot(data=graph, aes(x=sector, y=Temission)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot19)
     } else if(input$interResults == "Proyeksi Buangan Limbah"){
       graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
+      gplot20<-ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot20)
     } else if(input$interResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       graph <- waste_emission_table[waste_emission_table$year==input$selectedYearInter,]
-      ggplot(data=graph, aes(x=sector, y=Temission)) +
+      gplot21<-ggplot(data=graph, aes(x=sector, y=Temission)) +
         geom_bar(colour="blue", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot21)
     } else if(input$interResults == "Proyeksi Total Emisi"){
-      ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      gplot22<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      ggplotly(gplot22)
     }
     
   })
@@ -1935,7 +1992,7 @@ server <- function(input, output, session) {
     } else if(input$interResults == "Proyeksi Total Emisi"){
       return(NULL)
     }
-  }, options=list(pageLength=50), rownames=FALSE)  
+  }, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
 
   output$downloadTableInter <- downloadHandler(
     filename = input$interResults,
@@ -2017,7 +2074,7 @@ server <- function(input, output, session) {
     )
   })
   
-  output$curveEmRed <- renderPlot({
+  output$curveEmRed <- renderPlotly({
     resBAU <- allInputsBAU()
     resInv <- allInputsInter()
     
@@ -2034,13 +2091,14 @@ server <- function(input, output, session) {
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
-    ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
+    gplot23<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             ggtitle("Grafik Proyeksi Nilai Emisi Kumulatif")
+    ggplotly(gplot23)
   })
   
-  output$curveGDPGrowth <- renderPlot({
+  output$curveGDPGrowth <- renderPlotly({
     resBAU <- allInputsBAU()
     resInv <- allInputsInter()
     
@@ -2063,10 +2121,11 @@ server <- function(input, output, session) {
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
-    ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
+    gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
+    ggplotly(gplot24)
   })
 }
 
