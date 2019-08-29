@@ -148,38 +148,64 @@ body <- dashboardBody(
     ###*tab-historis####
     tabItem(tabName = "pageOne",
             # h2("Page 1"),
+            selectInput("province", "Pilih provinsi:",
+                        list(`Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="Babel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="Kepri",
+                          "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="Sumbar", "Sumatera Selatan"="Sumsel", "Sumatera Utara"="Sumut"),
+                          `Tengah` = list("Bali"="Bali","Banten"="Banten", "Jawa Barat"="Jawa_Barat",
+                          "Jawa Tengah"="Jawa_Tengah","Jawa Timur"="Jawa_Timur","Kalimantan Barat"="Kalimantan_Barat",
+                          "Kalimantan Selatan"="Kalimantan_Selatan","Kalimantan Tengah"="Kalimantan_Tengah",
+                          "Nusa Tenggara Barat"="Nusa_Tenggara_Barat","Nusa Tenggara Timur"="Nusa_Tenggara_Timur","Yogyakarta"="DI_Yogyakarta"),
+                          `Timur` = list("Gorontalo"="Gorontalo", "Kalimantan Timur"="Kalimantan_Timur", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
+                          "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
+                          "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
+            ),
               fluidRow(
                 column(width = 3,
-                  box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                    fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
-                  ),
-                  box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                    fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
-                  ),
-                  box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                    fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                    fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
-                  ),
+                  # box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  #   fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
+                  # ),
+                  # box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  #   fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
+                  # ),
+                  # box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
+                  #   fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
+                  #   fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
+                  # ),
                   # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
                   # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
                   box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
                     numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
-                  ),
-                  actionButton("button", "Submit")
+                  )
+                  # actionButton("button", "Submit")
                 ),
                 column(width = 9,
                   box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
                     div(style="overflow-x: scroll", dataTableOutput('tableIO'))
-                  )
                 )
-            )
+            ),
+            column(width = 9,
+              box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE,
+                div(style="overflow-x: scroll",dataTableOutput('SatelitTenagaKerja'))
+                       )
+                   ),
+            column(width = 9,
+              box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
+                div(style="overflow-x: scroll",dataTableOutput('SatelitEnergi'))
+                )
+              ),
+            column(width = 9,
+              box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
+                div(style="overflow-x: scroll",dataTableOutput('SatelitLimbah'))
+                )
+              )
+    )
     ),
     tabItem(tabName = "pageTwo",
             # h2("Page 2"),
@@ -281,8 +307,9 @@ body <- dashboardBody(
     #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
     #         )
     # )
-  )
+ )
 )
+
 
 ###*setup dashboard page####
 ui <- dashboardPage(
@@ -319,18 +346,45 @@ server <- function(input, output, session) {
   
   
   blackBoxInputs <- function(){
-    inSector <- "input/input_tablesJambi/1_sector.csv"
-    inIntermediateDemand <- "input/input_tablesJambi/2_intermediate_demand.csv"
-    inFinalDemandComp <- "input/input_tablesJambi/3_final_demand_component.csv"
-    inFinalDemand <- "input/input_tablesJambi/4_final_demand.csv"
-    inAddedValueComp <- "input/input_tablesJambi/5_value_added_component.csv"
-    inAddedValue <- "input/input_tablesJambi/6_value_added.csv"     
-    inLabour <- "input/input_tablesJambi/7_satellite_labour.csv"
-    inEnergy <- "input/input_tablesJambi/8_satellite_energy.csv"
-    inWaste <- "input/input_tablesJambi/9_satellite_waste.csv"
-    inEmissionFactorEnergiTable <- "input/input_tablesJambi/10_emission_factor_energy.csv"
-    inEmissionFactorLandWasteTable <- "input/input_tablesJambi/11_emission_factor_waste.csv"
+    io_folder <- input$province
+    print(io_folder)
     
+    # inSector <- paste0("Yumna/02 TENGAH/", io_folder, "/1_sector.csv")
+    # inIntermediateDemand <- "input/input_tablesJambi/2_intermediate_demand.csv"
+    # inFinalDemandComp <- "input/input_tablesJambi/3_final_demand_component.csv"
+    # inFinalDemand <- "input/input_tablesJambi/4_final_demand.csv"
+    # inAddedValueComp <- "input/input_tablesJambi/5_value_added_component.csv"
+    # inAddedValue <- "input/input_tablesJambi/6_value_added.csv"
+    # inLabour <- "input/input_tablesJambi/7_satellite_labour.csv"
+    # inEnergy <- "input/input_tablesJambi/8_satellite_energy.csv"
+    # inWaste <- "input/input_tablesJambi/9_satellite_waste.csv"
+    # inEmissionFactorEnergiTable <- "input/input_tablesJambi/10_emission_factor_energy.csv"
+    # inEmissionFactorLandWasteTable <- "input/input_tablesJambi/11_emission_factor_waste.csv"
+    
+    inSector <- paste0("Yumna/TENGAH/", io_folder, "/01_sektor.csv")
+    inIntermediateDemand <- paste0("Yumna/TENGAH/", io_folder, "/02_input_antara.csv")
+    inFinalDemandComp <- paste0("Yumna/TENGAH/", io_folder, "/03_komponen_permintaan_akhir.csv")
+    inFinalDemand<- paste0("Yumna/TENGAH/", io_folder, "/04_permintaan_akhir.csv")
+    inAddedValueComp<- paste0("Yumna/TENGAH/", io_folder, "/05_komponen_input_primer.csv")
+    inAddedValue<- paste0("Yumna/TENGAH/", io_folder, "/06_input_primer.csv")
+    inLabour<- paste0("Yumna/TENGAH/", io_folder, "/07_tenaga_kerja.csv")
+    inEnergy<- paste0("Yumna/TENGAH/", io_folder, "/08_satelit_energi.csv")
+    inWaste<- paste0("Yumna/TENGAH/", io_folder, "/09_satelit_limbah.csv")
+    inEmissionFactorEnergiTable<- paste0("Yumna/TENGAH/", io_folder, "/10_faktor_emisi_energi.csv")
+    inEmissionFactorLandWasteTable<- paste0("Yumna/TENGAH/", io_folder, "/11_faktor_emisi_limbah.csv")
+  
+    # inSector <- paste0("Yumna/TENGAH/", io_folder, "/1_sector.csv")
+    # inIntermediateDemand <- paste0("Yumna/TENGAH/", io_folder, "/2_intermediate_demand.csv")
+    # inFinalDemandComp <- paste0("Yumna/TENGAH/", io_folder, "/3_final_demand_component.csv")
+    # inFinalDemand<- paste0("Yumna/TENGAH/", io_folder, "/4_final_demand.csv")
+    # inAddedValueComp<- paste0("Yumna/TENGAH/", io_folder, "/5_value_added_component.csv")
+    # inAddedValue<- paste0("Yumna/TENGAH/", io_folder, "/6_value_added.csv")
+    # inLabour<- paste0("Yumna/TENGAH/", io_folder, "/7_satellite_labour.csv")
+    # inEnergy<- paste0("Yumna/TENGAH/", io_folder, "/8_satellite_energy.csv")
+    # inWaste<- paste0("Yumna/TENGAH/", io_folder, "/9_satellite_waste.csv")
+    # inEmissionFactorEnergiTable<- paste0("Yumna/TENGAH/", io_folder, "/10_emission_factor_energy.csv")
+    # inEmissionFactorLandWasteTable<- paste0("Yumna/TENGAH/", io_folder, "/11_emission_factor_waste.csv")
+
     sector <- read.table(inSector, header=FALSE, sep=",")
     indem <- read.table(inIntermediateDemand, header=FALSE, sep=",")
     findem <- read.table(inFinalDemand, header=FALSE, sep=",")
@@ -461,6 +515,9 @@ server <- function(input, output, session) {
   
   ###*historical input####
   allInputs <- eventReactive(input$button, {
+    # io_folder <- input$province
+    # print(io_folder)
+    
     inSector <- input$sector
     if(is.null(inSector))
       return(NULL)
@@ -658,6 +715,8 @@ server <- function(input, output, session) {
         graph <- subset(analysisResult, select = c(Sektor, GDP))
         GDPvalues <- as.matrix(analysisResult$GDP)
         GDPTotal <- colSums(GDPvalues)
+        GDPTotal <- round(GDPTotal,digits = 2)
+        #GDPTotalL <- formattable(GDPTotal, digits = 2, format = "f")
         insertUI(
           selector="#placeholder",
           ui = tags$div(
@@ -711,24 +770,46 @@ server <- function(input, output, session) {
         
         multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
         tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
-        tabel_radar <- tabel_radarchart
-        tabel_radar$Sektor <- NULL
-        tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
-                                     multiplierOutput=max(multiplierTable$multiplierOutput), 
-                                     multiplierLabour=max(multiplierTable$multiplierLabour), 
-                                     multiplierEnergy=max(multiplierTable$multiplierEnergy),
-                                     multiplierWaste=max(multiplierTable$multiplierWaste) 
-                                     )
-        tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
-                                     multiplierOutput=min(multiplierTable$multiplierOutput),  
-                                     multiplierLabour=min(multiplierTable$multiplierLabour),  
-                                     multiplierEnergy=min(multiplierTable$multiplierEnergy),
-                                     multiplierWaste=min(multiplierTable$multiplierWaste) 
-                                     )
-        tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
-        radarchart(tabel_radar)
-        #tabel_radar %>% add_rownames(var="")
-        #ggradar(tabel_radar)
+        
+        normalize<- function(x){
+          return((x-min(x))/(max(x)-min(x)))
+        }
+        
+        tabel_radarchart<-as.data.frame(tabel_radarchart[2:6])
+        tabel_radar<-normalize(tabel_radarchart)
+        nilai_temp<-t(tabel_radar)
+        plot_ly(
+          type='scatterpolar',
+          r = c(nilai_temp),
+          theta = c('multiplierIncome','multiplierOutput','multiplierLabour','multiplierEnergy','multiplierWaste'),
+          fill='toself'
+        ) %>%
+          layout(
+            polar=list(
+              radialaxis=list(
+                visible=T,
+                range=c(0,1)
+              )
+            ),
+            showlegend=F
+          )
+        # tabel_radar <- tabel_radarchart
+        # tabel_radar$Sektor <- NULL
+        # tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
+        #                              multiplierOutput=max(multiplierTable$multiplierOutput), 
+        #                              multiplierLabour=max(multiplierTable$multiplierLabour), 
+        #                              multiplierEnergy=max(multiplierTable$multiplierEnergy),
+        #                              multiplierWaste=max(multiplierTable$multiplierWaste) 
+        #                              )
+        # tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
+        #                              multiplierOutput=min(multiplierTable$multiplierOutput),  
+        #                              multiplierLabour=min(multiplierTable$multiplierLabour),  
+        #                              multiplierEnergy=min(multiplierTable$multiplierEnergy),
+        #                              multiplierWaste=min(multiplierTable$multiplierWaste) 
+        #                              )
+        # tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
+        # radarchart(tabel_radar)
+       
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
         gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
@@ -900,7 +981,9 @@ server <- function(input, output, session) {
         tables
       } 
     }
-  }, extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+      formatRound(columns=c(1:length(tables)),2)
+  }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
 
   output$downloadTable <- downloadHandler(
     filename = input$pprkResults,
@@ -1002,11 +1085,45 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
-      formatStyle('Sektor',target = "row",backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
-            formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880")
+    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+      formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
+            formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
+      formatRound(columns=c(1:length(io_table)),2)
+    
+    # datatable(io_table, options = list(
+    #   pageLength=25,
+    #   rowCallback = JS('function(row, data, index, rowId) {',
+    #                    'console.log(rowId)','if(rowId = 1 && rowId < Position("JUMLAH INPUT ANTARA")) {',
+    #                    'row.style.backgroundColor = "pink";','}','}')
+    # ))
   })
   
+  output$SatelitTenagaKerja <- renderDataTable({
+    if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+    labour <- sec$labour
+  })
+
+  output$SatelitEnergi <- renderDataTable({
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    energy <- sec$energy
+  })
+  
+  output$SatelitLimbah <- renderDataTable({
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    waste <- sec$waste
+  })
   ###*bau input####
   allInputsBAU <- eventReactive(input$buttonBAU, {
     if(debugMode){
@@ -1479,7 +1596,9 @@ server <- function(input, output, session) {
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
-  }, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+      formatRound(columns=c(3:length(tables)),2)
+  }) #extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
 
   output$downloadTableBAU <- downloadHandler(
     filename = input$bauResults,
@@ -1939,7 +2058,7 @@ server <- function(input, output, session) {
     if(input$interResults == "Proyeksi PDRB"){
       graph <- GDP_table[GDP_table$year==input$selectedYearInter,]
       gplot14<-ggplot(data=graph, aes(x=sector, y=GDP)) + 
-        geom_bar(colour="blue", stat="identity") + 
+        geom_bar(fill="green", stat="identity") + 
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot14)
     } else if(input$interResults == "Proyeksi Upah per Kapita"){
@@ -1948,37 +2067,37 @@ server <- function(input, output, session) {
     } else if(input$interResults == "Proyeksi Upah Gaji"){
       graph <- income_table[income_table$year==input$selectedYearInter,]
       gplot16<-ggplot(data=graph, aes(x=sector, y=income)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot16)
     } else if(input$interResults == "Proyeksi Tenaga Kerja"){
       graph <- labour_table[labour_table$year==input$selectedYearInter,]
       gplot17<-ggplot(data=graph, aes(x=sector, y=labour)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot17)
     } else if(input$interResults == "Proyeksi Konsumsi Energi"){
       graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYearInter,]
       gplot18<-ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot18)
     } else if(input$interResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       graph <- energy_emission_table[energy_emission_table$year==input$selectedYearInter,]
       gplot19<-ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot19)
     } else if(input$interResults == "Proyeksi Buangan Limbah"){
       graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYearInter,]
       gplot20<-ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot20)
     } else if(input$interResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       graph <- waste_emission_table[waste_emission_table$year==input$selectedYearInter,]
       gplot21<-ggplot(data=graph, aes(x=sector, y=Temission)) +
-        geom_bar(colour="blue", stat="identity") +
+        geom_bar(fill="green", stat="identity") +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot21)
     } else if(input$interResults == "Proyeksi Total Emisi"){
@@ -2026,7 +2145,9 @@ server <- function(input, output, session) {
     } else if(input$interResults == "Proyeksi Total Emisi"){
       return(NULL)
     }
-  }, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+      formatRound(columns=c(3:length(tables)),2)
+  }) #, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
 
   output$downloadTableInter <- downloadHandler(
     filename = input$interResults,
@@ -2081,7 +2202,7 @@ server <- function(input, output, session) {
     totalEmissionInv <- emissionInv[which(emissionInv$Year==yearIntervention),]$TotalEmission
     
     percentEm <- ((totalEmissionInv - totalEmissionBAU) / totalEmissionBAU) * 100 * -1 # minus as a contrast value
-    
+    percentEm <- round(percentEm,digits=2)
     valueBox(
       paste0(percentEm, " %"), "Persentase Penurunan Emisi", color="purple"
     )
@@ -2102,6 +2223,7 @@ server <- function(input, output, session) {
     totalGDPInv <- colSums(GDPvalues)
     
     percentGDP <- ((totalGDPInv - totalGDPBAU) / totalGDPBAU) * 100
+    percentGDP <- round(percentGDP,digits = 2)
     
     valueBox(
       paste0(percentGDP, " %"), "Persentase Pertumbuhan PDRB", color="yellow"
