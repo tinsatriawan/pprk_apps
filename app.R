@@ -22,6 +22,19 @@ header <- dashboardHeader(title="RED-CLUW", titleWidth = "300px")
 sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
   sidebarMenu(
     menuItem("Home", icon = icon("home"), tabName = "home"),
+    ###sidebar-setting###
+    menuItem("Pengaturan", icon = icon("check-circle"),
+                                       selectInput("categoryProvince", label = "Pilih provinsi", 
+                                                   choices = c("Nangroe Aceh Darussalam", "Sumatera Utara", "Sumatera Barat",
+                                                               "Riau","Jambi","Sumatera Selatan", "Bengkulu", "Lampung",
+                                                               "Kepulauan Riau", "Bangka Belitung")),
+                                       textInput("fullname", label = "Nama lengkap", value = "tuliskan nama anda",
+                                                 width = NULL, placeholder = NULL),
+                                       textInput("username", label = "Nama Pengguna", value = "masukkan nama pengguna tanpa spasi",
+                                                 width = NULL, placeholder = NULL),
+                                       passwordInput("password", label = "Masukkan password", value = "", width=NULL,placeholder=NULL),
+                                       actionButton("inputSetting", label = "Rekam")
+                                       ),
     ###sidebar-historis####
     menuItem("Historis", icon = icon("history"), 
               menuSubItem("Input", tabName = "pageOne"),
@@ -283,6 +296,27 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   # debug mode
   debugMode <- 1
+  
+  # ##AE ADD-1
+  # findem <- readRDS ("fin_dem")
+  # findemcom <-readRDS ("fin_dem_struc")
+  # addval <- readRDS ("add_val")
+  # addvalcom <- readRDS ("add_val_struc")
+  # sector <- readRDS ("sector")
+  # indem <- readRDS ("int_con")
+  # labour <- readRDS ("labour")
+  # readRDS ("I_A")
+  # readRDS ("GDP")
+  # readRDS ("Leontief")
+  # readRDS ("Linkages_table")
+  # readRDS ("multiplier")
+  # readRDS ("I_O_period")
+  # readRDS ("rtffile")
+  # readRDS ("prov_list")
+  
+  
+  
+  
   
   blackBoxInputs <- function(){
     inSector <- "input/input_tablesJambi/1_sector.csv"
