@@ -1,401 +1,146 @@
 ###*initiate library####
 library(shiny)
 library(shinydashboard)
-# library(shinyBS)
 library(shinyLP)
+# library(shinyBS)
+
 library(fmsb)
 library(ggplot2)
 library(plotly)
+library(dplyr)
+library(DT)
+library(formattable)
 #library(ggradar)
 # library(RColorBrewer)
-library(DT)
-library(dplyr)
-library(formattable)
-
 
 source("land.R")
 
-###*header####
-header <- dashboardHeader(title="RED-CLUW", titleWidth = "300px")
-
-###*sidebar####
-sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
-  sidebarMenu(
-    menuItem("Home", icon = icon("home"), tabName = "home"),
-    ###sidebar-setting###
-    menuItem("Pengaturan", icon = icon("check-circle"),
-                                       selectInput("categoryProvince", label = "Pilih provinsi", 
-                                                   choices = c("Nangroe Aceh Darussalam", "Sumatera Utara", "Sumatera Barat",
-                                                               "Riau","Jambi","Sumatera Selatan", "Bengkulu", "Lampung",
-                                                               "Kepulauan Riau", "Bangka Belitung")),
-                                       textInput("fullname", label = "Nama lengkap", value = "tuliskan nama anda",
-                                                 width = NULL, placeholder = NULL),
-                                       textInput("username", label = "Nama Pengguna", value = "masukkan nama pengguna tanpa spasi",
-                                                 width = NULL, placeholder = NULL),
-                                       passwordInput("password", label = "Masukkan password", value = "", width=NULL,placeholder=NULL),
-                                       actionButton("inputSetting", label = "Rekam")
-                                       ),
-    ###sidebar-historis####
-    menuItem("Historis", icon = icon("history"), 
-              menuSubItem("Input", tabName = "pageOne"),
-              menuSubItem("Results", tabName = "pageTwo"),
-              selectInput("categorySector", label="Kategori",
-                choices=c("Ekonomi", "Energi", "Limbah", "Lahan")
-              ),
-              conditionalPanel(
-                condition="input.categorySector=='Ekonomi'",
-                selectInput("pprkResults", label="Pilih output yang ingin ditampilkan",
-                  choices=c("PDRB", "Backward Linkage", "Forward Linkage", "Angka Pengganda Pendapatan Rumah Tangga", "Angka Pengganda Tenaga Kerja", "Angka Pengganda Output", 
-                            "Upah gaji", "Rasio Upah gaji per Surplus Usaha", "Pendapatan per kapita", "Perbandingan Angka Pengganda"
-                          )
-                )
-              ),
-              conditionalPanel(
-                condition="input.categorySector=='Energi'",
-                selectInput("pprkEnergy", label="Pilih output yang ingin ditampilkan",
-                  choices=c("Angka Pengganda Energi", "Koefisien Intensitas Energi", "Emisi dari Penggunaan Energi")
-                )
-              ),
-              conditionalPanel(
-                condition="input.categorySector=='Limbah'",
-                selectInput("pprkWaste", label="Pilih output yang ingin ditampilkan",
-                  choices=c("Angka Pengganda Buangan Limbah", "Koefisien Produk Limbah", "Emisi dari Limbah")
-                )
-              ),
-              conditionalPanel(
-                condition="input.categorySector=='Lahan'",
-                selectInput("pprkLand", label="Pilih output yang ingin ditampilkan",
-                  choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
-                )
-              )
-              # actionButton("ioTable", "Show I-O Table"),
-              # mainPanel(
-              #   bsModal("modalExample",
-              #           "I-O Table",
-              #           "ioTable",
-              #           size = "large",
-              #           div(style="overflow-x: scroll", tableOutput('tableIO'))
-              #           # downloadButton('downloadPlot', 'Download')
-              #           )
-              # )
-              # menuSubItem("I-O Table", tabName = "pageThree")
-    ),
-    ###sidebar-bau####
-    menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
-              menuSubItem("Input", tabName = "pageFour"),
-              sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
-              selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
-              selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
-              fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-              actionButton("buttonBAU", "Submit"),
-              menuSubItem("Results"),
-              selectInput("bauResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi",
-                                  "Proyeksi Intensitas Emisi"
-                                  )
-                        )
-    ),
-    ###sidebar-intervention####
-    menuItem("Skenario Intervensi", icon = icon("random"), 
-              menuSubItem("Input", tabName = "pageSeven"),
-              selectInput("interTableOutput",
-                        label="Pilih tipe intervensi",
-                        choices=c("Permintaan Akhir"
-                                  # "Tabel Satelit Sektor Energi",
-                                  # "Tabel Satelit Sektor Limbah"
-                                  )
-                        ),
-              textInput("scenarioName", "Nama skenario", value=""),
-              selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
-              uiOutput("selectizeSector"),
-              menuSubItem("Results", tabName = "pageEight")
-    )
-    # menuItem("Help", icon = icon("question-circle"), tabName="help")
-  )
-)
-
-###*body####
-body <- dashboardBody(
-  ###*tab-home####
-  tabItems(
-    tabItem(tabName = "home",
-      jumbotron(img(src="home.png"), " ", button = FALSE),
-      hr(),
-      fluidRow(
-        column(4, thumbnail_label(image = 'history.png', label = 'Historis',
-                                  content = 'Bagian pertama dari alat bantu ini menyediakan antar muka di mana pengguna dapat memasukkan data-data yang diperlukan. Setelah kebutuhan data dipenuhi, akan dihasilkan angka-angka dan indeks yang merupakan beberapa indikator umum ekonomi regional serta indikator PPRK, yakni emisi, upah dan gaji, dan jumlah kebutuhan tenaga kerja. Hasil-hasil tersebut tersaji dalam bentuk grafik dan tabel yang menunjukkan nilai total maupun nilai sektoral. Seluruh hasil tersebut dapat diunduh dan dianalisis lebih lanjut sesuai dengan kebutuhan pengguna.',
-                                  button_link = '#shiny-tab-pageOne', button_label = 'Click me')
-        ),
-        column(4, thumbnail_label(image = 'exchange.png', label = 'Skenario Bisnis Seperti Biasa',
-                                  content = 'Modul ini memuat fitur-fitur untuk membuat proyeksi dampak sosial, lingkungan, dan ekonomi di masa depan berdasarkan persentase pertumbuhan PDRB dambaan tahunan yang ditentukan oleh pengguna. Proyeksi dibangun berdasarkan asumsi bahwa pertumbuhan PDRB dicapai dengan meningkatkan permintaan akhir seluruh sektor penggerak ekonomi sebesar persentase peningkatan PDRB yang ditargetkan. Secara umum, Struktur ekonomi daerah dianggap tidak mengalami perubahan yang berarti. Atas dasar inilah, proyeksi dampak yang dihasilkan dapat dikatakan sebagai dampak dari Skenario Bisnis Seperti Biasa. Hasil-hasil proyeksi emisi dari sumber lain yang belum turut diperhitungkan (eksogen terhadap model ini) dapat diinput pada bagian ini.',
-                                  button_link = '#shiny-tab-pageFour', button_label = 'Click me')),
-        column(4, thumbnail_label(image = 'random.png', label = 'Skenario Intervensi',
-                                  content = 'Dampak sosial, ekonomi, dan lingkungan dari aksi mitigasi perubahan iklim yang dicanangkan dianalisis secara kuantitatif pada bagian ini. Dampak sosial, ekonomi, dan lingkungan dipicu oleh perubahan permintaan akhir (konsumsi) terhadap output satu atau lebih sektor ekonomi daerah yang merupakan konsekuensi dari suatu aksi mitigasi. Selain itu, perubahan nilai emisi akibat perubahan modus pemenuhan kebutuhan energi dan/atau pengelolaan limbah dihitung berdasarkan tabel input satelit baru yang menggambarkan kondisi setelah intervensi diterapkan.',
-                                  button_link = '#shiny-tab-pageSeven', button_label = 'Click me'))
-
-      )
-    ),
-    ###*tab-historis####
-    tabItem(tabName = "pageOne",
-            # h2("Page 1"),
-            selectInput("province", "Pilih provinsi:",
-                        list(`Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="Babel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="Kepri",
-                          "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="Sumbar", "Sumatera Selatan"="Sumsel", "Sumatera Utara"="Sumut"),
-                          `Tengah` = list("Bali"="Bali","Banten"="Banten", "Jawa Barat"="Jawa_Barat",
-                          "Jawa Tengah"="Jawa_Tengah","Jawa Timur"="Jawa_Timur","Kalimantan Barat"="Kalimantan_Barat",
-                          "Kalimantan Selatan"="Kalimantan_Selatan","Kalimantan Tengah"="Kalimantan_Tengah",
-                          "Nusa Tenggara Barat"="Nusa_Tenggara_Barat","Nusa Tenggara Timur"="Nusa_Tenggara_Timur","Yogyakarta"="DI_Yogyakarta"),
-                          `Timur` = list("Gorontalo"="Gorontalo", "Kalimantan Timur"="Kalimantan_Timur", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
-                          "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
-                          "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
-            ),
-              fluidRow(
-                column(width = 3,
-                  # box(title="Ekonomi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  #   fileInput("sector", "Tabel Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("intermediateDemand", "Tabel Permintaan Antara", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("finalDemandComponent", "Tabel Komponen Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("finalDemand", "Tabel Permintaan Akhir", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("addedValueComponent", "Tabel Komponen Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("addedValue", "Tabel Input Primer", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("labour", "Tabel Tenaga Kerja", buttonLabel="Browse...", placeholder="No file selected")
-                  # ),
-                  # box(title="Sektor Energy", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  #   fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="No file selected")
-                  # ),
-                  # box(title="Sektor Limbah", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                  #   fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  #   fileInput("emissionFactorLandWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="No file selected")
-                  # ),
-                  # fileInput("landTable", "Tabel Tipe Penggunaan Lahan per Sektor", buttonLabel="Browse...", placeholder="No file selected"),
-                  # fileInput("emissionFactorLandTable", "Faktor Emisi Lahan", buttonLabel="Browse...", placeholder="No file selected"),
-                  box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-                    numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
-                  )
-                  # actionButton("button", "Submit")
-                ),
-                column(width = 9,
-                  box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
-                    div(style="overflow-x: scroll", dataTableOutput('tableIO'))
-                )
-            ),
-            column(width = 9,
-              box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE,
-                div(style="overflow-x: scroll",dataTableOutput('SatelitTenagaKerja'))
-                       )
-                   ),
-            column(width = 9,
-              box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
-                div(style="overflow-x: scroll",dataTableOutput('SatelitEnergi'))
-                )
-              ),
-            column(width = 9,
-              box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
-                div(style="overflow-x: scroll",dataTableOutput('SatelitLimbah'))
-                )
-              )
-    )
-    ),
-    tabItem(tabName = "pageTwo",
-            # h2("Page 2"),
-            conditionalPanel(
-              condition="input.pprkResults=='Perbandingan Angka Pengganda'",
-              uiOutput("sectorSelection")
-            ),
-            conditionalPanel(
-              condition="input.pprkResults!='Pendapatan per kapita'",
-              plotlyOutput("plotlyResults")
-            ),
-            hr(),
-            fluidRow(
-              column(width=7,
-                box(width=NULL,
-                  div(style="overflow-x: scroll", dataTableOutput('tableResults')),
-                  downloadButton('downloadTable', 'Download Table (.csv)')
-                )
-              ),
-              column(width=5,
-                tags$div(id='placeholder'),
-                hr()
-              )
-            )
-    ),
-    ###*tab-bau####
-    tabItem(tabName = "pageFour",
-            conditionalPanel(
-              condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
-              uiOutput("yearSelection")
-            ),
-            plotlyOutput("plotlyResultsBAU"),
-            hr(),
-            fluidRow(
-              column(width=7,
-                box(width=NULL,
-                  dataTableOutput('tableResultsBAU'),
-                  downloadButton('downloadTableBAU', 'Download Table (.csv)')
-                )
-              ),
-              column(width=5,
-                tags$div(id='bauplaceholder'),
-                hr()
-              )
-            )
-            
-    ),
-    ###*tab-intervention####
-    tabItem(tabName = "pageSeven",
-            # render multiple num and slider
-            uiOutput("rowIntervention"),
-            hr(),
-            actionButton("buttonInter", "Submit")
-    ),
-    tabItem(tabName = "pageEight",
-            fluidRow(
-              valueBoxOutput(width=6, "percentOfEmRed"),
-              valueBoxOutput(width=6, "percentOfGDPGrowth")
-            ),
-            hr(),
-            plotlyOutput("curveEmRed"),
-            plotlyOutput("curveGDPGrowth"),
-            hr(),
-            selectInput("interResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi"
-                                  )
-                        ),
-            conditionalPanel(
-              condition="input.interResults!='Proyeksi Upah per Kapita' & input.interResults!='Proyeksi Total Emisi'",
-              uiOutput("yearSelectionInter")
-            ),
-            plotlyOutput("plotlyResultsInter"),
-            hr(),
-            fluidRow(
-              column(width=7,
-                box(width=NULL,
-                  dataTableOutput('tableResultsInter'),
-                  downloadButton('downloadTableInter', 'Download Table (.csv)')
-                )
-              ),
-              column(width=5,
-                tags$div(id='interplaceholder'),
-                hr()
-              )
-            )
-    )
-    # tabItem(tabName = "help",
-    #           tags$div(class = "header", checked = NA,
-    #           tags$p("Ini Help. Image letakkan di folder www"),
-    #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
-    #         )
-    # )
- )
-)
-
-
 ###*setup dashboard page####
-ui <- dashboardPage(
-  skin = 'blue', 
-  header,
-  sidebar,
-  body
-)
+ui <- source('interface.R')
 
 ###*define server#### 
 server <- function(input, output, session) {
   # debug mode
   debugMode <- 1
+
+  provList <- readRDS("data/provList")
+  # usersList <- load("")
   
-  # ##AE ADD-1
-  # findem <- readRDS ("fin_dem")
-  # findemcom <-readRDS ("fin_dem_struc")
-  # addval <- readRDS ("add_val")
-  # addvalcom <- readRDS ("add_val_struc")
-  # sector <- readRDS ("sector")
-  # indem <- readRDS ("int_con")
-  # labour <- readRDS ("labour")
-  # readRDS ("I_A")
-  # readRDS ("GDP")
-  # readRDS ("Leontief")
-  # readRDS ("Linkages_table")
-  # readRDS ("multiplier")
-  # readRDS ("I_O_period")
-  # readRDS ("rtffile")
-  # readRDS ("prov_list")
+  allDataPRov <- reactiveValues(
+    sector = NULL,
+    indem = NULL,
+    findem = NULL,
+    addval = NULL,
+    labour = NULL,
+    energy = NULL,
+    waste = NULL,
+    ef_energy = NULL,
+    ef_waste = NULL,
+    findemcom = NULL,
+    addvalcom = NULL,
+    population = NULL,
+    otherEm = NULL,
+    landDemand = NULL,
+    landDemand_prop = NULL,
+    I_A = NULL,
+    leontief = NULL,
+    GDPAll = NULL,
+    linkagesTable = NULL,
+    multiplierAll = NULL,
+    periodIO = NULL,
+    rtffile = NULL
+  )
   
-  
-  
-  
+  ###*user setting####
+  userAuth <- eventReactive(input$inputLogin, {
+    fullname <- input$fullname
+    username <- input$username
+    password <- input$password
+    selectedProv <- input$categoryProvince
+    
+    # if(password %in% provList$Password){
+    #   
+    # } else {
+    #   return(NULL)
+    # }
+    
+    datapath <- paste0("data/", selectedProv, "/")
+    
+    sector <- readRDS(paste0(datapath, "sector"))
+    indem <- readRDS(paste0(datapath, "indem"))
+    findem <- readRDS(paste0(datapath, "findem"))
+    addval <- readRDS(paste0(datapath, "addval"))
+    labour <- readRDS(paste0(datapath, "labour"))
+    energy <- readRDS(paste0(datapath, "energy"))
+    waste <- readRDS(paste0(datapath, "waste"))
+    ef_energy <- readRDS(paste0(datapath, "ef_energy"))
+    ef_waste <- readRDS(paste0(datapath, "ef_waste"))
+    findemcom <- readRDS(paste0(datapath, "findemcom"))
+    addvalcom <- readRDS(paste0(datapath, "addvalcom"))
+    population <- readRDS(paste0(datapath, "population"))
+    otherEm <- readRDS(paste0(datapath, "otherEm"))
+    landDemand <- readRDS(paste0(datapath, "landDemand"))
+    landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
+    I_A <- readRDS(paste0(datapath, "I_A"))
+    leontief <- readRDS(paste0(datapath, "leontief"))
+    GDPAll <- readRDS(paste0(datapath, "GDPAll"))
+    linkagesTable <- readRDS(paste0(datapath, "linkagesTable"))
+    multiplierAll <- readRDS(paste0(datapath, "multiplierAll"))
+    periodIO <- readRDS(paste0(datapath, "periodIO"))
+    rtffile <- readRDS(paste0(datapath, "rtffile"))
+    
+    listData <- list(
+      sector = as.data.frame(sector[,1]),
+      indem = indem,
+      findem = findem,
+      addval = addval,
+      labour = labour,
+      energy = energy,
+      waste = waste,
+      ef_energy = ef_energy,
+      ef_waste = ef_waste,
+      findemcom = findemcom,
+      addvalcom = addvalcom,
+      population = population,
+      otherEm = otherEm,
+      landDemand = landDemand,
+      landDemand_prop = landDemand_prop,
+      I_A = I_A,
+      leontief = leontief,
+      GDPAll = GDPAll,
+      linkagesTable = linkagesTable,
+      multiplierAll = multiplierAll,
+      periodIO = periodIO,
+      rtffile = rtffile
+    )
+    return(listData)
+  })
   
   blackBoxInputs <- function(){
-    io_folder <- input$province
-    print(io_folder)
+    allData <- userAuth()
     
-    # inSector <- paste0("Yumna/02 TENGAH/", io_folder, "/1_sector.csv")
-    # inIntermediateDemand <- "input/input_tablesJambi/2_intermediate_demand.csv"
-    # inFinalDemandComp <- "input/input_tablesJambi/3_final_demand_component.csv"
-    # inFinalDemand <- "input/input_tablesJambi/4_final_demand.csv"
-    # inAddedValueComp <- "input/input_tablesJambi/5_value_added_component.csv"
-    # inAddedValue <- "input/input_tablesJambi/6_value_added.csv"
-    # inLabour <- "input/input_tablesJambi/7_satellite_labour.csv"
-    # inEnergy <- "input/input_tablesJambi/8_satellite_energy.csv"
-    # inWaste <- "input/input_tablesJambi/9_satellite_waste.csv"
-    # inEmissionFactorEnergiTable <- "input/input_tablesJambi/10_emission_factor_energy.csv"
-    # inEmissionFactorLandWasteTable <- "input/input_tablesJambi/11_emission_factor_waste.csv"
-    
-    inSector <- paste0("Yumna/TENGAH/", io_folder, "/01_sektor.csv")
-    inIntermediateDemand <- paste0("Yumna/TENGAH/", io_folder, "/02_input_antara.csv")
-    inFinalDemandComp <- paste0("Yumna/TENGAH/", io_folder, "/03_komponen_permintaan_akhir.csv")
-    inFinalDemand<- paste0("Yumna/TENGAH/", io_folder, "/04_permintaan_akhir.csv")
-    inAddedValueComp<- paste0("Yumna/TENGAH/", io_folder, "/05_komponen_input_primer.csv")
-    inAddedValue<- paste0("Yumna/TENGAH/", io_folder, "/06_input_primer.csv")
-    inLabour<- paste0("Yumna/TENGAH/", io_folder, "/07_tenaga_kerja.csv")
-    inEnergy<- paste0("Yumna/TENGAH/", io_folder, "/08_satelit_energi.csv")
-    inWaste<- paste0("Yumna/TENGAH/", io_folder, "/09_satelit_limbah.csv")
-    inEmissionFactorEnergiTable<- paste0("Yumna/TENGAH/", io_folder, "/10_faktor_emisi_energi.csv")
-    inEmissionFactorLandWasteTable<- paste0("Yumna/TENGAH/", io_folder, "/11_faktor_emisi_limbah.csv")
-  
-    # inSector <- paste0("Yumna/TENGAH/", io_folder, "/1_sector.csv")
-    # inIntermediateDemand <- paste0("Yumna/TENGAH/", io_folder, "/2_intermediate_demand.csv")
-    # inFinalDemandComp <- paste0("Yumna/TENGAH/", io_folder, "/3_final_demand_component.csv")
-    # inFinalDemand<- paste0("Yumna/TENGAH/", io_folder, "/4_final_demand.csv")
-    # inAddedValueComp<- paste0("Yumna/TENGAH/", io_folder, "/5_value_added_component.csv")
-    # inAddedValue<- paste0("Yumna/TENGAH/", io_folder, "/6_value_added.csv")
-    # inLabour<- paste0("Yumna/TENGAH/", io_folder, "/7_satellite_labour.csv")
-    # inEnergy<- paste0("Yumna/TENGAH/", io_folder, "/8_satellite_energy.csv")
-    # inWaste<- paste0("Yumna/TENGAH/", io_folder, "/9_satellite_waste.csv")
-    # inEmissionFactorEnergiTable<- paste0("Yumna/TENGAH/", io_folder, "/10_emission_factor_energy.csv")
-    # inEmissionFactorLandWasteTable<- paste0("Yumna/TENGAH/", io_folder, "/11_emission_factor_waste.csv")
-
-    sector <- read.table(inSector, header=FALSE, sep=",")
-    indem <- read.table(inIntermediateDemand, header=FALSE, sep=",")
-    findem <- read.table(inFinalDemand, header=FALSE, sep=",")
-    addval <- read.table(inAddedValue, header=FALSE, sep=",")
-    labour <- read.table(inLabour, header=TRUE, sep=",")
-    energy <- read.table(inEnergy, header=TRUE, sep=",")
-    waste <- read.table(inWaste, header=TRUE, sep=",")
-    ef_energy <- read.table(inEmissionFactorEnergiTable, header=TRUE, sep=",")
-    ef_waste <- read.table(inEmissionFactorLandWasteTable, header=TRUE, sep=",")
-    findemcom <- read.table(inFinalDemandComp, header=FALSE, sep=",")
-    addvalcom <- read.table(inAddedValueComp, header=FALSE, sep=",")
+    sector <- allData$sector
+    indem <- allData$indem
+    findem <- allData$findem
+    addval <- allData$addval
+    labour <- allData$labour
+    energy <- allData$energy
+    waste <- allData$waste
+    ef_energy <- allData$ef_energy
+    ef_waste <- allData$ef_waste
+    findemcom <- allData$findemcom
+    addvalcom <- allData$addvalcom
+    population <- allData$population
+    otherEm <- allData$otherEm
+    landDemand <- allData$landDemand
+    landDemand_prop <- allData$landDemand_prop
+    I_A <- allData$I_A
+    leontief <- allData$leontief
+    GDPAll <- allData$GDPAll
+    linkagesTable <- allData$linkagesTable
+    multiplierAll <- allData$multiplierAll
+    periodIO <- allData$periodIO
+    rtffile <- allData$rtffile
     
     # Row explicit definition for Income (Wages & Salary)
     income_row <- 2
@@ -410,10 +155,6 @@ server <- function(input, output, session) {
     fin_con <- 1/(indem_colsum+addval_colsum)
     fin_con[is.infinite(fin_con)] <- 0
     tinput_invers <- diag(fin_con)
-    A <- indem_matrix %*% tinput_invers
-    I <- as.matrix(diag(dimensi))
-    I_A <- I-A
-    leontief <- solve(I_A)
     
     # Backward Linkage
     DBL <- colSums(leontief)
@@ -508,16 +249,15 @@ server <- function(input, output, session) {
                        waste=waste,
                        ef_waste=ef_waste,
                        ef_energy=ef_energy,
-                       income_per_capita=income_per_capita
+                       income_per_capita=income_per_capita,
+                       otherEm=otherEm,
+                       population=population
                     ) 
     return(list_table)
   }
   
   ###*historical input####
   allInputs <- eventReactive(input$button, {
-    # io_folder <- input$province
-    # print(io_folder)
-    
     inSector <- input$sector
     if(is.null(inSector))
       return(NULL)
@@ -1128,8 +868,8 @@ server <- function(input, output, session) {
   allInputsBAU <- eventReactive(input$buttonBAU, {
     if(debugMode){
       sec <- blackBoxInputs()
-      population <- read.table("input/input_tablesJambi/12_population.csv", header=TRUE, sep=",")
-      otherEm <- read.table("input/input_tablesJambi/13_emission_from_other.csv", header=TRUE, sep=",")
+      otherEm <- sec$otherEm
+      population <- sec$population
     } else {
       sec <- allInputs()
       inPopTable <- input$populationTable
@@ -1663,7 +1403,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     analysisResult <- sec$result
-    selectizeInput('selectMultiSector', 'Sektor', choices=list(
+    selectizeInput('selectMultiSector', 'Sektor terkait:', choices=list(
       Sektor=as.character(analysisResult$Sektor)
     ), multiple=TRUE)
   })
@@ -1732,7 +1472,7 @@ server <- function(input, output, session) {
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
           output[[i]] = tagList()
           output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Intervensi ", i), min=0, value=selectedSectorFinDemValue)
-          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" %", value=0, step=.5)
+          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" %", value=0, step=.01)
           
           observeEvent(input[[paste0("sliderInt", i)]][1], {
             percentRate <- input[[paste0("sliderInt", i)]][1]
