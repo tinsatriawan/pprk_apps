@@ -13,7 +13,7 @@ library(formattable)
 #library(ggradar)
 # library(RColorBrewer)
 
-source("land.R")
+# source("land.R")
 
 ###*setup dashboard page####
 ui <- source('interface.R')
@@ -24,7 +24,7 @@ server <- function(input, output, session) {
   debugMode <- 1
 
   provList <- readRDS("data/provList")
-  # usersList <- load("")
+  # usersList <- load("usersList")
   
   allDataPRov <- reactiveValues(
     sector = NULL,
@@ -79,8 +79,9 @@ server <- function(input, output, session) {
     addvalcom <- readRDS(paste0(datapath, "addvalcom"))
     population <- readRDS(paste0(datapath, "population"))
     otherEm <- readRDS(paste0(datapath, "otherEm"))
-    landDemand <- readRDS(paste0(datapath, "landDemand"))
-    landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
+    # landDemand <- readRDS(paste0(datapath, "landDemand"))
+    # landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
+    landtable <- readRDS(paste0(datapath, "landtable"))
     I_A <- readRDS(paste0(datapath, "I_A"))
     leontief <- readRDS(paste0(datapath, "leontief"))
     GDPAll <- readRDS(paste0(datapath, "GDPAll"))
@@ -103,8 +104,9 @@ server <- function(input, output, session) {
       addvalcom = addvalcom,
       population = population,
       otherEm = otherEm,
-      landDemand = landDemand,
-      landDemand_prop = landDemand_prop,
+      # landDemand = landDemand,
+      # landDemand_prop = landDemand_prop,
+      landtable = landtable,
       I_A = I_A,
       leontief = leontief,
       GDPAll = GDPAll,
@@ -132,8 +134,9 @@ server <- function(input, output, session) {
     addvalcom <- allData$addvalcom
     population <- allData$population
     otherEm <- allData$otherEm
-    landDemand <- allData$landDemand
-    landDemand_prop <- allData$landDemand_prop
+    # landDemand <- allData$landDemand
+    # landDemand_prop <- allData$landDemand_prop
+    landtable <- allData$landtable
     I_A <- allData$I_A
     leontief <- allData$leontief
     GDPAll <- allData$GDPAll
@@ -249,6 +252,7 @@ server <- function(input, output, session) {
                        waste=waste,
                        ef_waste=ef_waste,
                        ef_energy=ef_energy,
+                       landtable=landtable,
                        income_per_capita=income_per_capita,
                        otherEm=otherEm,
                        population=population
@@ -448,6 +452,7 @@ server <- function(input, output, session) {
     }
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
+    landtable <- sec$landtable
     graph <- data.frame(Sektor="", Analysis="")
     
     if(input$categorySector=="Ekonomi"){
@@ -591,7 +596,7 @@ server <- function(input, output, session) {
       removeUI(selector = '#pdrb')
       removeUI(selector = '#capita')
       if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        graph <- land_rc
+        graph <- subset(landtable, select=c(Sektor, Kategori, LRC))
         colnames(graph) <- c("Sektor", "Kategori", "LRC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
           geom_bar(colour="black", stat="identity")+ coord_flip() +
@@ -603,7 +608,7 @@ server <- function(input, output, session) {
         #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
         #          yaxis = list(title ="Sectors"))
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        graph <- land_pc
+        graph <- subset(landtable, select=c(Sektor, Kategori, LPC))
         colnames(graph) <- c("Sektor", "Kategori", "LPC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
           geom_bar(colour="black", stat="identity")+ coord_flip() +
@@ -650,6 +655,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     analysisResult <- sec$result
+    landtable <- sec$landtable
     
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
@@ -695,18 +701,18 @@ server <- function(input, output, session) {
       }
     } else if (input$categorySector=="Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
-        # removeUI(selector = '#plotlyResults')
-        tables <- land_dm
+        # removeUI(selector = '#plotlyResults') 
+        tables <- landtable
         tables
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        tables <- land_rc
+        tables <- subset(landtable, select=c(Sektor, Kategori, LRC))
         tables
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        tables <- land_pc
+        tables <- subset(landtable, select=c(Sektor, Kategori, LPC))
         tables
       } else {
         # removeUI(selector = '#plotlyResults')
-        tables <- land_demand
+        tables <- subset(landtable, select=c(Sektor, Total.kebutuhan.lahan))
         tables
       }
     } else {
@@ -776,6 +782,13 @@ server <- function(input, output, session) {
         }
       }
       write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
+    }
+  )
+  
+  output$downloadReport <- downloadHandler(
+    filename = "report.doc",
+    content = function(file){
+      done(rtffile)
     }
   )
   
@@ -941,7 +954,7 @@ server <- function(input, output, session) {
         
         order_cname <- names(impact$cons)[4:ncol(impact$cons)]
         em_f <- numeric()
-        for(m in 1: length(order_cname)){
+        for(m in 1:length(order_cname)){
           em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
         }
         em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
@@ -1471,8 +1484,8 @@ server <- function(input, output, session) {
           selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[i],]
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
           output[[i]] = tagList()
-          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Intervensi ", i), min=0, value=selectedSectorFinDemValue)
-          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" %", value=0, step=.01)
+          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Sektor ke-", i), min=0, value=selectedSectorFinDemValue)
+          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
           
           observeEvent(input[[paste0("sliderInt", i)]][1], {
             percentRate <- input[[paste0("sliderInt", i)]][1]
@@ -1480,7 +1493,7 @@ server <- function(input, output, session) {
             updateNumericInput(
               session,
               inputId=numOfInput[i],
-              label=paste0("Intervensi ", i),
+              label=paste0("Sektor ke-", i),
               value=valInv
             )
             values$finalDemandSeriesTableInv[i,  startCol] = valInv
@@ -1983,7 +1996,7 @@ server <- function(input, output, session) {
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
     
     cumSumBAU$Scenario<-"BAU"
-    cumSumInv$Scenario<-"INV"
+    cumSumInv$Scenario<-"AKSI"
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
@@ -2010,7 +2023,7 @@ server <- function(input, output, session) {
     cumSumInv <- cumsum(totalGDPInvPerYear)
     
     cumSumBAU$Scenario <- "BAU"
-    cumSumInv$Scenario <- "INV"
+    cumSumInv$Scenario <- "AKSI"
     
     colnames(cumSumBAU)[2] <- "CummulativeGDP"
     colnames(cumSumInv)[2] <- "CummulativeGDP"
@@ -2023,6 +2036,53 @@ server <- function(input, output, session) {
             ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
     ggplotly(gplot24)
   })
+  
+  # output$curveIntensityEmission <- renderPlotly({
+  #   resBAU <- allInputsBAU()
+  #   resInv <- allInputsInter()
+  #   
+  #   
+  #   emissionBAU <- resBAU$total_emission_table
+  #   emissionInv <- resInv$total_emission_table
+  #   
+  #   yearIntervention <- input$yearInter
+  #   
+  #   cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
+  #   cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
+  #   
+  #   cumSumBAU$Scenario<-"BAU"
+  #   cumSumInv$Scenario<-"AKSI"
+  #   
+  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+  #   
+  #   
+  #   gdpBAU <- resBAU$GDP_table
+  #   gdpInv <- resInv$GDP_table
+  #   
+  #   yearIntervention <- input$yearInter
+  #   
+  #   totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
+  #   totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
+  #   
+  #   cumSumBAU <- cumsum(totalGDPBAUPerYear)
+  #   cumSumInv <- cumsum(totalGDPInvPerYear)
+  #   
+  #   cumSumBAU$Scenario <- "BAU"
+  #   cumSumInv$Scenario <- "AKSI"
+  #   
+  #   colnames(cumSumBAU)[2] <- "CummulativeGDP"
+  #   colnames(cumSumInv)[2] <- "CummulativeGDP"
+  #   
+  #   cumSumBAU$Intensity <- cumSumBAU$CummulativeEmission
+  #   
+  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+  #   
+  #   gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
+  #           geom_line(aes(color=Scenario))+
+  #           geom_point(aes(color=Scenario))+
+  #           ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
+  #   ggplotly(gplot24)
+  # })
 }
 
 ###*run the apps#### 

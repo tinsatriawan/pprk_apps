@@ -64,7 +64,8 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                 selectInput("pprkLand", label="Pilih output yang ingin ditampilkan",
                   choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                 )
-              )
+              ),
+              downloadButton('downloadReport', 'Unduh Ringkasan')
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
@@ -239,6 +240,7 @@ body <- dashboardBody(
             hr(),
             plotlyOutput("curveEmRed"),
             plotlyOutput("curveGDPGrowth"),
+            # plotlyOutput("curveIntensityEmission"),
             hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
