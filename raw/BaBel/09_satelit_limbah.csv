@@ -1,0 +1,61 @@
+ID,Sektor,Total,Padat_Ditimbun_di_TPA ,Padat_Kompos,Padat_R3,Padat_waste_to_energy,Padat_dibakar_terbuka,Padat_tidak_terkelola ,Cair_septic_tank,Cair_MCK_plus,Cair_IPAL_Aerob,Cair_IPAL_Anaerob,Cair_tidak_terkelola,Cair_Biogas,Cair_Pengolahan_KIMIA,Cair_R3
+1,Padi,136428.832,0,42919.38,0,0,42919.38,50413.24,0,0,0,123.7824,53.0496,0,0,0
+2,Tanaman Bahan Makanan Lainnya,5900.9,0,0,1730.43,0,0,4037.67,0,0,0,92.96,39.84,0,0,0
+3,Sayur-Sayuran,4008.725,0,0,1074.3615,0,0,2506.8435,0,0,0,299.264,128.256,0,0,0
+4,Buah-Buahan,6024.111,0,0,1682.9325,0,0,3926.8425,0,0,0,290.0352,124.3008,0,0,0
+5,Tanaman Hortikultura Lainnya,1759.692,0,0,0,0,0,1725.58,0,0,0,23.8784,10.2336,0,0,0
+6,Kelapa Sawit,135461.26,0,0,24897.03,0,0,24897.03,0,0,0,35573.3048,50093.8952,0,0,0
+7,Lada,9358.048,0,0,1413.36,0,0,3297.84,0,0,0,3252.7936,1394.0544,0,0,0
+8,Karet,3034.81,0,0,781.515,0,0,1823.535,0,0,0,300.832,128.928,0,0,0
+9,Tanaman Perkebunan Lainnya,26.168,0,0,0.54,0,0,0.54,0,0,0,17.5616,7.5264,0,0,0
+10,Ternak dan Hasil-Hasilnya,5833.375,0,0,0,0,0,0,0,0,0,0,5833.375,0,0,0
+11,Unggas dan Hasil-Hasilnya serta Pemeliharaan Hewan Lainnya,2217.4266,0,0,517.94478,0,0,1208.53782,0,0,0,343.6608,147.2832,0,0,0
+12,"Jasa Pertanian, Kehutanan dan Perikanan",243.46428,4.04028,0,0,0,0,0,0,0,0,167.5968,71.8272,0,0,0
+13,Hasil Kehutanan dan Penebangan Kayu,291.10284,4.83084,0,0,0,0,0,0,0,0,200.3904,85.8816,0,0,0
+14,Ikan dan Hasil Perikanan Lainnya,3370.310501,0,0,82.4032506,0,0,82.4032506,0,0,0,2243.8528,961.6512,0,0,0
+15,Migas (tambang),94.56124,1.56924,0,0,0,0,0,0,0,0,65.0944,27.8976,0,0,0
+16,Bijih Timah,113576.3777,0,0,0,0,0,111468.7937,0,0,0,1475.3088,632.2752,0,0,0
+17,Hasil Tambang dan Galian Lainnya,868.62276,14.41476,0,0,0,0,0,0,0,0,597.9456,256.2624,0,0,0
+18,Produk industri Pengilangan Migas,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+19,Minyak Hewani dan Nabati,1865.71344,30.96144,0,0,0,0,0,0,0,0,1284.3264,550.4256,0,0,0
+20,"Krupuk, Getas, Kritcu dan Produk Makanan Lainnya yang Sejenis",60.58948,1.00548,0,0,0,0,0,0,0,0,41.7088,17.8752,0,0,0
+21,Makanan Lainnya,153.65388,2.54988,0,0,0,0,0,0,0,0,105.7728,45.3312,0,0,0
+22,Minuman,3.5794,0.0594,0,0,0,0,0,0,0,0,2.464,1.056,0,0,0
+23,Produk Tembakau,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+24,Tekstil dan Pakaian Jadi,10.02232,0.16632,0,0,0,0,0,0,0,0,6.8992,2.9568,0,0,0
+25,"Kulit, Barang dari Kulit dan Alas Kaki",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+26,"Kayu, Barang dari Kayu dan Gabus (Tidak Termasuk Furnitur) dan Barang Anyaman dari Bambu, Rotan dan Sejenisnya",72.36896,1.20096,0,0,0,0,0,0,0,0,49.8176,21.3504,0,0,0
+27,"Kertas, Barang dari Kertas dan Pencetakan, Reproduksi Media Rekamam",12.56044,0.20844,0,0,0,0,0,0,0,0,8.6464,3.7056,0,0,0
+28,"Bahan Kimia dan Barang dari Bahan Kimia, Farmasi, Produk obat Kimia dan Obat Tradisional",8.7858,0.1458,0,0,0,0,0,0,0,0,6.048,2.592,0,0,0
+29,"Karet, Barang dari Karet dan Plastik",7815.15,0,0,0,0,0,2605.05,0,0,0,0,5210.1,0,0,0
+30,Barang Galian Bukan Logam Lainnya,179.10016,2.97216,0,0,0,0,0,0,0,0,123.2896,52.8384,0,0,0
+31,Logam Dasar Mulia dan Logam Dasar Bukan Besi Lainnya,1684.01008,27.94608,0,0,0,0,0,0,0,0,1159.2448,496.8192,0,0,0
+32,"Logam Dasar Besi dan Baja, Barang dari Logam, Mesin dan Peralatannya, Komputer, Barang Elektronik dan Optik, Peralatan Listrik",187.105,3.105,0,0,0,0,0,0,0,0,128.8,55.2,0,0,0
+33,Mesin dan Perlengkapan Ytdl,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+34,"Kendaraan Bermotor, Trailer dan Semi Trailer, dan Alat Angkutan Lainnya",66.12128,1.09728,0,0,0,0,0,0,0,0,45.5168,19.5072,0,0,0
+35,Furnitur,15.68428,0.26028,0,0,0,0,0,0,0,0,10.7968,4.6272,0,0,0
+36,"Produk Pengolahan Lainnya, Jasa Reparasi dan Pemasangan",29.87172,0.49572,0,0,0,0,0,0,0,0,20.5632,8.8128,0,0,0
+37,"Listrik, Gas dan Produk Es",2.890607648,0,0.021606752,2.826726816,0,0,0.04227408,0,0,0,0,0,0,0,0
+38,"Pengadaan Air, Pengelolaan Sampah, Limbah dan Daur Ulang",1846.778,0,0,1825.146,0,0,0,0,0,0,15.1424,6.4896,0,0,0
+39,Konstruksi dan Jasa Konstruksi,7365.7544,122.2344,0,0,0,0,0,0,0,0,5070.464,2173.056,0,0,0
+40,"Perdagangan Mobil, Sepeda Motor dan Reparasinya",32.60508,0.54108,0,0,0,0,0,0,0,0,22.4448,9.6192,0,0,0
+41,Perdagangan Selain Mobil dan Sepeda Motor,154.17452,2.55852,0,0,0,0,0,0,0,0,106.1312,45.4848,0,0,0
+42,Jasa Angkutan Darat,102554.4532,510.22116,0,0,0,0,0,0,0,0,71430.9624,30613.2696,0,0,0
+43,Jasa Angkutan Laut,2453124.266,12.26556,0,0,0,0,0,0,0,0,1717178.4,735933.6,0,0,0
+44,"Jasa Angkutan Sungai, Danau dan Penyebrangan",14.57792,0.24192,0,0,0,0,0,0,0,0,10.0352,4.3008,0,0,0
+45,Jasa Angkutan Udara,196379.8682,271.74336,0,0,0,0,0,0,0,98054.0624,68615.1984,29438.864,0,0,0
+46,"Pergudangan dan Jasa Penunjang Angkutan, Pos dan Kurir",89.22468,1.48068,0,0,0,0,0,0,0,0,61.4208,26.3232,0,0,0
+47,Jasa Penyediaan Akomodasi,19.1986,0.3186,0,0,0,0,0,0,0,0,13.216,5.664,0,0,0
+48,Jasa Penyediaan Makan Minum,405.96904,6.73704,0,0,0,0,0,0,0,0,279.4624,119.7696,0,0,0
+49,Informasi dan Komunikasi,233.41504,2.50884,0,0,0,0,0,115.4531,0,0,80.8404,34.6127,0,0,0
+50,Jasa Keuangan Perbankan,197.2227,1.6362,0,0.303,0,0.6666,0.6969,0,0,0,135.744,58.176,0,0,0
+51,Jasa Asuransi dan Dana Pensiun,20.56844,0.17064,0,0.0316,0,0.06952,0.07268,0,0,0,14.1568,6.0672,0,0,0
+52,Jasa Lembaga Keuangan Lainnya,92.62307,0.76842,0,0.1423,0,0.31306,0.32729,0,0,0,63.7504,27.3216,0,0,0
+53,Jasa Real Estat,620.66796,0,0,0,0,0,10.29996,0,0,0,427.2576,183.1104,0,0,0
+54,Jasa Perusahaan dan Jasa Persewaan,86.42624,0,0,0,0,0,1.43424,0,0,0,59.4944,25.4976,0,0,0
+55,"Jasa Agen Perjalanan, Penyelenggaraan Tur dan Jasa Reservasi Lainnya",34.8178,0,0,0,0,0,0.5778,0,0,0,23.968,10.272,0,0,0
+56,Jasa Pemerintahan Umum,4169.79558,34.59348,0,6.4062,0,14.09364,14.73426,0,0,0,2869.9776,1229.9904,0,0,0
+57,Jasa Pendidikan,1428.0746,11.8476,0,2.194,0,4.8268,5.0462,0,0,0,982.912,421.248,0,0,0
+58,Jasa Kesehatan dan Kegiatan Sosial,511.47722,4.24332,0,0.7858,0,1.72876,1.80734,0,0,0,352.0384,150.8736,0,0,0
+59,"Jasa Kesenian, Hiburan, dan Rekreasi",49.74255,0.13914,0,0.02319,0,0.05411,0.05411,0,0,0,34.6304,14.8416,0,0,0
+60,Jasa Perorangan yang Melayani Rumah Tangga,218.24677,1.81062,0,0.3353,0,0.73766,0.77119,0,0,0,150.2144,64.3776,0,0,0

@@ -1,0 +1,54 @@
+ID,Sektor,Labour
+1,Tanaman Pangan ,247009
+2,Tanaman Hortikultura ,110052
+3,Perkebunan ,165181
+4,Peternakan ,156674
+5,"Jasa Pertanian, dan Perburuan",18554
+6,Kehutanan dan Penebangan Kayu,10118
+7,Perikanan,228616
+8,Pertambangan Minyak & Gas Bumi,39518
+9,Pertambangan Batubara dan Lignit,0
+10,Pertambangan Bijih Logam,1426
+11,Pertambangan dan Penggalian Lainnya,64625
+12,Industri Batubara dan Pengilangan Migas,953
+13,Industri Makanan dan Minuman,523382
+14,Industri Pengolahan Tembakau,4
+15,Industri Tekstil dan Pakaian Jadi,1959
+16,"Industri Kulit, Barang dari Kulit dan Alas Kaki",0
+17,"Industri Kayu, Barang dari Kayu dan Gabus dan Barang Anyaman dari Bambu, Rotan dan Sejenisnya",20876
+18,"Industri Kertas dan Barang dari Kertas, Percetakan dan Reproduksi Media Rekaman",4424
+19,"Industri Kimia, Farmasi dan Obat Tradisional",55517
+20,"Industri Karet, Barang dari Karet dan Plastik",104777
+21,Industri Barang Galian bukan Logam,36353
+22,Industri Logam Dasar ,611
+23,"Industri Barang dari Logam, Komputer, Barang Elektronik, Optik dan Peralatan Listrik",5034
+24,Industri Mesin dan Perlengkapan YTDL,22684
+25,Industri Alat Angkutan,674
+26,Industri Furnitur,11319
+27,"Industri pengolahan lainnya, jasa reparasi dan pemasangan mesin dan peralatan",1302
+28,Ketenagalistrikan ,4364
+29,Gas,181
+30,Pengadaan Air,10526
+31,Konstruksi Gedung,91341
+32,Konstruksi Bangunan Sipil,124447
+33,Konstruksi Khusus,61375
+34,Perdagangan Besar dan Eceran,384137
+35,Angkutan Rel,5555
+36,Angkutan Darat,136238
+37,Angkutan Laut,12271
+38,Angkutan Sungai Danau dan Penyeberangan,19853
+39,Angkutan Udara,6410
+40,"Pergudangan dan Jasa Penunjang Angkutan, Pos dan Kurir",11589
+41,Penyediaan Akomodasi ,3883
+42,Penyediaan Makan Minum,49546
+43,Informasi dan Komunikasi,105548
+44,Bank,53506
+45,Asuransi dan Dana Pensiun,3812
+46,Jasa Keuangan Lainnya,6262
+47,Jasa Penunjang Keuangan,46
+48,Real Estate,70392
+49,Jasa Perusahaan,12733
+50,"Administrasi Pemerintahan, Pertahanan dan Jaminan Sosial Wajib",444143
+51,Jasa Pendidikan,153081
+52,Jasa Kesehatan dan Kegiatan Sosial,94066
+53,Jasa lainnya,40129

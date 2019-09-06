@@ -1,0 +1,71 @@
+ID,Sektor,Labour
+1,Padi,16764
+2,Jagung,3601
+3,Ketela Pohon,1994
+4,Ketela Rambat,368
+5,Kacang Tanah,212
+6,Kacang Kedelai,627
+7,Kentang,2569
+8,Sayur-sayuran,5612
+9,Buah-buahan,6780
+10,Tanaman bahan makanan lainnya,506
+11,Karet,20154
+12,Kopi,5743
+13,Kelapa Sawit,6229
+14,Kelapa Dalam,1344
+15,Kayu Manis,11790
+16,Pinang,141
+17,Tanaman perkebunan lainnya,2330
+18,Ternak besar dan hasil-hasilnya,1240
+19,Ternak kecil dan hasil-hasilnya,525
+20,Ayam buras,2574
+21,Ayam Ras,4034
+22,Unggas lainnya,2657
+23,Telur,1509
+24,Kayu Bulat,11066
+25,Hasil hutan lainnya,1402
+26,Udang,977
+27,Perikanan laut lainnya,3839
+28,Perairan Umum,129
+29,Budidaya,707
+30,Pertambangan migas,46544
+31,Pertambangan non migas,7429
+32,Penggalian,2326
+33,Industri Pengilangan Migas,3638
+34,Industri Minyak Kelapa,10420
+35,Industri CPO,50527
+36,"Industri penggilingan, Padi, Biji-bijian dan tepung",25215
+37,Industri makanan lainnya,30595
+38,Industri minuman,185
+39,"Industri tekstil, barang dari kulit dan alas kaki",1450
+40,Industri penggergajian dan pengolahan kayu,2836
+41,Industri kayu lapis dan sejenisnya,24488
+42,Industri bahan dan perabot dari kayu,6870
+43,Industri karet dan barang dari karet dan barang plastik,38223
+44,Industri Kertas dan barang dari kertas,3488
+45,Industri Kimia,900
+46,Industri pupuk,903
+47,Industri barang mineral bukan logam,29924
+48,"Industri barang dari logam, mesin-mesin dan peralatannya",25300
+49,Industri barang lainnya,1838
+50,Listrik,9804
+51,Air Minum,20325
+52,Bangunan,201734
+53,Perdagangan,51040
+54,Hotel,10880
+55,Restoran,11793
+56,Angkutan jalan raya,35065
+57,Angkutan laut,5333
+58,Angkutan sungai dan danau,6504
+59,Angkutan udara,11573
+60,Jasa penunjang Angkutan,5402
+61,Komunikasi,7951
+62,Bank,27362
+63,Asuransi,2497
+64,Lembaga Keuangan,10620
+65,Jasa persewaan,3978
+66,Jasa perusahaan,18090
+67,Pemerintahan Umum dan pertahanan,213846
+68,Jasa Sosial Kemasyarakatan,48881
+69,Jasa lainnya,38278
+70,Kegiatan yang tidak jelas batasannya,389
