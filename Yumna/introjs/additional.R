@@ -1,5 +1,4 @@
 ###DIGIT DECIMAL AND SEPARATOR###
-
 test <- c(1209940.2929,2823773.014,47474821.34433)
 dtest<- format(round(as.numeric(test), 2), nsmall=2, big.mark=",")
 dftest <- as.data.frame(dtest)
