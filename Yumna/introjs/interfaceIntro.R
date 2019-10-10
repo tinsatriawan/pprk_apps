@@ -59,13 +59,13 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                            data.intro = "Atur jumlah populasi pada provinsi Anda"),
                                          
                                          introBox(menuSubItem("Results", tabName = "pageTwo"),
-                                                  data.step = 17,
+                                                  data.step = 14,
                                                   data.intro = "Klik 'Result' untuk menampilkan hasil"),
                                          introBox(
                                            selectInput("categorySector", label="Kategori",
                                                      choices=c("Ekonomi", "Energi", "Limbah", "Lahan")
                                          ),
-                                         data.step = 15,
+                                         data.step = 12,
                                          data.intro = "Pilihlah satu kategori yang Anda ingin tampilkan"),
                                          introBox(
                                            conditionalPanel(
@@ -94,40 +94,40 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                                        choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                                            )
                                          ),
-                                         data.step = 16,
+                                         data.step = 13,
                                          data.intro = "Pilih output yang ingin Anda ditampilkan "),
                                          introBox(
                                            downloadButton('downloadReport', 'Unduh Ringkasan'),
-                                           data.step = 18,
+                                           data.step = 15,
                                            data.intro = "Klik tombol ini untuk mengunduh ringkasan")
                                 ),
                                 ###sidebar-bau####
                                 menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
                                          introBox(
                                            menuSubItem("Input", tabName = "pageFour"),
-                                           data.step = 24,
+                                           data.step = 21,
                                            data.intro = "Klik 'Input' untuk menampilkan hasil"),
                                          introBox(
                                            sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
-                                           data.step = 20,
+                                           data.step = 17,
                                            data.intro = "Masukkan angka persenan laju peningkatan GDP"),
                                          introBox(
                                          selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
-                                         data.step = 21,
+                                         data.step = 18,
                                          data.intro = "Pilih tahun awal"),
                                          introBox(
                                          selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
-                                         data.step = 22,
+                                         data.step = 19,
                                          data.intro = "Pilih tahun akhir"),
                                          # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
                                          # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
                                          introBox(
                                            actionButton("buttonBAU", "Submit"),
-                                           data.step = 23,
+                                           data.step = 20,
                                            data.intro = "Klik tombol ini"),
                                          introBox(
                                            menuSubItem("Results"),
-                                           data.step = 26,
+                                           data.step = 23,
                                            data.intro = "Klik 'Result' untuk menampilkan hasil"),
                                          introBox(
                                            selectInput("bauResults",
@@ -144,13 +144,13 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                                                "Proyeksi Intensitas Emisi"
                                                      )
                                          ),
-                                         data.step = 25,
+                                         data.step = 22,
                                          data.intro = "Pilih output yang ingin Anda tampilkan")),
                                 ###sidebar-intervention####
                                 menuItem("Skenario Intervensi", icon = icon("random"), 
                                          introBox(
                                            menuSubItem("Input", tabName = "pageSeven"),
-                                           data.step = 32,
+                                           data.step = 29,
                                            data.intro = "Klik 'Input' untuk menentukan perubahan permintaan akhir dari sektor terkait"),
                                          introBox(
                                            selectInput("interTableOutput",
@@ -160,23 +160,23 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                                                # "Tabel Satelit Sektor Limbah"
                                                      )
                                          ),
-                                         data.step = 28,
+                                         data.step = 25,
                                          data.intro = "Tentukan tipe intervensi yang Anda inginkan"),
                                          introBox(
                                            textInput("scenarioName", "Nama aksi:", value=""),
-                                           data.step = 29,
+                                           data.step = 26,
                                            data.intro = "Tuliskan nama aksi yang Anda inginkan"),
                                          introBox(
                                            selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
-                                           data.step = 30,
+                                           data.step = 27,
                                            data.intro = "Tentukan tahun awal yang Anda inginkan untuk intervensi"),
                                          introBox(
                                            uiOutput("selectizeSector"),
-                                           data.step = 31,
+                                           data.step = 28,
                                            data.intro = "Tentukan sektor apa saja yang terkait"),
                                          introBox(
                                            menuSubItem("Results", tabName = "pageEight"),
-                                           data.step = 35,
+                                           data.step = 32,
                                            data.intro = "Klik 'Result' untuk menampilkan hasil")
                                 ),
                                 menuItem("Help", icon = icon("question-circle"), tabName="help",
@@ -192,9 +192,9 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                               data.intro = "Klik Menu 'Pengaturan', lalu klik 'Lanjut' disini"),
                               data.step = 8,
                               data.intro = "Klik Menu 'Historis' untuk menampilkan tabel, lalu klik 'Lanjut' disini"),
-                              data.step = 19 ,
+                              data.step = 16,
                               data.intro = "Klik Menu 'Skenario Bisnis Seperti Biasa', lalu klik 'Lanjut' disini"),
-                              data.step = 27 ,
+                              data.step = 24,
                               data.intro = "Klik Menu 'Skenario Intervensi', lalu klik 'Lanjut' disini")
 ))
 
@@ -253,32 +253,26 @@ body <- dashboardBody(
                          div(style="overflow-x: scroll", dataTableOutput('tableIO'))
                      )
               ),
-              data.step = 11,
-              data.intro = "Ini merupakan tabel IO untuk provinsi yang Anda pilih"),
               
-              introBox(column(width = 12,
+              column(width = 12,
                      box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE,
                          div(style="overflow-x: scroll", dataTableOutput('SatelitTenagaKerja'))
                      )
               ),
-              data.step = 12,
-              data.intro = "Ini merupakan tabel Satelit Tenaga Kerja untuk provinsi yang Anda pilih"),
               
-              introBox(column(width = 12,
+              column(width = 12,
                      box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
                          div(style="overflow-x: scroll", dataTableOutput('SatelitEnergi'))
                      )
               ),
-              data.step = 13,
-              data.intro = "Ini merupakan tabel Satelit Energi untuk provinsi yang Anda pilih"),
               
-              introBox(column(width = 12,
+              column(width = 12,
                      box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
                          div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
                      )
               ),
-              data.step = 14,
-              data.intro = "Ini merupakan tabel Satelit Limbah untuk provinsi yang Anda pilih")
+              data.step = 11,
+              data.intro = "Ini merupakan tabel IO dan tabel Satelit untuk provinsi yang Anda pilih")
             )
     ),
     tabItem(tabName = "pageTwo",
@@ -331,12 +325,12 @@ body <- dashboardBody(
             # render multiple num and slider
             introBox(
               uiOutput("rowIntervention"),
-              data.step = 33,
+              data.step = 30,
               data.intro = "Tentukan nilai persenan untuk setiap sektor terkait"),
             hr(),
             introBox(
             actionButton("buttonInter", "Submit"),
-            data.step = 34,
+            data.step = 31,
             data.intro = "Klik tombol ini")
     ),
     tabItem(tabName = "pageEight",
