@@ -859,6 +859,8 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     labour <- sec$labour
+    # labour$ID <- NULL
+    # labour
   })
   
   output$SatelitEnergi <- renderDataTable({
