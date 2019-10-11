@@ -1,12 +1,11 @@
-navbarPage(title = "RED-CLUWE", theme = shinytheme("darkly"), id="redcluwe",
-           introjsUI(),
+navbarPage(title = "RED-CLUWE", theme = shinytheme("yeti"), id="redcluwe",
+           # introjsUI(),
            ###Home###
-           fluidRow(
-             introBox(
+           # introBox(
              tabPanel("Home", value = "tabHome",
                     jumbotron("RED-CLUWE", "Menampilkan tabel IO dan Satelit, membandingkan skenario BAU dan AKSI", button = FALSE)),
-                    data.step = 1,
-                    data.intro = "test")),
+                    # data.step = 1,
+                    # data.intro = "test"),
 navbarMenu("Pengaturan",
            tabPanel("Data Diri", icon = icon("database"),
                     selectInput("categoryProvince", label = "Pilih Provinsi:", 
@@ -21,13 +20,39 @@ navbarMenu("Pengaturan",
                                                              "Sulawesi Tenggara"="SulTra", "Sulawesi Barat"="SulBar", "Sulawesi Utara"="SulUt"))
                     ),                   textInput("nama", "Nama Lengkap", value = ""),
                    textInput("user", "Username", value = ""),
-                   textInput("pass", "Password", value = "")
+                   textInput("pass", "Password", value = ""),
+                   actionButton("inputLogin", label = "Masuk")
                    )),
 navbarMenu("Historis",
            tabPanel("Input", icon = icon("upload"),
-                    numericInput("populasi","Populasi Penduduk (Jiwa)", value = 1000000),
-                    actionButton("inputData", "Input")
-                    ),
+                    fluidRow(
+                      box(numericInput("populasi","Populasi Penduduk (Jiwa)", value = 1000000),
+                          actionButton("inputData", "Input")
+                          ),
+                      column(width = 12,
+                             box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE,
+                                 div(style="overflow-x: scroll", dataTableOutput('tableIO'))
+                             )
+                      ),
+                      
+                      column(width = 12,
+                             box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE,
+                                 div(style="overflow-x: scroll", dataTableOutput('SatelitTenagaKerja'))
+                             )
+                      ),
+                      
+                      column(width = 12,
+                             box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
+                                 div(style="overflow-x: scroll", dataTableOutput('SatelitEnergi'))
+                             )
+                      ),
+                      
+                      column(width = 12,
+                             box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
+                                 div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
+                             )
+                      )
+                          )),
            tabPanel("Result", icon = icon("edit"),
                     selectInput("kategori", "Kategori", choices = c(`Ekonomi`="Ekonomi", `Energi`="Energi", `Limbah`="Limbah", `Lahan`="Lahan")),
                     # conditionalPanel(
@@ -57,14 +82,14 @@ navbarMenu("Historis",
                     #   )
                     # ),
                     selectInput("output", "Pilih output yang ingin ditampilkan", choices = c(`PDRB`="PDRB",`Backward Lingkage`="BL")),
-                    actionButton("result", "Result"))
+                    actionButton("Results", "Result"))
            ),
 navbarMenu("Skenario Bisnis Seperti Biasa",
            tabPanel("Input", icon = icon("upload"),
                     sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
                     selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
                     selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2035),
-                    actionButton("submitData", "Submit")
+                    actionButton("buttonBAU", "Submit")
            ),
            tabPanel("Result", icon = icon("edit"),
                     selectInput("bauResults",
@@ -80,7 +105,7 @@ navbarMenu("Skenario Bisnis Seperti Biasa",
                                           "Proyeksi Total Emisi",
                                           "Proyeksi Intensitas Emisi"
                                 )),
-                    actionButton("result", "Result"))
+                    actionButton("Results", "Result"))
            ),
 navbarMenu("Skenario Intervensi",
            tabPanel("Input-Result", icon = icon("upload"),
@@ -93,7 +118,7 @@ navbarMenu("Skenario Intervensi",
                     ),
                     textInput("scenarioName", "Nama aksi:", value=""),
                     selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
-                    actionButton("inputData", "Input"),
-                    actionButton("result", "Result"))),
+                    actionButton("Input", "Input"),
+                    actionButton("Results", "Result"))),
 tabPanel("Petunjuk", value = "tabHelp",
          actionButton("help", "Klik untuk petunjuk")))
