@@ -502,7 +502,7 @@ server <- function(input, output, session) {
         insertUI(
           selector="#placeholder",
           ui = tags$div(
-            valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
+            valueBox(format(GDPTotal, nsmall = 1, big.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
             id='pdrb'
           )
         )
@@ -595,9 +595,12 @@ server <- function(input, output, session) {
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
         gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-          geom_bar(stat="identity", colour="black") + theme_minimal() +
+          geom_bar(stat="identity", colour="black") + theme_void() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
         ggplotly(gplot)
+        
+        # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
+        
         # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
         #   add_bars(orientation = 'h',name=~Sektor) %>%
         #   layout(barmode = 'stack',
@@ -621,7 +624,7 @@ server <- function(input, output, session) {
       
       colnames(graph) <- c("Sektor", "Analisis")
       gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-        geom_bar(colour="black", stat="identity") + theme_minimal() +
+        geom_bar(colour="black", stat="identity") + theme_void() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot1)
       # plot_ly(graph, x=~Nilai, y=~Sektor, fill=~Sektor) %>%
@@ -636,7 +639,7 @@ server <- function(input, output, session) {
         graph <- subset(landtable, select=c(Sektor, Kategori, LRC))
         colnames(graph) <- c("Sektor", "Kategori", "LRC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
-          geom_bar(colour="black", stat="identity")+ coord_flip() +
+          geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
           guides(fill=FALSE) + xlab("Sectors") + ylab("Koefisien Kebutuhan Lahan")
         ggplotly(gplot2)
         # plot_ly(graph, x=~LRC, y=~Sektor, fill=~Kategori) %>%
@@ -648,7 +651,7 @@ server <- function(input, output, session) {
         graph <- subset(landtable, select=c(Sektor, Kategori, LPC))
         colnames(graph) <- c("Sektor", "Kategori", "LPC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
-          geom_bar(colour="black", stat="identity")+ coord_flip() +
+          geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
           guides(fill=FALSE) + xlab("Sektor") + ylab("Koefisien Produktivitas Lahan")
         ggplotly(gplot2)
         # plot_ly(graph, x=~LPC, y=~Sektor, fill=~Kategori) %>%
@@ -674,7 +677,7 @@ server <- function(input, output, session) {
       
       colnames(graph) <- c("Sektor", "Analisis")
       gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-        geom_bar(colour="black", stat="identity") + theme_minimal() +
+        geom_bar(colour="black", stat="identity") + theme_void() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot3)
       # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
@@ -764,7 +767,7 @@ server <- function(input, output, session) {
         tables
       } 
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(1:length(tables)),2)
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
 
@@ -842,8 +845,9 @@ server <- function(input, output, session) {
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
     
-    io_table <- cbind(sector, indem)
-    colnames(io_table) <- c("Sektor", t(sector))
+    first_sector <- as.character(sector[,1])
+    io_table <- cbind(first_sector, indem)
+    colnames(io_table) <- c("Sektor", t(c(first_sector)))
     io_table$`Total Permintaan Antara` <- rowSums(indem)
     
     colnames(findem) <- c(t(findemcom))
@@ -875,7 +879,7 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
             formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)

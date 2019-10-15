@@ -182,6 +182,12 @@ body <- dashboardBody(
       )
     ),
     tabItem(tabName = "pageTwo",
+      fluidRow(
+        column(width=12,
+          tags$div(id='placeholder'),
+          hr()
+        )
+      ),
       conditionalPanel(
         condition="input.pprkResults=='Perbandingan Angka Pengganda'",
         uiOutput("sectorSelection")
@@ -192,15 +198,11 @@ body <- dashboardBody(
       ),
       hr(),
       fluidRow(
-        column(width=7,
+        column(width=12,
           box(width=NULL,
             div(style="overflow-x: scroll", dataTableOutput('tableResults')),
             downloadButton('downloadTable', 'Download Table (.csv)')
           )
-        ),
-        column(width=5,
-          tags$div(id='placeholder'),
-          hr()
         )
       )
     ),
