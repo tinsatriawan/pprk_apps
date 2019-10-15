@@ -4,6 +4,7 @@ library(shinydashboard)
 library(shinyLP)
 # library(shinyBS)
 
+# library(digest)
 library(fmsb)
 library(ggplot2)
 library(plotly)
@@ -26,7 +27,9 @@ server <- function(input, output, session) {
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
-  allDataPRov <- reactiveValues(
+  allDataProv <- reactiveValues(
+    username = NULL,
+    prov = NULL,
     sector = NULL,
     indem = NULL,
     findem = NULL,
@@ -40,15 +43,17 @@ server <- function(input, output, session) {
     addvalcom = NULL,
     population = NULL,
     otherEm = NULL,
-    landDemand = NULL,
-    landDemand_prop = NULL,
+    # landDemand = NULL,
+    # landDemand_prop = NULL,
     I_A = NULL,
     leontief = NULL,
     GDPAll = NULL,
     linkagesTable = NULL,
     multiplierAll = NULL,
     periodIO = NULL,
-    rtffile = NULL
+    rtffile = NULL,
+    bau_scenario = NULL,
+    prk_scenario = data.frame(time=NULL, action= NULL, year=NULL, username=NULL, provinsi=NULL, sector=NULL, fd_value=NULL)
   )
   
   ###*user setting####
@@ -63,8 +68,12 @@ server <- function(input, output, session) {
     # } else {
     #   return(NULL)
     # }
+    # usersList <- data.frame(id=NULL, fullname=NULL, username=NULL, password=NULL, provinsi=NULL)
     
     datapath <- paste0("data/", selectedProv, "/")
+    userFolder <- paste0(datapath, username)
+    if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
+    # system(paste0("chmod -R 777 ", userFolder))
     
     sector <- readRDS(paste0(datapath, "sector"))
     indem <- readRDS(paste0(datapath, "indem"))
@@ -89,6 +98,31 @@ server <- function(input, output, session) {
     multiplierAll <- readRDS(paste0(datapath, "multiplierAll"))
     periodIO <- readRDS(paste0(datapath, "periodIO"))
     rtffile <- readRDS(paste0(datapath, "rtffile"))
+    
+    allDataProv$username = username 
+    allDataProv$prov = selectedProv 
+    allDataProv$sector = sector 
+    allDataProv$indem = indem 
+    allDataProv$findem = findem 
+    allDataProv$addval = addval 
+    allDataProv$labour = labour 
+    allDataProv$energy = energy 
+    allDataProv$waste = waste 
+    allDataProv$ef_energy = ef_energy 
+    allDataProv$ef_waste = ef_waste 
+    allDataProv$findemcom = findemcom 
+    allDataProv$addvalcom = addvalcom 
+    allDataProv$population = population 
+    allDataProv$otherEm = otherEm 
+    # allDataProv$landDemand = landDemand 
+    # allDataProv$landDemand_prop = landDemand_prop 
+    allDataProv$I_A = I_A 
+    allDataProv$leontief = leontief 
+    allDataProv$GDPAll = GDPAll 
+    allDataProv$linkagesTable = linkagesTable 
+    allDataProv$multiplierAll = multiplierAll 
+    allDataProv$periodIO = periodIO 
+    allDataProv$rtffile = rtffile 
     
     listData <- list(
       sector = as.data.frame(sector[,1]),
@@ -115,6 +149,7 @@ server <- function(input, output, session) {
       periodIO = periodIO,
       rtffile = rtffile
     )
+    updateTabItems(session, "tabs", selected = "pageTwo")
     return(listData)
   })
   
@@ -433,6 +468,8 @@ server <- function(input, output, session) {
                     ) 
     list_table
   })
+  
+  output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$periodIO) })
   
   output$sectorSelection <- renderUI({
     if(debugMode){
@@ -1484,7 +1521,7 @@ server <- function(input, output, session) {
           selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[i],]
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
           output[[i]] = tagList()
-          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Sektor ke-", i), min=0, value=selectedSectorFinDemValue)
+          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Lapangan usaha ke-", i), min=0, value=selectedSectorFinDemValue)
           output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
           
           observeEvent(input[[paste0("sliderInt", i)]][1], {
@@ -1493,11 +1530,19 @@ server <- function(input, output, session) {
             updateNumericInput(
               session,
               inputId=numOfInput[i],
-              label=paste0("Sektor ke-", i),
+              label=paste0("Lapangan usaha ke-", i),
               value=valInv
             )
             values$finalDemandSeriesTableInv[i,  startCol] = valInv
           })          
+          
+          # prk_scen <- data.frame(time=Sys.time(), action=input$scenarioName, year=input$yearInter, username=allDataProv$username, provinsi=allDataProv$prov, sector=selectedSectorFinDem, fd_value=values$finalDemandSeriesTableInv[i,  startCol])
+          # prk_rds <- paste0("data/", allDataProv$prov, "/", allDataProv$username, "/prk")
+          # if(file.exists(prk_rds)){
+          #   prk<-readRDS(prk_rds)
+          #   prk_scen<-rbind(prk_scen, prk)
+          # } 
+          # saveRDS(prk_scen, prk_rds)
         }
         # lapply(1:lenSelSector, function(i){
         #   div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]))
@@ -1507,6 +1552,7 @@ server <- function(input, output, session) {
     # } else {
     }
     
+    # print(output)
     output
   })
   

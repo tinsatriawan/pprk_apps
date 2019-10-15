@@ -4,6 +4,7 @@ header <- dashboardHeader(title="RED-CLUWE", titleWidth = "300px")
 ###*sidebar####
 sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
   sidebarMenu(
+    id = "tabs",
     menuItem("Home", icon = icon("home"), tabName = "home"),
     ###sidebar-setting####
     menuItem("Pengaturan", icon = icon("check-circle"),
@@ -12,11 +13,11 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                              "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="SumBar", "Sumatera Selatan"="SumSel", "Sumatera Utara"="SumUt"),
                           `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "Jawa Barat"="JaBar",
                                           "Jawa Tengah"="JaTeng", "Jawa Timur"="JaTim", "Kalimantan Barat"="KalBar",
-                                          "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng",
+                                          "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", 
                                           "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT", "Yogyakarta"="DIY"),
-                          `Regional Timur` = list("Gorontalo"="Gorontalo", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", "Maluku"="Maluku", "Maluku Utara"="MalUt",
-                                         "Papua"="Papua", "Papua Barat"="PapuaBar", "Sulawesi Selatan"="SulSel", "Sulawesi Tengah"="SulTeng",
-                                         "Sulawesi Tenggara"="SulTra", "Sulawesi Barat"="SulBar", "Sulawesi Utara"="SulUt"))
+                          `Regional Timur` = list("Gorontalo"="Gorontalo", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
+                                         "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
+                                         "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
              ),
              textInput("fullname", label = "Nama Lengkap", placeholder = "Tuliskan nama anda"),
              textInput("username", label = "Nama Pengguna", placeholder = "Masukkan nama pengguna tanpa spasi"),
@@ -76,7 +77,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
               # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("buttonBAU", "Submit"),
-              menuSubItem("Results"),
+              menuSubItem("Results", tabName = "pageFive"),
               selectInput("bauResults",
                         label="Pilih output yang ingin ditampilkan",
                         choices=c("Proyeksi PDRB", 
@@ -157,7 +158,7 @@ body <- dashboardBody(
         #     div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
         #   )
         # )
-        
+        h3(textOutput("yearIO")),
         column(width = 12,
           box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE,
             div(style="overflow-x: scroll", dataTableOutput('tableIO'))
@@ -204,7 +205,7 @@ body <- dashboardBody(
       )
     ),
     ###*tab-bau####
-    tabItem(tabName = "pageFour",
+    tabItem(tabName = "pageFive",
         conditionalPanel(
           condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
           uiOutput("yearSelection")
@@ -226,7 +227,7 @@ body <- dashboardBody(
     ),
     ###*tab-intervention####
     tabItem(tabName = "pageSeven",
-            h2("Perubahan permintaan akhir dari sektor terkait"),
+            h2("Perubahan permintaan akhir dari lapangan usaha terkait"),
             # render multiple num and slider
             uiOutput("rowIntervention"),
             hr(),
