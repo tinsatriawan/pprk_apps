@@ -1839,8 +1839,6 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
     
-    final_results$tabel1<-mGDPoutput
-    
     list_intervensi <- list(GDP_table = mGDPOutput,
                             mGDPseries = mGDPseries,  
                             income_percapita_table = mIncomePerCapitaOutput,
@@ -2136,6 +2134,8 @@ server <- function(input, output, session) {
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
 
+    final_results$tabel1<-tblIntensity
+    
     gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
