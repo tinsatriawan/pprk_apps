@@ -66,7 +66,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                   choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                 )
               ),
-              downloadButton('downloadReport', 'Unduh Ringkasan')
+              downloadButton('downloadReport', 'Unduh Ringkasan', style="color: #fff; background-color: #00a65a; border-color: #008d4c")
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
@@ -246,6 +246,8 @@ body <- dashboardBody(
             plotlyOutput("curveEmRed"),
             plotlyOutput("curveGDPGrowth"),
             plotlyOutput("curveIntensityEmission"),
+            hr(),
+            downloadButton('downloadResults', 'Unduh Hasil Analisis', style="color: #fff; background-color: #00a65a; border-color: #008d4c"),
             hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",

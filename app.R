@@ -11,6 +11,7 @@ library(plotly)
 library(dplyr)
 library(DT)
 library(formattable)
+library(rtf)
 #library(ggradar)
 # library(RColorBrewer)
 
@@ -55,6 +56,8 @@ server <- function(input, output, session) {
     bau_scenario = NULL,
     prk_scenario = data.frame(time=NULL, action= NULL, year=NULL, username=NULL, provinsi=NULL, sector=NULL, fd_value=NULL)
   )
+  
+  final_results <- reactiveValues(table1=NULL, plot23=NULL, plot24=NULL, plot25=NULL)
   
   ###*user setting####
   userAuth <- eventReactive(input$inputLogin, {
@@ -828,7 +831,7 @@ server <- function(input, output, session) {
   output$downloadReport <- downloadHandler(
     filename = "report.doc",
     content = function(file){
-      done(rtffile)
+      file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
     }
   )
   
@@ -1836,6 +1839,8 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
     
+    final_results$tabel1<-mGDPoutput
+    
     list_intervensi <- list(GDP_table = mGDPOutput,
                             mGDPseries = mGDPseries,  
                             income_percapita_table = mIncomePerCapitaOutput,
@@ -2059,6 +2064,7 @@ server <- function(input, output, session) {
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             ggtitle("Grafik Proyeksi Nilai Emisi Kumulatif")
+    final_results$plot23<-gplot23
     ggplotly(gplot23)
   })
   
@@ -2089,6 +2095,7 @@ server <- function(input, output, session) {
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
+    final_results$plot24<-gplot24
     ggplotly(gplot24)
   })
   
@@ -2129,12 +2136,42 @@ server <- function(input, output, session) {
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
 
-    gplot24<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
+    gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             ggtitle("Grafik Proyeksi Intensitas Emisi")
-    ggplotly(gplot24)
+    final_results$plot25<-gplot25
+    ggplotly(gplot25)
   })
+  
+  output$downloadResults <- downloadHandler(
+    filename = paste0(allDataProv$prov, "_hasil.doc"),
+    content = function(file){
+      title <- "\\b\\fs32 Dokumen Hasil Analisis PPRK-D\\b0\\fs20"
+      fileresult = file.path(tempdir(), paste0(allDataProv$prov, "_hasil.doc"))
+      rtffile <- RTF(fileresult, font.size = 9)
+      addParagraph(rtffile, title)
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 1. Grafik Emisi Nilai Proyeksi Emisi Kumulatif\\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot23)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 2. Grafik Emisi Proyeksi Nilai PDRB Kumulatif\\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot24)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 3. Grafik Proyeksi Intensitas Emisi\\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot25)
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      addTable(rtffile, final_results$tabel1, font.size = 8)
+      addParagraph(rtffile, "\\b\\fs20 Table 1. Tabel PDRB\\b0\\fs20.")
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      done(rtffile)
+      
+      file.copy(fileresult, file)
+    }
+  )
 }
 
 ###*run the apps#### 
