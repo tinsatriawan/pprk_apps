@@ -208,6 +208,12 @@ body <- dashboardBody(
     ),
     ###*tab-bau####
     tabItem(tabName = "pageFive",
+        fluidRow(
+          column(width=12,
+            tags$div(id='bauplaceholder'),
+            hr()
+          )
+        ),
         conditionalPanel(
           condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
           uiOutput("yearSelection")
@@ -215,15 +221,11 @@ body <- dashboardBody(
         plotlyOutput("plotlyResultsBAU"),
         hr(),
         fluidRow(
-          column(width=7,
+          column(width=12,
             box(width=NULL,
               dataTableOutput('tableResultsBAU'),
               downloadButton('downloadTableBAU', 'Download Table (.csv)')
             )
-          ),
-          column(width=5,
-            tags$div(id='bauplaceholder'),
-            hr()
           )
         )
     ),
@@ -243,7 +245,7 @@ body <- dashboardBody(
             hr(),
             plotlyOutput("curveEmRed"),
             plotlyOutput("curveGDPGrowth"),
-            # plotlyOutput("curveIntensityEmission"),
+            plotlyOutput("curveIntensityEmission"),
             hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",

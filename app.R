@@ -149,7 +149,7 @@ server <- function(input, output, session) {
       periodIO = periodIO,
       rtffile = rtffile
     )
-    updateTabItems(session, "tabs", selected = "pageTwo")
+    updateTabItems(session, "tabs", selected = "pageOne")
     return(listData)
   })
   
@@ -845,9 +845,8 @@ server <- function(input, output, session) {
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
     
-    first_sector <- as.character(sector[,1])
-    io_table <- cbind(first_sector, indem)
-    colnames(io_table) <- c("Sektor", t(c(first_sector)))
+    io_table <- cbind(sector, indem)
+    colnames(io_table) <- c("Sektor", t(sector))
     io_table$`Total Permintaan Antara` <- rowSums(indem)
     
     colnames(findem) <- c(t(findemcom))
@@ -1250,7 +1249,7 @@ server <- function(input, output, session) {
       insertUI(
         selector="#bauplaceholder",
         ui = tags$div(
-          valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
+          valueBox(format(GDPTotal, nsmall = 1, big.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 8),
           id='baupdrb'
         )
       )
@@ -1340,11 +1339,12 @@ server <- function(input, output, session) {
       gplot12<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
       ggplotly(gplot12)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
+      removeUI(selector = '#baupdrb')
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
       GDP_all$emisi <- total_emission_table$TotalEmission
       GDP_all$intensitas <- GDP_all$PDRB / GDP_all$emisi
-      gplot13<-ggplot(data=GDP_all, aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+      gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
     
@@ -1390,7 +1390,7 @@ server <- function(input, output, session) {
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)
   }) #extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
 
@@ -1519,33 +1519,38 @@ server <- function(input, output, session) {
 
       if(lenSelSector != 0){
         numOfInput  = sapply(1:lenSelSector, function(i){ paste0("numInt", i) })
-        numOfSlider = sapply(1:lenSelSector, function(i){ paste0("sliderInt", i) })
+        # numOfSlider = sapply(1:lenSelSector, function(i){ paste0("sliderInt", i) })
 
         for(i in 1:lenSelSector){
           selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[i],]
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
           output[[i]] = tagList()
-          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Lapangan usaha ke-", i), min=0, value=selectedSectorFinDemValue)
-          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
+          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Lapangan usaha ke-", i, ": ", selectedSectorFinDem[, 1]), value=selectedSectorFinDemValue)
+          # output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
           
-          observeEvent(input[[paste0("sliderInt", i)]][1], {
-            percentRate <- input[[paste0("sliderInt", i)]][1]
-            valInv <- (percentRate / 100 * selectedSectorFinDemValue) + selectedSectorFinDemValue
-            updateNumericInput(
-              session,
-              inputId=numOfInput[i],
-              label=paste0("Lapangan usaha ke-", i),
-              value=valInv
-            )
+          # observeEvent(input[[paste0("sliderInt", i)]][1], {
+          #   percentRate <- input[[paste0("sliderInt", i)]][1]
+          #   valInv <- (percentRate / 100 * selectedSectorFinDemValue) + selectedSectorFinDemValue
+          #   updateNumericInput(
+          #     session,
+          #     inputId=numOfInput[i],
+          #     label=paste0("Lapangan usaha ke-", i),
+          #     value=valInv
+          #   )
+          #   values$finalDemandSeriesTableInv[i,  startCol] = valInv
+          # })          
+          
+          observeEvent(input[[paste0("numInt", i)]][1], {
+            valInv <- input[[paste0("numInt", i)]][1]
             values$finalDemandSeriesTableInv[i,  startCol] = valInv
-          })          
+          })   
           
           # prk_scen <- data.frame(time=Sys.time(), action=input$scenarioName, year=input$yearInter, username=allDataProv$username, provinsi=allDataProv$prov, sector=selectedSectorFinDem, fd_value=values$finalDemandSeriesTableInv[i,  startCol])
           # prk_rds <- paste0("data/", allDataProv$prov, "/", allDataProv$username, "/prk")
           # if(file.exists(prk_rds)){
           #   prk<-readRDS(prk_rds)
           #   prk_scen<-rbind(prk_scen, prk)
-          # } 
+          # }
           # saveRDS(prk_scen, prk_rds)
         }
         # lapply(1:lenSelSector, function(i){
@@ -1689,7 +1694,7 @@ server <- function(input, output, session) {
         mImpactWaste <- impactWaste[1:which(names(impactWaste) == paste0("y", startT+(tu-1)))]
       }
       mProjFinDem <- mfinalDemandSeriesTable[, tu+1]
-      mProjOutput <- leontief %*% mProjFinDem
+      mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
       mtOutputseries <- cbind(mtOutputseries, mProjOutput)
       # Time relevant colnames
       mProjT <- startT+tu
@@ -2046,7 +2051,7 @@ server <- function(input, output, session) {
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
     
     cumSumBAU$Scenario<-"BAU"
-    cumSumInv$Scenario<-"AKSI"
+    cumSumInv$Scenario<-input$scenarioName
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
@@ -2073,7 +2078,7 @@ server <- function(input, output, session) {
     cumSumInv <- cumsum(totalGDPInvPerYear)
     
     cumSumBAU$Scenario <- "BAU"
-    cumSumInv$Scenario <- "AKSI"
+    cumSumInv$Scenario <- input$scenarioName
     
     colnames(cumSumBAU)[2] <- "CummulativeGDP"
     colnames(cumSumInv)[2] <- "CummulativeGDP"
@@ -2087,52 +2092,49 @@ server <- function(input, output, session) {
     ggplotly(gplot24)
   })
   
-  # output$curveIntensityEmission <- renderPlotly({
-  #   resBAU <- allInputsBAU()
-  #   resInv <- allInputsInter()
-  #   
-  #   
-  #   emissionBAU <- resBAU$total_emission_table
-  #   emissionInv <- resInv$total_emission_table
-  #   
-  #   yearIntervention <- input$yearInter
-  #   
-  #   cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
-  #   cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
-  #   
-  #   cumSumBAU$Scenario<-"BAU"
-  #   cumSumInv$Scenario<-"AKSI"
-  #   
-  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-  #   
-  #   
-  #   gdpBAU <- resBAU$GDP_table
-  #   gdpInv <- resInv$GDP_table
-  #   
-  #   yearIntervention <- input$yearInter
-  #   
-  #   totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
-  #   totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
-  #   
-  #   cumSumBAU <- cumsum(totalGDPBAUPerYear)
-  #   cumSumInv <- cumsum(totalGDPInvPerYear)
-  #   
-  #   cumSumBAU$Scenario <- "BAU"
-  #   cumSumInv$Scenario <- "AKSI"
-  #   
-  #   colnames(cumSumBAU)[2] <- "CummulativeGDP"
-  #   colnames(cumSumInv)[2] <- "CummulativeGDP"
-  #   
-  #   cumSumBAU$Intensity <- cumSumBAU$CummulativeEmission
-  #   
-  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-  #   
-  #   gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
-  #           geom_line(aes(color=Scenario))+
-  #           geom_point(aes(color=Scenario))+
-  #           ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
-  #   ggplotly(gplot24)
-  # })
+  output$curveIntensityEmission <- renderPlotly({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+
+    emissionBAU <- resBAU$total_emission_table
+    emissionInv <- resInv$total_emission_table
+
+    yearIntervention <- input$yearInter
+
+    cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
+    cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
+
+    cumSumBAU$Scenario<-"BAU"
+    cumSumInv$Scenario<-input$scenarioName
+
+    tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+
+
+    gdpBAU <- resBAU$GDP_table
+    gdpInv <- resInv$GDP_table
+
+    yearIntervention <- input$yearInter
+
+    totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
+    totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
+
+    colnames(totalGDPBAUPerYear)[2] <- "CummulativeGDP"
+    colnames(totalGDPInvPerYear)[2] <- "CummulativeGDP"
+
+    intensityBAU <- merge(cumSumBAU, totalGDPBAUPerYear, by="Year")
+    intensityInv <- merge(cumSumInv, totalGDPInvPerYear, by="Year")
+
+    intensityBAU$intensitas <- intensityBAU$CummulativeGDP / intensityBAU$CummulativeEmission
+    intensityInv$intensitas <- intensityInv$CummulativeGDP / intensityInv$CummulativeEmission
+    
+    tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
+
+    gplot24<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
+            geom_line(aes(color=Scenario))+
+            geom_point(aes(color=Scenario))+
+            ggtitle("Grafik Proyeksi Intensitas Emisi")
+    ggplotly(gplot24)
+  })
 }
 
 ###*run the apps#### 
