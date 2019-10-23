@@ -5,6 +5,7 @@ library(shinyLP)
 # library(shinyBS)
 
 # library(digest)
+# library(rintrojs)
 library(fmsb)
 library(ggplot2)
 library(plotly)
@@ -1052,7 +1053,7 @@ server <- function(input, output, session) {
         eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
         eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
         eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
-        print("first year data load has been successfully conducted")
+        # print("first year data load has been successfully conducted")
       }
       projFinDem <- coef_grise * findem_series[, s]
       findem_series <- cbind(findem_series, projFinDem)
@@ -1590,6 +1591,7 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste  
+    GDP_rate <- sec$GDP_rate
     
     importRow <- 1
     incomeRow <- 2
@@ -1679,29 +1681,35 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers
+    coef_grise <- (100+GDP_rate)/100
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
+    
+    mGDPseries <- GDPseries[, 1:which(colnames(GDPseries) == paste0("y", startT+(stepInv-1)))]
+        
+    # colnames(mtOutputseries) <- colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))] # retain missing colnames
+    mtOutputseries <- tOutputSeries[, colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(stepInv-1)))]]
+    
+    mAddValueSeries <- addValueSeries[1:which(names(addValueSeries) == paste0("y", startT+(stepInv-1)))] # list can also be subsetted by using single square bracket
+    
+    mImpactLabour <- impactLabour[1:which(names(impactLabour) == paste0("y", startT+(stepInv-1)))] # list can also be subsetted by using single square bracket
+    mImpactEnergy <- impactEnergy[1:which(names(impactEnergy) == paste0("y", startT+(stepInv-1)))]
+    mImpactWaste <- impactWaste[1:which(names(impactWaste) == paste0("y", startT+(stepInv-1)))]
+    
     for(tu in stepInv:stepN){
-      if(tu == stepInv){
-        # GDP compile table
-        mGDPseries <- GDPseries[, 1:which(colnames(GDPseries) == paste0("y", startT+(tu-1)))]
-        
-        mtOutputseries <- tOutputSeries[, colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))]]
-        # colnames(mtOutputseries) <- colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))] # retain missing colnames
-        
-        mAddValueSeries <- addValueSeries[1:which(names(addValueSeries) == paste0("y", startT+(tu-1)))] # list can also be subsetted by using single square bracket
-        
-        mImpactLabour <- impactLabour[1:which(names(impactLabour) == paste0("y", startT+(tu-1)))] # list can also be subsetted by using single square bracket
-        mImpactEnergy <- impactEnergy[1:which(names(impactEnergy) == paste0("y", startT+(tu-1)))]
-        mImpactWaste <- impactWaste[1:which(names(impactWaste) == paste0("y", startT+(tu-1)))]
-      }
-      mProjFinDem <- mfinalDemandSeriesTable[, tu+1]
-      mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
-      mtOutputseries <- cbind(mtOutputseries, mProjOutput)
       # Time relevant colnames
       mProjT <- startT+tu
       mProjT <- paste0("y", mProjT)
+      
+      if(startT+tu == yearIntervention){
+        mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
+      } else {
+        mProjFinDem <- coef_grise * mfinalDemandSeriesTable[, mProjT]
+      }
+      mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
+      mtOutputseries <- cbind(mtOutputseries, mProjOutput)
+      
       # calculation of mAddValueSeries
       eval(parse(text=paste0("mAddValueSeries$", mProjT, " <-  coef_primary_input %*% diag(as.vector(mProjOutput), ncol = dimensi, nrow= dimensi)")))
       # calculation of mGDPseries
@@ -1713,7 +1721,6 @@ server <- function(input, output, session) {
       # calculation of mImpactWaste
       eval(parse(text= paste0("mImpactWaste$", mProjT, " <- mSatelliteImpact('waste', tbl_sat=waste, table_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_waste, yearInt=yearIntervention)")))
     }
-    
     
     mGDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
     for(c in 3:ncol(mGDPseries)){
@@ -2084,15 +2091,15 @@ server <- function(input, output, session) {
     cumSumBAU$Scenario <- "BAU"
     cumSumInv$Scenario <- input$scenarioName
     
-    colnames(cumSumBAU)[2] <- "CummulativeGDP"
-    colnames(cumSumInv)[2] <- "CummulativeGDP"
+    colnames(cumSumBAU)[2] <- "TotalGDP"
+    colnames(cumSumInv)[2] <- "TotalGDP"
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
-    gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
+    gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=TotalGDP, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
-            ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
+            ggtitle("Grafik Proyeksi Nilai PDRB")
     final_results$plot24<-gplot24
     ggplotly(gplot24)
   })
@@ -2123,14 +2130,14 @@ server <- function(input, output, session) {
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
 
-    colnames(totalGDPBAUPerYear)[2] <- "CummulativeGDP"
-    colnames(totalGDPInvPerYear)[2] <- "CummulativeGDP"
+    colnames(totalGDPBAUPerYear)[2] <- "TotalGDP"
+    colnames(totalGDPInvPerYear)[2] <- "TotalGDP"
 
     intensityBAU <- merge(cumSumBAU, totalGDPBAUPerYear, by="Year")
     intensityInv <- merge(cumSumInv, totalGDPInvPerYear, by="Year")
 
-    intensityBAU$intensitas <- intensityBAU$CummulativeGDP / intensityBAU$CummulativeEmission
-    intensityInv$intensitas <- intensityInv$CummulativeGDP / intensityInv$CummulativeEmission
+    intensityBAU$intensitas <- intensityBAU$TotalGDP / intensityBAU$CummulativeEmission
+    intensityInv$intensitas <- intensityInv$TotalGDP / intensityInv$CummulativeEmission
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
 
@@ -2156,7 +2163,7 @@ server <- function(input, output, session) {
       addParagraph(rtffile, "\\b\\fs20 Gambar 1. Grafik Emisi Nilai Proyeksi Emisi Kumulatif\\b0\\fs20.")
       addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot23)
       addNewLine(rtffile)
-      addParagraph(rtffile, "\\b\\fs20 Gambar 2. Grafik Emisi Proyeksi Nilai PDRB Kumulatif\\b0\\fs20.")
+      addParagraph(rtffile, "\\b\\fs20 Gambar 2. Grafik Emisi Proyeksi Nilai PDRB \\b0\\fs20.")
       addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot24)
       addNewLine(rtffile)
       addParagraph(rtffile, "\\b\\fs20 Gambar 3. Grafik Proyeksi Intensitas Emisi\\b0\\fs20.")

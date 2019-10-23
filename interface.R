@@ -113,7 +113,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
 )
 
 ###*body####
-body <- dashboardBody(
+body <- dashboardBody( #introjsUI(),
   ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
@@ -280,13 +280,13 @@ body <- dashboardBody(
                 hr()
               )
             )
-    )
-    # tabItem(tabName = "help",
+    ),
+    tabItem(tabName = "help"
     #           tags$div(class = "header", checked = NA,
     #           tags$p("Ini Help. Image letakkan di folder www"),
     #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
     #         )
-    # )
+    )
  )
 )
 
