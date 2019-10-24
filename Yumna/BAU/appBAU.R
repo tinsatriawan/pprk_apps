@@ -1,17 +1,21 @@
-###*initiate library####
 library(shiny)
 library(shinydashboard)
 library(shinyLP)
 # library(shinyBS)
 
+# library(digest)
+# library(rintrojs)
 library(fmsb)
 library(ggplot2)
 library(plotly)
 library(dplyr)
 library(DT)
 library(formattable)
+library(rtf)
 #library(ggradar)
 # library(RColorBrewer)
+
+library(rhandsontable)
 
 # source("land.R")
 
@@ -26,7 +30,9 @@ server <- function(input, output, session) {
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
-  allDataPRov <- reactiveValues(
+  allDataProv <- reactiveValues(
+    username = NULL,
+    prov = NULL,
     sector = NULL,
     indem = NULL,
     findem = NULL,
@@ -40,16 +46,20 @@ server <- function(input, output, session) {
     addvalcom = NULL,
     population = NULL,
     otherEm = NULL,
-    landDemand = NULL,
-    landDemand_prop = NULL,
+    # landDemand = NULL,
+    # landDemand_prop = NULL,
     I_A = NULL,
     leontief = NULL,
     GDPAll = NULL,
     linkagesTable = NULL,
     multiplierAll = NULL,
     periodIO = NULL,
-    rtffile = NULL
+    rtffile = NULL,
+    bau_scenario = NULL,
+    prk_scenario = data.frame(time=NULL, action= NULL, year=NULL, username=NULL, provinsi=NULL, sector=NULL, fd_value=NULL)
   )
+  
+  final_results <- reactiveValues(table1=NULL, plot23=NULL, plot24=NULL, plot25=NULL)
   
   ###*user setting####
   userAuth <- eventReactive(input$inputLogin, {
@@ -63,8 +73,12 @@ server <- function(input, output, session) {
     # } else {
     #   return(NULL)
     # }
+    # usersList <- data.frame(id=NULL, fullname=NULL, username=NULL, password=NULL, provinsi=NULL)
     
     datapath <- paste0("data/", selectedProv, "/")
+    userFolder <- paste0(datapath, username)
+    if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
+    # system(paste0("chmod -R 777 ", userFolder))
     
     sector <- readRDS(paste0(datapath, "sector"))
     indem <- readRDS(paste0(datapath, "indem"))
@@ -89,6 +103,31 @@ server <- function(input, output, session) {
     multiplierAll <- readRDS(paste0(datapath, "multiplierAll"))
     periodIO <- readRDS(paste0(datapath, "periodIO"))
     rtffile <- readRDS(paste0(datapath, "rtffile"))
+    
+    allDataProv$username = username 
+    allDataProv$prov = selectedProv 
+    allDataProv$sector = sector 
+    allDataProv$indem = indem 
+    allDataProv$findem = findem 
+    allDataProv$addval = addval 
+    allDataProv$labour = labour 
+    allDataProv$energy = energy 
+    allDataProv$waste = waste 
+    allDataProv$ef_energy = ef_energy 
+    allDataProv$ef_waste = ef_waste 
+    allDataProv$findemcom = findemcom 
+    allDataProv$addvalcom = addvalcom 
+    allDataProv$population = population 
+    allDataProv$otherEm = otherEm 
+    # allDataProv$landDemand = landDemand 
+    # allDataProv$landDemand_prop = landDemand_prop 
+    allDataProv$I_A = I_A 
+    allDataProv$leontief = leontief 
+    allDataProv$GDPAll = GDPAll 
+    allDataProv$linkagesTable = linkagesTable 
+    allDataProv$multiplierAll = multiplierAll 
+    allDataProv$periodIO = periodIO 
+    allDataProv$rtffile = rtffile 
     
     listData <- list(
       sector = as.data.frame(sector[,1]),
@@ -115,6 +154,7 @@ server <- function(input, output, session) {
       periodIO = periodIO,
       rtffile = rtffile
     )
+    updateTabItems(session, "tabs", selected = "pageOne")
     return(listData)
   })
   
@@ -434,6 +474,8 @@ server <- function(input, output, session) {
     list_table
   })
   
+  output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$periodIO) })
+  
   output$sectorSelection <- renderUI({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -465,7 +507,7 @@ server <- function(input, output, session) {
         insertUI(
           selector="#placeholder",
           ui = tags$div(
-            valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
+            valueBox(format(GDPTotal, nsmall = 1, big.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
             id='pdrb'
           )
         )
@@ -558,9 +600,12 @@ server <- function(input, output, session) {
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
         gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-          geom_bar(stat="identity", colour="black") + theme_minimal() +
+          geom_bar(stat="identity", colour="black") + theme_void() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
         ggplotly(gplot)
+        
+        # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
+        
         # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
         #   add_bars(orientation = 'h',name=~Sektor) %>%
         #   layout(barmode = 'stack',
@@ -584,7 +629,7 @@ server <- function(input, output, session) {
       
       colnames(graph) <- c("Sektor", "Analisis")
       gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-        geom_bar(colour="black", stat="identity") + theme_minimal() +
+        geom_bar(colour="black", stat="identity") + theme_void() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot1)
       # plot_ly(graph, x=~Nilai, y=~Sektor, fill=~Sektor) %>%
@@ -599,7 +644,7 @@ server <- function(input, output, session) {
         graph <- subset(landtable, select=c(Sektor, Kategori, LRC))
         colnames(graph) <- c("Sektor", "Kategori", "LRC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
-          geom_bar(colour="black", stat="identity")+ coord_flip() +
+          geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
           guides(fill=FALSE) + xlab("Sectors") + ylab("Koefisien Kebutuhan Lahan")
         ggplotly(gplot2)
         # plot_ly(graph, x=~LRC, y=~Sektor, fill=~Kategori) %>%
@@ -611,7 +656,7 @@ server <- function(input, output, session) {
         graph <- subset(landtable, select=c(Sektor, Kategori, LPC))
         colnames(graph) <- c("Sektor", "Kategori", "LPC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
-          geom_bar(colour="black", stat="identity")+ coord_flip() +
+          geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
           guides(fill=FALSE) + xlab("Sektor") + ylab("Koefisien Produktivitas Lahan")
         ggplotly(gplot2)
         # plot_ly(graph, x=~LPC, y=~Sektor, fill=~Kategori) %>%
@@ -637,7 +682,7 @@ server <- function(input, output, session) {
       
       colnames(graph) <- c("Sektor", "Analisis")
       gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
-        geom_bar(colour="black", stat="identity") + theme_minimal() +
+        geom_bar(colour="black", stat="identity") + theme_void() +
         coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
       ggplotly(gplot3)
       # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
@@ -727,7 +772,7 @@ server <- function(input, output, session) {
         tables
       } 
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(1:length(tables)),2)
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
   
@@ -788,7 +833,7 @@ server <- function(input, output, session) {
   output$downloadReport <- downloadHandler(
     filename = "report.doc",
     content = function(file){
-      done(rtffile)
+      file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
     }
   )
   
@@ -838,7 +883,7 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
       formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
@@ -1009,7 +1054,7 @@ server <- function(input, output, session) {
         eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
         eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
         eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
-        print("first year data load has been successfully conducted")
+        # print("first year data load has been successfully conducted")
       }
       projFinDem <- coef_grise * findem_series[, s]
       findem_series <- cbind(findem_series, projFinDem)
@@ -1185,6 +1230,27 @@ server <- function(input, output, session) {
     list_bau
   })
   
+  # output$tableGDPRate<- renderDataTable({
+  #   if(debugMode){
+  #     sec <- blackBoxInputs()
+  #   } else {
+  #     sec <- allInputs()
+  #   }
+  #   sektor <- sector
+  #   
+  # })
+  
+  output$OldIris <- renderRHandsontable({
+    rhandsontable(as.data.frame(iris))
+  })
+  
+  observeEvent(input$changeRate, {
+    
+    values$data <-  hot_to_r(input$OldIris)
+    print(values$data)
+    
+  })
+  
   output$yearSelection <- renderUI({
     selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
   })
@@ -1209,7 +1275,7 @@ server <- function(input, output, session) {
       insertUI(
         selector="#bauplaceholder",
         ui = tags$div(
-          valueBox(paste0(GDPTotal), "Juta Rupiah", icon = icon("credit-card"), width = 8),
+          valueBox(format(GDPTotal, nsmall = 1, big.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 8),
           id='baupdrb'
         )
       )
@@ -1299,11 +1365,12 @@ server <- function(input, output, session) {
       gplot12<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
       ggplotly(gplot12)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
+      removeUI(selector = '#baupdrb')
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
       GDP_all$emisi <- total_emission_table$TotalEmission
       GDP_all$intensitas <- GDP_all$PDRB / GDP_all$emisi
-      gplot13<-ggplot(data=GDP_all, aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+      gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
     
@@ -1349,7 +1416,7 @@ server <- function(input, output, session) {
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)
   }) #extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
   
@@ -1478,26 +1545,39 @@ server <- function(input, output, session) {
       
       if(lenSelSector != 0){
         numOfInput  = sapply(1:lenSelSector, function(i){ paste0("numInt", i) })
-        numOfSlider = sapply(1:lenSelSector, function(i){ paste0("sliderInt", i) })
+        # numOfSlider = sapply(1:lenSelSector, function(i){ paste0("sliderInt", i) })
         
         for(i in 1:lenSelSector){
           selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[i],]
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
           output[[i]] = tagList()
-          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Sektor ke-", i), min=0, value=selectedSectorFinDemValue)
-          output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
+          output[[i]][[1]] = numericInput(inputId=numOfInput[i], label=paste0("Lapangan usaha ke-", i, ": ", selectedSectorFinDem[, 1]), value=selectedSectorFinDemValue)
+          # output[[i]][[2]] = sliderInput(inputId=numOfSlider[i], label=as.character(selectedSectorFinDem[,1]), min=-100, max=100, post=" ", value=0, step=.01)
           
-          observeEvent(input[[paste0("sliderInt", i)]][1], {
-            percentRate <- input[[paste0("sliderInt", i)]][1]
-            valInv <- (percentRate / 100 * selectedSectorFinDemValue) + selectedSectorFinDemValue
-            updateNumericInput(
-              session,
-              inputId=numOfInput[i],
-              label=paste0("Sektor ke-", i),
-              value=valInv
-            )
+          # observeEvent(input[[paste0("sliderInt", i)]][1], {
+          #   percentRate <- input[[paste0("sliderInt", i)]][1]
+          #   valInv <- (percentRate / 100 * selectedSectorFinDemValue) + selectedSectorFinDemValue
+          #   updateNumericInput(
+          #     session,
+          #     inputId=numOfInput[i],
+          #     label=paste0("Lapangan usaha ke-", i),
+          #     value=valInv
+          #   )
+          #   values$finalDemandSeriesTableInv[i,  startCol] = valInv
+          # })          
+          
+          observeEvent(input[[paste0("numInt", i)]][1], {
+            valInv <- input[[paste0("numInt", i)]][1]
             values$finalDemandSeriesTableInv[i,  startCol] = valInv
-          })          
+          })   
+          
+          # prk_scen <- data.frame(time=Sys.time(), action=input$scenarioName, year=input$yearInter, username=allDataProv$username, provinsi=allDataProv$prov, sector=selectedSectorFinDem, fd_value=values$finalDemandSeriesTableInv[i,  startCol])
+          # prk_rds <- paste0("data/", allDataProv$prov, "/", allDataProv$username, "/prk")
+          # if(file.exists(prk_rds)){
+          #   prk<-readRDS(prk_rds)
+          #   prk_scen<-rbind(prk_scen, prk)
+          # }
+          # saveRDS(prk_scen, prk_rds)
         }
         # lapply(1:lenSelSector, function(i){
         #   div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]))
@@ -1507,6 +1587,7 @@ server <- function(input, output, session) {
       # } else {
     }
     
+    # print(output)
     output
   })
   
@@ -1532,6 +1613,7 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste  
+    GDP_rate <- sec$GDP_rate
     
     importRow <- 1
     incomeRow <- 2
@@ -1621,29 +1703,35 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers
+    coef_grise <- (100+GDP_rate)/100
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
+    
+    mGDPseries <- GDPseries[, 1:which(colnames(GDPseries) == paste0("y", startT+(stepInv-1)))]
+    
+    # colnames(mtOutputseries) <- colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))] # retain missing colnames
+    mtOutputseries <- tOutputSeries[, colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(stepInv-1)))]]
+    
+    mAddValueSeries <- addValueSeries[1:which(names(addValueSeries) == paste0("y", startT+(stepInv-1)))] # list can also be subsetted by using single square bracket
+    
+    mImpactLabour <- impactLabour[1:which(names(impactLabour) == paste0("y", startT+(stepInv-1)))] # list can also be subsetted by using single square bracket
+    mImpactEnergy <- impactEnergy[1:which(names(impactEnergy) == paste0("y", startT+(stepInv-1)))]
+    mImpactWaste <- impactWaste[1:which(names(impactWaste) == paste0("y", startT+(stepInv-1)))]
+    
     for(tu in stepInv:stepN){
-      if(tu == stepInv){
-        # GDP compile table
-        mGDPseries <- GDPseries[, 1:which(colnames(GDPseries) == paste0("y", startT+(tu-1)))]
-        
-        mtOutputseries <- tOutputSeries[, colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))]]
-        # colnames(mtOutputseries) <- colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))] # retain missing colnames
-        
-        mAddValueSeries <- addValueSeries[1:which(names(addValueSeries) == paste0("y", startT+(tu-1)))] # list can also be subsetted by using single square bracket
-        
-        mImpactLabour <- impactLabour[1:which(names(impactLabour) == paste0("y", startT+(tu-1)))] # list can also be subsetted by using single square bracket
-        mImpactEnergy <- impactEnergy[1:which(names(impactEnergy) == paste0("y", startT+(tu-1)))]
-        mImpactWaste <- impactWaste[1:which(names(impactWaste) == paste0("y", startT+(tu-1)))]
-      }
-      mProjFinDem <- mfinalDemandSeriesTable[, tu+1]
-      mProjOutput <- leontief %*% mProjFinDem
-      mtOutputseries <- cbind(mtOutputseries, mProjOutput)
       # Time relevant colnames
       mProjT <- startT+tu
       mProjT <- paste0("y", mProjT)
+      
+      if(startT+tu == yearIntervention){
+        mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
+      } else {
+        mProjFinDem <- coef_grise * mfinalDemandSeriesTable[, mProjT]
+      }
+      mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
+      mtOutputseries <- cbind(mtOutputseries, mProjOutput)
+      
       # calculation of mAddValueSeries
       eval(parse(text=paste0("mAddValueSeries$", mProjT, " <-  coef_primary_input %*% diag(as.vector(mProjOutput), ncol = dimensi, nrow= dimensi)")))
       # calculation of mGDPseries
@@ -1655,7 +1743,6 @@ server <- function(input, output, session) {
       # calculation of mImpactWaste
       eval(parse(text= paste0("mImpactWaste$", mProjT, " <- mSatelliteImpact('waste', tbl_sat=waste, table_output_matrix = as.matrix(mProjOutput), emission_lookup=ef_waste, yearInt=yearIntervention)")))
     }
-    
     
     mGDPOutput <- data.frame(year = 0, id.sector = 0, sector = "", GDP = 0, stringsAsFactors = FALSE)
     for(c in 3:ncol(mGDPseries)){
@@ -1996,7 +2083,7 @@ server <- function(input, output, session) {
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
     
     cumSumBAU$Scenario<-"BAU"
-    cumSumInv$Scenario<-"AKSI"
+    cumSumInv$Scenario<-input$scenarioName
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
@@ -2004,6 +2091,7 @@ server <- function(input, output, session) {
       geom_line(aes(color=Scenario))+
       geom_point(aes(color=Scenario))+
       ggtitle("Grafik Proyeksi Nilai Emisi Kumulatif")
+    final_results$plot23<-gplot23
     ggplotly(gplot23)
   })
   
@@ -2023,66 +2111,96 @@ server <- function(input, output, session) {
     cumSumInv <- cumsum(totalGDPInvPerYear)
     
     cumSumBAU$Scenario <- "BAU"
-    cumSumInv$Scenario <- "AKSI"
+    cumSumInv$Scenario <- input$scenarioName
     
-    colnames(cumSumBAU)[2] <- "CummulativeGDP"
-    colnames(cumSumInv)[2] <- "CummulativeGDP"
+    colnames(cumSumBAU)[2] <- "TotalGDP"
+    colnames(cumSumInv)[2] <- "TotalGDP"
     
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
-    gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
+    gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=TotalGDP, group=Scenario)) +
       geom_line(aes(color=Scenario))+
       geom_point(aes(color=Scenario))+
-      ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
+      ggtitle("Grafik Proyeksi Nilai PDRB")
+    final_results$plot24<-gplot24
     ggplotly(gplot24)
   })
   
-  # output$curveIntensityEmission <- renderPlotly({
-  #   resBAU <- allInputsBAU()
-  #   resInv <- allInputsInter()
-  #   
-  #   
-  #   emissionBAU <- resBAU$total_emission_table
-  #   emissionInv <- resInv$total_emission_table
-  #   
-  #   yearIntervention <- input$yearInter
-  #   
-  #   cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
-  #   cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
-  #   
-  #   cumSumBAU$Scenario<-"BAU"
-  #   cumSumInv$Scenario<-"AKSI"
-  #   
-  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-  #   
-  #   
-  #   gdpBAU <- resBAU$GDP_table
-  #   gdpInv <- resInv$GDP_table
-  #   
-  #   yearIntervention <- input$yearInter
-  #   
-  #   totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
-  #   totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
-  #   
-  #   cumSumBAU <- cumsum(totalGDPBAUPerYear)
-  #   cumSumInv <- cumsum(totalGDPInvPerYear)
-  #   
-  #   cumSumBAU$Scenario <- "BAU"
-  #   cumSumInv$Scenario <- "AKSI"
-  #   
-  #   colnames(cumSumBAU)[2] <- "CummulativeGDP"
-  #   colnames(cumSumInv)[2] <- "CummulativeGDP"
-  #   
-  #   cumSumBAU$Intensity <- cumSumBAU$CummulativeEmission
-  #   
-  #   tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-  #   
-  #   gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeGDP, group=Scenario)) +
-  #           geom_line(aes(color=Scenario))+
-  #           geom_point(aes(color=Scenario))+
-  #           ggtitle("Grafik Proyeksi Nilai PDRB Kumulatif")
-  #   ggplotly(gplot24)
-  # })
+  output$curveIntensityEmission <- renderPlotly({
+    resBAU <- allInputsBAU()
+    resInv <- allInputsInter()
+    
+    emissionBAU <- resBAU$total_emission_table
+    emissionInv <- resInv$total_emission_table
+    
+    yearIntervention <- input$yearInter
+    
+    cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
+    cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
+    
+    cumSumBAU$Scenario<-"BAU"
+    cumSumInv$Scenario<-input$scenarioName
+    
+    tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
+    
+    
+    gdpBAU <- resBAU$GDP_table
+    gdpInv <- resInv$GDP_table
+    
+    yearIntervention <- input$yearInter
+    
+    totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
+    totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
+    
+    colnames(totalGDPBAUPerYear)[2] <- "TotalGDP"
+    colnames(totalGDPInvPerYear)[2] <- "TotalGDP"
+    
+    intensityBAU <- merge(cumSumBAU, totalGDPBAUPerYear, by="Year")
+    intensityInv <- merge(cumSumInv, totalGDPInvPerYear, by="Year")
+    
+    intensityBAU$intensitas <- intensityBAU$TotalGDP / intensityBAU$CummulativeEmission
+    intensityInv$intensitas <- intensityInv$TotalGDP / intensityInv$CummulativeEmission
+    
+    tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
+    
+    final_results$tabel1<-tblIntensity
+    
+    gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
+      geom_line(aes(color=Scenario))+
+      geom_point(aes(color=Scenario))+
+      ggtitle("Grafik Proyeksi Intensitas Emisi")
+    final_results$plot25<-gplot25
+    ggplotly(gplot25)
+  })
+  
+  output$downloadResults <- downloadHandler(
+    filename = paste0(allDataProv$prov, "_hasil.doc"),
+    content = function(file){
+      title <- "\\b\\fs32 Dokumen Hasil Analisis PPRK-D\\b0\\fs20"
+      fileresult = file.path(tempdir(), paste0(allDataProv$prov, "_hasil.doc"))
+      rtffile <- RTF(fileresult, font.size = 9)
+      addParagraph(rtffile, title)
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 1. Grafik Emisi Nilai Proyeksi Emisi Kumulatif\\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot23)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 2. Grafik Emisi Proyeksi Nilai PDRB \\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot24)
+      addNewLine(rtffile)
+      addParagraph(rtffile, "\\b\\fs20 Gambar 3. Grafik Proyeksi Intensitas Emisi\\b0\\fs20.")
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot25)
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      addTable(rtffile, final_results$tabel1, font.size = 8)
+      addParagraph(rtffile, "\\b\\fs20 Table 1. Tabel PDRB\\b0\\fs20.")
+      addNewLine(rtffile)
+      addNewLine(rtffile)
+      done(rtffile)
+      
+      file.copy(fileresult, file)
+    }
+  )
 }
 
 ###*run the apps#### 
