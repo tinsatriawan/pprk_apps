@@ -25,7 +25,7 @@ ui <- source('interface.R')
 server <- function(input, output, session) {
   # debug mode
   debugMode <- 1
-
+  
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
@@ -1347,7 +1347,7 @@ server <- function(input, output, session) {
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
       GDP_all$emisi <- total_emission_table$TotalEmission
-      GDP_all$intensitas <- GDP_all$PDRB / GDP_all$emisi
+      GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
@@ -1591,7 +1591,6 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste  
-    GDP_rate <- sec$GDP_rate
     
     importRow <- 1
     incomeRow <- 2
@@ -1681,7 +1680,7 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers
-    coef_grise <- (100+GDP_rate)/100
+    coef_grise <- (100+input$gdpRate)/100
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
@@ -1705,7 +1704,7 @@ server <- function(input, output, session) {
       if(startT+tu == yearIntervention){
         mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
       } else {
-        mProjFinDem <- coef_grise * mfinalDemandSeriesTable[, mProjT]
+        mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
       }
       mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
       mtOutputseries <- cbind(mtOutputseries, mProjOutput)
@@ -2136,8 +2135,8 @@ server <- function(input, output, session) {
     intensityBAU <- merge(cumSumBAU, totalGDPBAUPerYear, by="Year")
     intensityInv <- merge(cumSumInv, totalGDPInvPerYear, by="Year")
 
-    intensityBAU$intensitas <- intensityBAU$TotalGDP / intensityBAU$CummulativeEmission
-    intensityInv$intensitas <- intensityInv$TotalGDP / intensityInv$CummulativeEmission
+    intensityBAU$intensitas <- intensityBAU$CummulativeEmission / intensityBAU$TotalGDP
+    intensityInv$intensitas <- intensityInv$CummulativeEmission / intensityInv$TotalGDP
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
 
