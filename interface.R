@@ -4,6 +4,7 @@ header <- dashboardHeader(title="RED-CLUWE", titleWidth = "300px")
 ###*sidebar####
 sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
   sidebarMenu(
+    id = "tabs",
     menuItem("Home", icon = icon("home"), tabName = "home"),
     ###sidebar-setting####
     menuItem("Pengaturan", icon = icon("check-circle"),
@@ -12,11 +13,11 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                              "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="SumBar", "Sumatera Selatan"="SumSel", "Sumatera Utara"="SumUt"),
                           `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "Jawa Barat"="JaBar",
                                           "Jawa Tengah"="JaTeng", "Jawa Timur"="JaTim", "Kalimantan Barat"="KalBar",
-                                          "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng",
+                                          "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", 
                                           "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT", "Yogyakarta"="DIY"),
-                          `Regional Timur` = list("Gorontalo"="Gorontalo", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", "Maluku"="Maluku", "Maluku Utara"="MalUt",
-                                         "Papua"="Papua", "Papua Barat"="PapuaBar", "Sulawesi Selatan"="SulSel", "Sulawesi Tengah"="SulTeng",
-                                         "Sulawesi Tenggara"="SulTra", "Sulawesi Barat"="SulBar", "Sulawesi Utara"="SulUt"))
+                          `Regional Timur` = list("Gorontalo"="Gorontalo", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
+                                         "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
+                                         "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
              ),
              textInput("fullname", label = "Nama Lengkap", placeholder = "Tuliskan nama anda"),
              textInput("username", label = "Nama Pengguna", placeholder = "Masukkan nama pengguna tanpa spasi"),
@@ -27,12 +28,12 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
     menuItem("Historis", icon = icon("history"), 
              
               menuSubItem("Input", tabName = "pageOne"),
-              fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              fileInput("emissionFactorWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              fileInput("landDemandTable", "Tabel Permintaan Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              fileInput("landDistTable", "Tabel Distribusi Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("emissionFactorWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("landDemandTable", "Tabel Permintaan Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
+              # fileInput("landDistTable", "Tabel Distribusi Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               numericInput("popDensTable", "Populasi Penduduk (Jiwa)", min=0, value=1000000),
              
               menuSubItem("Results", tabName = "pageTwo"),
@@ -65,7 +66,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                   choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                 )
               ),
-              downloadButton('downloadReport', 'Unduh Ringkasan')
+              downloadButton('downloadReport', 'Unduh Ringkasan', style="color: #fff; background-color: #00a65a; border-color: #008d4c")
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
@@ -73,10 +74,10 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
               selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
               selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
-              fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-              fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+              # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("buttonBAU", "Submit"),
-              menuSubItem("Results"),
+              menuSubItem("Results", tabName = "pageFive"),
               selectInput("bauResults",
                         label="Pilih output yang ingin ditampilkan",
                         choices=c("Proyeksi PDRB", 
@@ -112,7 +113,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
 )
 
 ###*body####
-body <- dashboardBody(
+body <- dashboardBody( #introjsUI(),
   ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
@@ -157,7 +158,7 @@ body <- dashboardBody(
         #     div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
         #   )
         # )
-        
+        h3(textOutput("yearIO")),
         column(width = 12,
           box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE,
             div(style="overflow-x: scroll", dataTableOutput('tableIO'))
@@ -181,6 +182,12 @@ body <- dashboardBody(
       )
     ),
     tabItem(tabName = "pageTwo",
+      fluidRow(
+        column(width=12,
+          tags$div(id='placeholder'),
+          hr()
+        )
+      ),
       conditionalPanel(
         condition="input.pprkResults=='Perbandingan Angka Pengganda'",
         uiOutput("sectorSelection")
@@ -191,20 +198,22 @@ body <- dashboardBody(
       ),
       hr(),
       fluidRow(
-        column(width=7,
+        column(width=12,
           box(width=NULL,
             div(style="overflow-x: scroll", dataTableOutput('tableResults')),
             downloadButton('downloadTable', 'Download Table (.csv)')
           )
-        ),
-        column(width=5,
-          tags$div(id='placeholder'),
-          hr()
         )
       )
     ),
     ###*tab-bau####
-    tabItem(tabName = "pageFour",
+    tabItem(tabName = "pageFive",
+        fluidRow(
+          column(width=12,
+            tags$div(id='bauplaceholder'),
+            hr()
+          )
+        ),
         conditionalPanel(
           condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
           uiOutput("yearSelection")
@@ -212,21 +221,17 @@ body <- dashboardBody(
         plotlyOutput("plotlyResultsBAU"),
         hr(),
         fluidRow(
-          column(width=7,
+          column(width=12,
             box(width=NULL,
               dataTableOutput('tableResultsBAU'),
               downloadButton('downloadTableBAU', 'Download Table (.csv)')
             )
-          ),
-          column(width=5,
-            tags$div(id='bauplaceholder'),
-            hr()
           )
         )
     ),
     ###*tab-intervention####
     tabItem(tabName = "pageSeven",
-            h2("Perubahan permintaan akhir dari sektor terkait"),
+            h2("Perubahan permintaan akhir dari lapangan usaha terkait"),
             # render multiple num and slider
             uiOutput("rowIntervention"),
             hr(),
@@ -240,7 +245,9 @@ body <- dashboardBody(
             hr(),
             plotlyOutput("curveEmRed"),
             plotlyOutput("curveGDPGrowth"),
-            # plotlyOutput("curveIntensityEmission"),
+            plotlyOutput("curveIntensityEmission"),
+            hr(),
+            downloadButton('downloadResults', 'Unduh Hasil Analisis', style="color: #fff; background-color: #00a65a; border-color: #008d4c"),
             hr(),
             selectInput("interResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -273,13 +280,13 @@ body <- dashboardBody(
                 hr()
               )
             )
-    )
-    # tabItem(tabName = "help",
+    ),
+    tabItem(tabName = "help"
     #           tags$div(class = "header", checked = NA,
     #           tags$p("Ini Help. Image letakkan di folder www"),
     #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
     #         )
-    # )
+    )
  )
 )
 
