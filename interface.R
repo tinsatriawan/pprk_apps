@@ -1,5 +1,52 @@
 ###*header####
-header <- dashboardHeader(title="RED-CLUWE", titleWidth = "300px")
+header <- dashboardHeader(
+    title="RED-CLUWE", 
+    titleWidth = "300px", 
+    dropdownMenu(type = "messages", badgeStatus = "success",
+      messageItem("Support Team",
+        "This is the content of a message.",
+        time = "5 mins"
+      ),
+      messageItem("Support Team",
+        "This is the content of another message.",
+        time = "2 hours"
+      ),
+      messageItem("New User",
+        "Can I get some help?",
+        time = "Today"
+      )
+    ),
+    # Dropdown menu for notifications
+    dropdownMenu(type = "notifications", badgeStatus = "warning",
+      notificationItem(icon = icon("users"), status = "info",
+        "5 new members joined today"
+      ),
+      notificationItem(icon = icon("warning"), status = "danger",
+        "Resource usage near limit."
+      ),
+      notificationItem(icon = icon("shopping-cart", lib = "glyphicon"),
+        status = "success", "25 sales made"
+      ),
+      notificationItem(icon = icon("user", lib = "glyphicon"),
+        status = "danger", "You changed your username"
+      )
+    ),
+    # Dropdown menu for tasks, with progress bar
+    dropdownMenu(type = "tasks", badgeStatus = "danger",
+      taskItem(value = 20, color = "aqua",
+        "Refactor code"
+      ),
+      taskItem(value = 40, color = "green",
+        "Design new layout"
+      ),
+      taskItem(value = 60, color = "yellow",
+        "Another task"
+      ),
+      taskItem(value = 80, color = "red",
+        "Write documentation"
+      )
+    )
+  )
 
 ###*sidebar####
 sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
@@ -107,8 +154,15 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
               uiOutput("selectizeSector"),
               menuSubItem("Results", tabName = "pageEight")
+    ),
+    menuItem("Help", icon = icon("question-circle"), tabName="help",
+      introBox(
+        actionButton("helpMe", "Tur Singkat"),
+        data.step = 1,
+        data.intro = "Apabila ingin melanjutkan bantuan klik Next",
+        data.hint = "Press me"
+      )       
     )
-    # menuItem("Help", icon = icon("question-circle"), tabName="help")
   )
 )
 
@@ -290,9 +344,14 @@ body <- dashboardBody( #introjsUI(),
  )
 )
 
-dashboardPage(
-  skin = 'green', 
-  header,
-  sidebar,
-  body
+shinyUI(
+  tagList(
+    introjsUI(),
+    dashboardPage(
+      skin = 'green', 
+      header,
+      sidebar,
+      body
+    )
+  )
 )
