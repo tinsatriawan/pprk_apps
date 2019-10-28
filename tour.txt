@@ -1,0 +1,2 @@
+element,intro
+#welcome,Selamat datang di panduan interaktif redcluwe.id\n\nAnda akan melakukan simulasi pertumbuhan ekonomi provinsi

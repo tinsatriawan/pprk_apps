@@ -1,49 +1,20 @@
 ###*header####
 header <- dashboardHeader(
-    title="RED-CLUWE", 
+    title="redcluwe.id", 
     titleWidth = "300px", 
-    dropdownMenu(type = "messages", badgeStatus = "success",
-      messageItem("Support Team",
-        "This is the content of a message.",
-        time = "5 mins"
+    dropdownMenu(type = "tasks",
+      icon = icon("info fa-1g"),
+      badgeStatus = NULL,
+      headerText = "Tentang",
+      notificationItem(
+        text = actionButton('quickTour', label=" Panduan interaktif",
+        icon = icon("hand-o-right")),
+        icon = icon(""), status = "primary"
       ),
-      messageItem("Support Team",
-        "This is the content of another message.",
-        time = "2 hours"
-      ),
-      messageItem("New User",
-        "Can I get some help?",
-        time = "Today"
-      )
-    ),
-    # Dropdown menu for notifications
-    dropdownMenu(type = "notifications", badgeStatus = "warning",
-      notificationItem(icon = icon("users"), status = "info",
-        "5 new members joined today"
-      ),
-      notificationItem(icon = icon("warning"), status = "danger",
-        "Resource usage near limit."
-      ),
-      notificationItem(icon = icon("shopping-cart", lib = "glyphicon"),
-        status = "success", "25 sales made"
-      ),
-      notificationItem(icon = icon("user", lib = "glyphicon"),
-        status = "danger", "You changed your username"
-      )
-    ),
-    # Dropdown menu for tasks, with progress bar
-    dropdownMenu(type = "tasks", badgeStatus = "danger",
-      taskItem(value = 20, color = "aqua",
-        "Refactor code"
-      ),
-      taskItem(value = 40, color = "green",
-        "Design new layout"
-      ),
-      taskItem(value = 60, color = "yellow",
-        "Another task"
-      ),
-      taskItem(value = 80, color = "red",
-        "Write documentation"
+      notificationItem(
+        text = actionButton('redcluweInfo', label=" Tentang redcluwe.id",
+        icon = icon("heart")),
+        icon = icon(""), status = "primary"
       )
     )
   )
@@ -54,17 +25,17 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
     id = "tabs",
     menuItem("Home", icon = icon("home"), tabName = "home"),
     ###sidebar-setting####
-    menuItem("Pengaturan", icon = icon("check-circle"),
+    menuItem("Pengaturan", icon = icon("check-circle"), id="pengaturan",
              selectInput("categoryProvince", label = "Pilih Provinsi:", 
-                         list(`Regional Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="BaBel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="KepRi",
-                                             "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="SumBar", "Sumatera Selatan"="SumSel", "Sumatera Utara"="SumUt"),
-                          `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "Jawa Barat"="JaBar",
-                                          "Jawa Tengah"="JaTeng", "Jawa Timur"="JaTim", "Kalimantan Barat"="KalBar",
-                                          "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", 
-                                          "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT", "Yogyakarta"="DIY"),
-                          `Regional Timur` = list("Gorontalo"="Gorontalo", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
-                                         "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
-                                         "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
+                 list(`Regional Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="BaBel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="KepRi",
+                                     "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="SumBar", "Sumatera Selatan"="SumSel", "Sumatera Utara"="SumUt"),
+                  `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "Jawa Barat"="JaBar",
+                                  "Jawa Tengah"="JaTeng", "Jawa Timur"="JaTim", "Kalimantan Barat"="KalBar",
+                                  "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", 
+                                  "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT", "Yogyakarta"="DIY"),
+                  `Regional Timur` = list("Gorontalo"="Gorontalo", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
+                                 "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
+                                 "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
              ),
              textInput("fullname", label = "Nama Lengkap", placeholder = "Tuliskan nama anda"),
              textInput("username", label = "Nama Pengguna", placeholder = "Masukkan nama pengguna tanpa spasi"),
@@ -118,12 +89,12 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
               menuSubItem("Input", tabName = "pageFour"),
-              sliderInput("gdpRate", "Laju peningkatan GDP", min=0, max=100, post=" %", value=2.5, step=.5),
+              selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2", "Tipe 3")),
               selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
               selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
               # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
               # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-              actionButton("buttonBAU", "Submit"),
+              actionButton("generateBAUTable", "Buat Tabel"),
               menuSubItem("Results", tabName = "pageFive"),
               selectInput("bauResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -155,20 +126,13 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               uiOutput("selectizeSector"),
               menuSubItem("Results", tabName = "pageEight")
     ),
-    menuItem("Help", icon = icon("question-circle"), tabName="help",
-      introBox(
-        actionButton("helpMe", "Tur Singkat"),
-        data.step = 1,
-        data.intro = "Apabila ingin melanjutkan bantuan klik Next",
-        data.hint = "Press me"
-      )       
-    )
+    menuItem("Bantuan", icon = icon("question-circle"), tabName="help")
   )
 )
 
 ###*body####
-body <- dashboardBody( #introjsUI(),
-  ###*tab-home####
+body <- dashboardBody(
+    ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
         jumbotron(img(src="homepage.jpg", width="100%"), " ", button = FALSE)
@@ -261,6 +225,21 @@ body <- dashboardBody( #introjsUI(),
       )
     ),
     ###*tab-bau####
+    tabItem(tabName = "pageFour",
+      conditionalPanel(
+        condition = "input.typeIntervention=='Tipe 2'",
+        selectInput("yearBAUInv", "Pilih tahun:", choices = 2010:2030, selected=2011)
+      ),
+      conditionalPanel(
+        condition = "input.typeIntervention=='Tipe 1' | input.typeIntervention=='Tipe 2'",
+        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=1, post=" x 100%", value=0.05, step=0.01, width = "600px")
+      ),
+      actionButton("saveTableBauType", "Simpan Tabel"),
+      hr(),
+      rHandsontableOutput('tableBAUType'),
+      hr(),
+      actionButton("buttonBAU", "Jalankan Simulasi")
+    ),
     tabItem(tabName = "pageFive",
         fluidRow(
           column(width=12,
@@ -335,13 +314,13 @@ body <- dashboardBody( #introjsUI(),
               )
             )
     ),
-    tabItem(tabName = "help"
-    #           tags$div(class = "header", checked = NA,
-    #           tags$p("Ini Help. Image letakkan di folder www"),
-    #           tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
-    #         )
+    tabItem(tabName = "help",
+      tags$div(class = "header", checked = NA,
+        tags$p("Ini halaman bantuan, untuk ilustrasi letakkan di folder www"),
+        tags$a(href = "shiny.rstudio.com/tutorial", "Ini link!")
+      )
     )
- )
+  )  
 )
 
 shinyUI(
