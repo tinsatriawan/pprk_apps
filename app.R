@@ -4,8 +4,8 @@ library(shinydashboard)
 library(shinyLP)
 # library(shinyBS)
 
-# library(digest)
-# library(rintrojs)
+library(digest)
+library(rintrojs)
 library(fmsb)
 library(ggplot2)
 library(plotly)
@@ -13,6 +13,7 @@ library(dplyr)
 library(DT)
 library(formattable)
 library(rtf)
+library(rhandsontable)
 #library(ggradar)
 # library(RColorBrewer)
 
@@ -127,6 +128,7 @@ server <- function(input, output, session) {
     allDataProv$multiplierAll = multiplierAll 
     allDataProv$periodIO = periodIO 
     allDataProv$rtffile = rtffile 
+    allDataProv$bau_scenario = data.frame(Lapangan_usaha=as.character(sector[,1]))
     
     listData <- list(
       sector = as.data.frame(sector[,1]),
@@ -921,7 +923,47 @@ server <- function(input, output, session) {
     }
     waste <- sec$waste
   })
+  
   ###*bau input####
+  generate_table<-function(table, first_year, second_year, value=0.05){
+    n <- second_year-first_year
+    eval(parse(text=(paste0("table$y", first_year, " <- value"))))
+    for(i in 1:n){
+      eval(parse(text=(paste0("table$y", first_year+i, " <- value"))))
+    }
+    table
+  }
+  observeEvent(input$generateBAUTable, {
+    allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$sector[,1])) # reset table
+    allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo))
+  })
+  output$tableBAUType <- renderRHandsontable({
+    rhandsontable(allDataProv$bau_scenario) %>% hot_cols(format="0%") # load table
+  })
+  observeEvent(input$saveTableBauType, {
+    if(input$typeIntervention=='Tipe 1'){
+      
+      allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate))
+    
+    } else if(input$typeIntervention=='Tipe 2'){
+      
+      column_year <- paste0("y", input$yearBAUInv)
+      bau_scenario <- allDataProv$bau_scenario
+      eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate)"))))
+      
+      allDataProv$bau_scenario<-bau_scenario
+    
+    } else {
+    
+      allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
+    
+    }
+    
+    # 
+    # print(allDataProv$bau_scenario)
+    # 
+  })
+  
   allInputsBAU <- eventReactive(input$buttonBAU, {
     if(debugMode){
       sec <- blackBoxInputs()
@@ -952,6 +994,7 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste
+    bau_scenario <- allDataProv$bau_scenario
     
     import_row <- 1
     income_row <- 2
@@ -1029,6 +1072,8 @@ server <- function(input, output, session) {
     findem_proportion[is.na(findem_proportion)] <- 0
     
     coef_grise <- (100+gdpRate)/100
+    bau_scenario$Lapangan_usaha <- NULL
+    bau_scenario_matrix <- as.matrix(bau_scenario)
     
     stepN <- endT-startT
     for(s in 1:stepN){
@@ -1053,9 +1098,12 @@ server <- function(input, output, session) {
         eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
         eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
         eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
-        # print("first year data load has been successfully conducted")
       }
-      projFinDem <- coef_grise * findem_series[, s]
+      if(input$typeIntervention=='Tipe 1'){
+        projFinDem <- coef_grise * findem_series[, s]
+      } else {
+        projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
+      }
       findem_series <- cbind(findem_series, projFinDem)
       projOutput <- leontief %*% projFinDem
       tOutputSeries <- cbind(tOutputSeries, projOutput)
@@ -2067,7 +2115,7 @@ server <- function(input, output, session) {
     gplot23<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
-            ggtitle("Grafik Proyeksi Nilai Emisi Kumulatif")
+            ggtitle("Grafik Proyeksi Emisi")
     final_results$plot23<-gplot23
     ggplotly(gplot23)
   })
@@ -2098,7 +2146,7 @@ server <- function(input, output, session) {
     gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=TotalGDP, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
-            ggtitle("Grafik Proyeksi Nilai PDRB")
+            ggtitle("Grafik Proyeksi PDRB")
     final_results$plot24<-gplot24
     ggplotly(gplot24)
   })
@@ -2177,6 +2225,42 @@ server <- function(input, output, session) {
       
       file.copy(fileresult, file)
     }
+  )
+  
+  steps <- reactive(data.frame(
+    element = c(
+      "tabs",
+      ".sidebar-menu",
+      "#pengaturan",
+      "#categoryProvince + .selectize-control"
+      # ""
+    ),
+    intro = c(
+      "Selamat datang di panduan interaktif redcluwe.id.<br/><br/>Anda akan melakukan simulasi pertumbuhan ekonomi provinsi dengan data yang tersedia. Elemen yang tersorot akan ditampilkan sesuai dengan respon Anda, sementara elemen lainnya akan berwarna gelap. Pada setiap langkah panduan yang dilewati, anda juga akan diminta untuk menjalankan sebuah perintah maupun memasukkan suatu input yang diberi tanda \"<strong>Petunjuk</strong>\".<br/><br/>Klik <strong>Berikutnya</strong> untuk mengikuti keseluruhan panduan ini.",
+      "Berikut ini adalah menu-menu yang akan digunakan sebagai input simulasi pertumbuhan ekonomi dan pilihan untuk menampilkan halaman hasil simulasi.<br/><br/><strong>Petunjuk:</strong> Silahkan klik menu <strong>Pengaturan</strong> untuk memilih data sesuai provinsi yang akan dilakukan simulasi kemudian klik <strong>Berikutnya</strong>.",
+      "Pilih nama provinsi, kemudian isi kolom nama pengguna, nama lengkap pengguna, dan password.<br/><br/><strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>.",
+      "<strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>."
+      # "This is another slider.",
+      # "This is a select input.",
+      # "This is another select input.",
+      # "Text for dropdown 1",
+      # "Text for dropdown 2"
+    )
+  ))
+  
+  observeEvent(input$quickTour,
+    introjs(session, 
+      options = list(steps=steps(),
+                     "nextLabel"="Berikutnya",
+                     "prevLabel"="Kembali",
+                     "skipLabel"="Lewati",
+                     "doneLabel"="Selesai",
+                     "scrollToElement"=TRUE,
+                     "exitOnOverlayClick"= TRUE,
+                     "helperNumberLayer"="right",
+                     "tooltipPosition"= "right"),
+      events = list("oncomplete" = I('alert("Bantuan telah selesai")'))
+    )
   )
 }
 
