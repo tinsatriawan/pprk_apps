@@ -26,6 +26,7 @@ ui <- source('interface.R')
 server <- function(input, output, session) {
   # debug mode
   debugMode <- 1
+  notif_id <- NULL
   
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
@@ -155,7 +156,8 @@ server <- function(input, output, session) {
       periodIO = periodIO,
       rtffile = rtffile
     )
-    updateTabItems(session, "tabs", selected = "pageOne")
+    notif_id <<- showNotification("Anda berhasil masuk", duration = 4, closeButton = TRUE, type = "message")
+    # updateTabItems(session, "tabs", selected = "pageOne")
     return(listData)
   })
   
@@ -298,6 +300,7 @@ server <- function(input, output, session) {
                        otherEm=otherEm,
                        population=population
                     ) 
+    
     return(list_table)
   }
   
@@ -758,7 +761,7 @@ server <- function(input, output, session) {
         tables
       } else {
         # removeUI(selector = '#plotlyResults')
-        tables <- subset(landtable, select=c(Sektor, Total.kebutuhan.lahan))
+        tables <- landtable[,c("Sektor", colnames(landtable)[ncol(landtable)-2])]
         tables
       }
     } else {
@@ -773,8 +776,9 @@ server <- function(input, output, session) {
         tables
       } 
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
-      formatRound(columns=c(1:length(tables)),2)
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+      formatRound(columns=c(1:length(tables)),2) %>%
+      formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
 
   output$downloadTable <- downloadHandler(
@@ -936,6 +940,7 @@ server <- function(input, output, session) {
   observeEvent(input$generateBAUTable, {
     allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$sector[,1])) # reset table
     allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo))
+    notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "message")
   })
   output$tableBAUType <- renderRHandsontable({
     rhandsontable(allDataProv$bau_scenario) %>% hot_cols(format="0%") # load table
@@ -958,7 +963,7 @@ server <- function(input, output, session) {
       allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
     
     }
-    
+    notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "message")
     # 
     # print(allDataProv$bau_scenario)
     # 
@@ -1074,6 +1079,7 @@ server <- function(input, output, session) {
     coef_grise <- (100+gdpRate)/100
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
+    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
     
     stepN <- endT-startT
     for(s in 1:stepN){
@@ -1251,6 +1257,8 @@ server <- function(input, output, session) {
     totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
     totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
     
+    notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "message")
+    
     list_bau <- list(population = population,
                      otherEm = otherEm,
                      GDP_table = GDPOutput,
@@ -1388,7 +1396,7 @@ server <- function(input, output, session) {
 
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       removeUI(selector = '#baupdrb')
-      gplot12<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      gplot12<-ggplot(data=total_emission_table[total_emission_table$Year > input$dateFrom,], aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
       ggplotly(gplot12)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       removeUI(selector = '#baupdrb')
@@ -1639,6 +1647,7 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste  
+    bau_scenario <- allDataProv$bau_scenario
     
     importRow <- 1
     incomeRow <- 2
@@ -1729,6 +1738,9 @@ server <- function(input, output, session) {
     
     coef_primary_input <- addval_matrix %*% tinput_invers
     coef_grise <- (100+input$gdpRate)/100
+    bau_scenario$Lapangan_usaha <- NULL
+    bau_scenario_matrix <- as.matrix(bau_scenario)
+    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
@@ -1752,7 +1764,12 @@ server <- function(input, output, session) {
       if(startT+tu == yearIntervention){
         mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
       } else {
-        mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
+        if(input$typeIntervention=='Tipe 1'){
+          mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
+        } else {
+          mProjFinDem <- bau_scenario_matrix[, mProjT] * mfinalDemandSeriesTable[, mProjT]
+        }
+        
       }
       mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
       mtOutputseries <- cbind(mtOutputseries, mProjOutput)
@@ -1892,6 +1909,8 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$emissionWasteDisp <- mEmissionIndWaste
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
+    
+    notif_id <<- showNotification("Simulasi skenario intervensi aksi telah berhasil", duration = 4, closeButton = TRUE, type = "message")
     
     list_intervensi <- list(GDP_table = mGDPOutput,
                             mGDPseries = mGDPseries,  
@@ -2232,19 +2251,35 @@ server <- function(input, output, session) {
       "tabs",
       ".sidebar-menu",
       "#pengaturan",
-      "#categoryProvince + .selectize-control"
-      # ""
+      ".sidebar-menu",
+      "#historis > li > a[data-value=pageOne]",
+      "#popDensTable",
+      "#yearIO",
+      "#boxIO",
+      "#boxLabour",
+      "#boxEnergy",
+      "#boxWaste",
+      "#historis > li > a[data-value=pageTwo]",
+      "#categorySector + .selectize-control",
+      "#pprkResults + .selectize-control"
+      
     ),
     intro = c(
       "Selamat datang di panduan interaktif redcluwe.id.<br/><br/>Anda akan melakukan simulasi pertumbuhan ekonomi provinsi dengan data yang tersedia. Elemen yang tersorot akan ditampilkan sesuai dengan respon Anda, sementara elemen lainnya akan berwarna gelap. Pada setiap langkah panduan yang dilewati, anda juga akan diminta untuk menjalankan sebuah perintah maupun memasukkan suatu input yang diberi tanda \"<strong>Petunjuk</strong>\".<br/><br/>Klik <strong>Berikutnya</strong> untuk mengikuti keseluruhan panduan ini.",
       "Berikut ini adalah menu-menu yang akan digunakan sebagai input simulasi pertumbuhan ekonomi dan pilihan untuk menampilkan halaman hasil simulasi.<br/><br/><strong>Petunjuk:</strong> Silahkan klik menu <strong>Pengaturan</strong> untuk memilih data sesuai provinsi yang akan dilakukan simulasi kemudian klik <strong>Berikutnya</strong>.",
       "Pilih nama provinsi, kemudian isi kolom nama pengguna, nama lengkap pengguna, dan password.<br/><br/><strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>.",
-      "<strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>."
-      # "This is another slider.",
-      # "This is a select input.",
-      # "This is another select input.",
-      # "Text for dropdown 1",
-      # "Text for dropdown 2"
+      "<strong>Petunjuk:</strong> Silahkan klik menu <strong>Historis</strong>.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Input</strong>.",
+      "<strong>Petunjuk:</strong> Isi jumlah penduduk pada provinsi yang akan dijalankan.",
+      "Tahun produksi dari Tabel Input-Output provinsi yang dipilih.",
+      "Tabel IO provinsi adalah tabel transaksi barang dan jasa yang terjadi di provinsi tersebut pada satu titik waktu dari tahun tabel tersebut diproduksi. Tabel IO yang digunakan adalah <strong>Tabel Transaksi Domestik Atas Dasar Harga Produsen</strong> dengan satuan moneter <strong>Miliar Rupiah</strong>.",
+      "Matriks satelit tenaga kerja menunjukkan jumlah tenaga kerja untuk setiap sektor ekonomi",
+      "Matriks satelit energi menunjukkan jumlah pemakaian tiap jenis bahan bakar untuk tiap sektor ekonomi dalam satuan <strong>terra Joule</strong>",
+      "Matriks satelit limbah menunjukkan jumlah limbah yang diproduksi sektor ekonomi menurut jenis pengelolaan limbah dalam satuan <strong>ton/m3</strong>",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Result</strong> untuk menampilkan analisis dampak ekonomi wilayah untuk data historis.",
+      "<strong>Petunjuk:</strong> Pilih kategori hasil yang ingin ditampilkan. Terdapat empat kategori yaitu: Ekonomi, Energi, Limbah, Lahan.",
+      "<strong>Petunjuk:</strong> Pilih output yang tersedia sesuai kategori yang sudah dipilih seperti PDRB, Linkage, maupun Angka Pengganda."
+      
     )
   ))
   

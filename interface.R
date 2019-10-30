@@ -29,10 +29,10 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
              selectInput("categoryProvince", label = "Pilih Provinsi:", 
                list(`Regional Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="BaBel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="KepRi",
                                    "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="SumBar", "Sumatera Selatan"="SumSel", "Sumatera Utara"="SumUt"),
-                `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "Jawa Barat"="JaBar",
+                `Regional Tengah` = list("Bali"="Bali","Banten"="Banten", "DKI Jakarta"="DKIJakarta", "D.I. Yogyakarta"="DIY", "Jawa Barat"="JaBar",
                                 "Jawa Tengah"="JaTeng", "Jawa Timur"="JaTim", "Kalimantan Barat"="KalBar",
                                 "Kalimantan Selatan"="KalSel", "Kalimantan Tengah"="KalTeng", "Kalimantan Utara"="KalTara", "Kalimantan Timur"="KalTim", 
-                                "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT", "Yogyakarta"="DIY"),
+                                "Nusa Tenggara Barat"="NTB", "Nusa Tenggara Timur"="NTT"),
                 `Regional Timur` = list("Gorontalo"="Gorontalo", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
                                "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
                                "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
@@ -43,7 +43,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
              actionButton("inputLogin", label = "Masuk")
     ),
     ###sidebar-historis####
-    menuItem("Historis", icon = icon("history"), 
+    menuItem("Historis", icon = icon("history"), id="historis",
               menuSubItem("Input", tabName = "pageOne"),
               # fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
@@ -83,7 +83,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                   choices=c("Matriks Distribusi Lahan", "Koefisien Kebutuhan Lahan", "Koefisien Produktivitas Lahan", "Permintaan Lahan")
                 )
               ),
-              downloadButton('downloadReport', 'Unduh Ringkasan', style="color: #fff; background-color: #00a65a; border-color: #008d4c")
+              tags$div(style="padding: 12px 15px 5px 15px;", downloadButton('downloadReport', 'Unduh Ringkasan', style="color: #fff; background-color: #00a65a; border-color: #008d4c;"))
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
@@ -175,23 +175,23 @@ body <- dashboardBody(
         #     div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
         #   )
         # )
-        h3(textOutput("yearIO")),
-        column(width = 12,
-          box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE,
+        h3(style="padding-left: 15px;", textOutput("yearIO")),
+        column(width = 12, id="boxIO",
+          box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
             div(style="overflow-x: scroll", dataTableOutput('tableIO'))
           )
         ),
-        column(width = 12,
-          box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE,
+        column(width = 12, id="boxLabour",
+          box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE, 
             div(style="overflow-x: scroll", dataTableOutput('SatelitTenagaKerja'))
           )
         ),
-        column(width = 12,
+        column(width = 12, id="boxEnergy",
           box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
             div(style="overflow-x: scroll", dataTableOutput('SatelitEnergi'))
           )
         ),
-        column(width = 12,
+        column(width = 12, id="boxWaste",
           box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
             div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
           )
@@ -205,14 +205,6 @@ body <- dashboardBody(
           hr()
         )
       ),
-      conditionalPanel(
-        condition="input.pprkResults=='Perbandingan Angka Pengganda'",
-        uiOutput("sectorSelection")
-      ),
-      conditionalPanel(
-        condition="input.pprkResults!='Pendapatan per kapita'",
-        plotlyOutput("plotlyResults")
-      ),
       hr(),
       fluidRow(
         column(width=12,
@@ -221,6 +213,14 @@ body <- dashboardBody(
             downloadButton('downloadTable', 'Download Table (.csv)')
           )
         )
+      ),
+      conditionalPanel(
+        condition="input.pprkResults=='Perbandingan Angka Pengganda'",
+        uiOutput("sectorSelection")
+      ),
+      conditionalPanel(
+        condition="input.pprkResults!='Pendapatan per kapita'",
+        plotlyOutput("plotlyResults")
       )
     ),
     ###*tab-bau####
@@ -267,7 +267,7 @@ body <- dashboardBody(
             # render multiple num and slider
             uiOutput("rowIntervention"),
             hr(),
-            actionButton("buttonInter", "Submit")
+            actionButton("buttonInter", "Jalankan Simulasi")
     ),
     tabItem(tabName = "pageEight",
             fluidRow(
@@ -298,20 +298,20 @@ body <- dashboardBody(
               condition="input.interResults!='Proyeksi Upah per Kapita' & input.interResults!='Proyeksi Total Emisi'",
               uiOutput("yearSelectionInter")
             ),
-            plotlyOutput("plotlyResultsInter"),
             hr(),
             fluidRow(
-              column(width=7,
+              column(width=12,
+                tags$div(id='interplaceholder'),
+                hr()
+              ),
+              column(width=12,
                 box(width=NULL,
                   dataTableOutput('tableResultsInter'),
                   downloadButton('downloadTableInter', 'Download Table (.csv)')
                 )
-              ),
-              column(width=5,
-                tags$div(id='interplaceholder'),
-                hr()
               )
-            )
+            ),
+            plotlyOutput("plotlyResultsInter")
     ),
     tabItem(tabName = "help",
       tags$div(class = "header", checked = NA,
