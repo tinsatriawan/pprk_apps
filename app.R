@@ -2287,7 +2287,7 @@ server <- function(input, output, session) {
     introjs(session, 
       options = list(steps=steps(),
                      "nextLabel"="Berikutnya",
-                     "prevLabel"="Kembali",
+                     "prevLabel"="Sebelumnya",
                      "skipLabel"="Lewati",
                      "doneLabel"="Selesai",
                      "scrollToElement"=TRUE,
