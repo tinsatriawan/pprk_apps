@@ -5,17 +5,17 @@ header <- dashboardHeader(
   dropdownMenu(type = "tasks",
     icon = icon("info fa-1g"),
     badgeStatus = NULL,
-    headerText = "Tentang",
+    headerText = "Informasi",
     notificationItem(
       text = actionButton('quickTour', label=" Panduan interaktif",
       icon = icon("hand-o-right")),
       icon = icon(""), status = "primary"
-    ),
-    notificationItem(
-      text = actionButton('redcluweInfo', label=" Tentang redcluwe.id",
-      icon = icon("heart")),
-      icon = icon(""), status = "primary"
-    )
+    ) #,
+    # notificationItem(
+    #   text = actionButton('redcluweInfo', label=" Tentang redcluwe.id",
+    #   icon = icon("heart")),
+    #   icon = icon(""), status = "primary"
+    # )
   )
 )
 
@@ -86,7 +86,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               tags$div(style="padding: 12px 15px 5px 15px;", downloadButton('downloadReport', 'Unduh Ringkasan', style="color: #fff; background-color: #00a65a; border-color: #008d4c;"))
     ),
     ###sidebar-bau####
-    menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), 
+    menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), id="bau",
               menuSubItem("Input", tabName = "pageFour"),
               selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2", "Tipe 3")),
               selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
@@ -111,7 +111,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                         )
     ),
     ###sidebar-intervention####
-    menuItem("Skenario Intervensi", icon = icon("random"), 
+    menuItem("Skenario Aksi", icon = icon("random"), id="intervensi",
               menuSubItem("Input", tabName = "pageSeven"),
               selectInput("interTableOutput",
                         label="Pilih tipe intervensi:",
@@ -120,17 +120,17 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                   # "Tabel Satelit Sektor Limbah"
                                   )
                         ),
-              textInput("scenarioName", "Nama aksi:", value=""),
-              selectInput("yearInter", "Tahun awal intervensi:", choices = 1990:2100, selected=2015),
+              textInput("scenarioName", "Nama skenario aksi:", value=""),
+              selectInput("yearInter", "Tahun skenario aksi:", choices = 1990:2100, selected=2015),
               uiOutput("selectizeSector"),
               menuSubItem("Results", tabName = "pageEight")
     ),
-    menuItem("Bantuan", icon = icon("question-circle"), tabName="help")
+    menuItem("Tentang redcluwe.id", icon = icon("question-circle"), tabName="help")
   )
 )
 
 ###*body####
-body <- dashboardBody( 
+body <- dashboardBody(
   ###*tab-home####
   tabItems(
     tabItem(tabName = "home",
@@ -138,61 +138,20 @@ body <- dashboardBody(
     ),
     ###*tab-historis####
     tabItem(tabName = "pageOne",
-      # selectInput("province", "Pilih provinsi:",
-      #             list(`Barat` = list("Aceh" = "Aceh", "Bangka Belitung"="Babel", "Bengkulu"="Bengkulu", "Jambi"="Jambi", "Kepulauan Riau"="Kepri",
-      #               "Lampung"="Lampung", "Riau"="Riau", "Sumatera Barat"="Sumbar", "Sumatera Selatan"="Sumsel", "Sumatera Utara"="Sumut"),
-      #               `Tengah` = list("Bali"="Bali","Banten"="Banten", "Jawa Barat"="Jawa_Barat",
-      #               "Jawa Tengah"="Jawa_Tengah","Jawa Timur"="Jawa_Timur","Kalimantan Barat"="Kalimantan_Barat",
-      #               "Kalimantan Selatan"="Kalimantan_Selatan","Kalimantan Tengah"="Kalimantan_Tengah",
-      #               "Nusa Tenggara Barat"="Nusa_Tenggara_Barat","Nusa Tenggara Timur"="Nusa_Tenggara_Timur","Yogyakarta"="DI_Yogyakarta"),
-      #               `Timur` = list("Gorontalo"="Gorontalo", "Kalimantan Timur"="Kalimantan_Timur", "Maluku"="Maluku", "Maluku Utara"="Maluku_Utara",
-      #               "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
-      #               "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
-      # ),
       fluidRow(
-        # column(width = 12,
-        #   box(title="Populasi", status="primary", width = NULL, collapsible = TRUE, solidHeader=TRUE,
-        #     numericInput("popDensTable", "Tabel Populasi Penduduk (Jiwa)", min=0, value=1000000)
-        #   )
-        #   actionButton("button", "Submit")
-        # ),
-        
-        # tabBox(
-        #   title = "First tabBox",
-        #   width = 12,
-        #   id = "tabset1", 
-        #   selected = "Tab1",
-        #   tabPanel("Tab1", 
-        #     div(style="overflow-x: scroll", dataTableOutput('tableIO'))
-        #   ),
-        #   tabPanel("Tab1", 
-        #     div(style="overflow-x: scroll", dataTableOutput('SatelitTenagaKerja'))
-        #   ),
-        #   tabPanel("Tab1", 
-        #     div(style="overflow-x: scroll", dataTableOutput('SatelitEnergi'))
-        #   ),
-        #   tabPanel("Tab1", 
-        #     div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
-        #   )
-        # )
         h3(style="padding-left: 15px;", textOutput("yearIO")),
-        column(width = 12, id="boxIO",
-          box(title="Table Input-Output", width = NULL, status="warning", solidHeader=TRUE, 
+        
+        tabBox(id="tabPanelHistori", width = 12, 
+          tabPanel("Table Input-Output", id="boxIO",
             div(style="overflow-x: scroll", dataTableOutput('tableIO'))
-          )
-        ),
-        column(width = 12, id="boxLabour",
-          box(title="Satellite Labour", width = NULL, status="warning", solidHeader=TRUE, 
+          ),
+          tabPanel("Tabel Tenaga Kerja", id="boxLabour", 
             div(style="overflow-x: scroll", dataTableOutput('SatelitTenagaKerja'))
-          )
-        ),
-        column(width = 12, id="boxEnergy",
-          box(title="Satellite Energy", width = NULL, status="warning", solidHeader=TRUE,
+          ),
+          tabPanel("Tabel Satelit Energi", id="boxEnergy",
             div(style="overflow-x: scroll", dataTableOutput('SatelitEnergi'))
-          )
-        ),
-        column(width = 12, id="boxWaste",
-          box(title="Satellite Waste", width = NULL, status="warning", solidHeader=TRUE,
+          ),
+          tabPanel("Tabel Satelit Limbah", id="boxWaste",
             div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
           )
         )
@@ -314,12 +273,24 @@ body <- dashboardBody(
             plotlyOutput("plotlyResultsInter")
     ),
     tabItem(tabName = "help",
+      h2("Perencanaan Pembangunan Rendah Karbon"),
       tags$div(class = "header", checked = NA,
-        tags$p("Ini halaman bantuan, untuk ilustrasi letakkan di folder www"),
-        tags$a(href = "#", "Ini link!")
+        tags$p("Pertumbuhan ekonomi selama ini cenderung diikuti dengan penurunan kualitas lingkungan.
+                Korelasi negatif ini menjadi tantangan bersama dalam pembangunan berkelanjutan.
+                Penerapan Pembangunan Rendah Karbon menjadi perspektif baru dalam mendorong
+                perencanaan pembangunan yang lebih baik."),
+        tags$p("Pembangunan Rendah Karbon bertujuan Menurunkan emisi Gas Rumah Kaca serta
+                mengintegrasikan pertumbuhan ekonomi, pengentasan kemiskinan dan stabilitas sosial.
+                Pembangunan Rendah Karbon juga merupakan tindak lanjut dari program penurunan emisi
+                Indonesia yang dituangkan dalam Rencana Aksi Nasional maupun Rencana Aksi Daerah
+                Gas Rumah Kaca (RAN/RAD GRK)."),
+        h3("redcluwe.id"),
+        tags$p("Reducing Carbon Intensity of Landuse, Waste and Energy (redcluwe.id) adalah alat bantu proses transformasi Rencana Aksi Daerah - Gas Rumah Kaca (RAD-GRK) menjadi Perencanaan Pembangunan Rendah Karbon (PPRK)."),
+        tags$p("Untuk menjalankan panduan interaktif menggunakan redcluwe.id, silahkan klik menu di kanan atas aplikasi ini.")
       )
     )
- )
+  ),
+  useShinyjs()
 )
 
 shinyUI(
