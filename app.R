@@ -1291,7 +1291,7 @@ server <- function(input, output, session) {
     labour_table <- results$labour_table
     energy_consumption_table <- results$energy_consumption_table 
     energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
+    waste_disposal_table <- results$waste_disposal_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
     
@@ -1327,9 +1327,9 @@ server <- function(input, output, session) {
       # ggplot(data=graph, aes(x=sector, y=income)) +
       #   geom_bar(colour="blue", stat="identity") +
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
-      colnames(GDP_all) = c("year", "PDRB")
-      gplot6<-ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point
+      income_all <- aggregate(x = income_table$income, by = list(income_table$year), FUN = sum)
+      colnames(income_all) = c("year", "income")
+      gplot6<-ggplot(data=income_all, aes(x=year, y=income, group=1)) + geom_line() + geom_point()
       ggplotly(gplot6)
       
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
@@ -1368,11 +1368,11 @@ server <- function(input, output, session) {
 
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
       removeUI(selector = '#baupdrb')
-      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      graph <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
       #   geom_bar(colour="blue", stat="identity") +
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      waste_all <- aggregate(x = waste_consumption_table$Tconsumption, by = list(waste_consumption_table$year), FUN = sum)
+      waste_all <- aggregate(x = waste_disposal_table$Tconsumption, by = list(waste_disposal_table$year), FUN = sum)
       colnames(waste_all) = c("year", "Waste")
       gplot10<-ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
       ggplotly(gplot10)
@@ -1412,7 +1412,7 @@ server <- function(input, output, session) {
     labour_table <- results$labour_table
     energy_consumption_table <- results$energy_consumption_table 
     energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
+    waste_disposal_table <- results$waste_disposal_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
     
@@ -1434,7 +1434,7 @@ server <- function(input, output, session) {
       tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
       tables
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-      tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       tables
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
@@ -1459,7 +1459,7 @@ server <- function(input, output, session) {
       labour_table <- results$labour_table
       energy_consumption_table <- results$energy_consumption_table 
       energy_emission_table <- results$energy_emission_table 
-      waste_consumption_table <- results$waste_consumption_table  
+      waste_disposal_table <- results$waste_disposal_table  
       waste_emission_table <- results$waste_emission_table 
       total_emission_table <- results$total_emission_table
       
@@ -1476,7 +1476,7 @@ server <- function(input, output, session) {
       } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
         tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-        tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+        tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
         tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Total Emisi"){
