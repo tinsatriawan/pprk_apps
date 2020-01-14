@@ -13,6 +13,8 @@ library(dplyr)
 library(DT)
 library(formattable)
 library(rhandsontable)
+library(stringr)
+
 #library(ggradar)
 # library(RColorBrewer)
 
@@ -29,7 +31,7 @@ server <- function(input, output, session) {
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
-  allDataProv <- reactiveValues(
+    allDataProv <- reactiveValues(
     username = NULL,
     prov = NULL,
     sector = NULL,
@@ -50,6 +52,8 @@ server <- function(input, output, session) {
     I_A = NULL,
     leontief = NULL,
     GDPAll = NULL,
+    LU_tahun=NULL,
+    LDMprop=NULL,
     linkagesTable = NULL,
     multiplierAll = NULL,
     periodIO = NULL,
@@ -94,10 +98,12 @@ server <- function(input, output, session) {
     otherEm <- readRDS(paste0(datapath, "otherEm"))
     # landDemand <- readRDS(paste0(datapath, "landDemand"))
     # landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
-    landtable <- readRDS(paste0(datapath, "landtable"))
+    #landtable <- readRDS(paste0(datapath, "landtable"))
     I_A <- readRDS(paste0(datapath, "I_A"))
     leontief <- readRDS(paste0(datapath, "leontief"))
     GDPAll <- readRDS(paste0(datapath, "GDPAll"))
+    LU_tahun <-readRDS(paste0(datapath,"LU_tahun"))
+    LDMprop<-readRDS(paste0(datapath,"LDMprop"))
     linkagesTable <- readRDS(paste0(datapath, "linkagesTable"))
     multiplierAll <- readRDS(paste0(datapath, "multiplierAll"))
     periodIO <- readRDS(paste0(datapath, "periodIO"))
@@ -122,7 +128,9 @@ server <- function(input, output, session) {
     # allDataProv$landDemand_prop = landDemand_prop 
     allDataProv$I_A = I_A 
     allDataProv$leontief = leontief 
-    allDataProv$GDPAll = GDPAll 
+    allDataProv$GDPAll = GDPAll
+    allDataProv$LU_tahun = LU_tahun
+    allDataProv$LDMprop = LDMprop
     allDataProv$linkagesTable = linkagesTable 
     allDataProv$multiplierAll = multiplierAll 
     allDataProv$periodIO = periodIO 
@@ -145,10 +153,12 @@ server <- function(input, output, session) {
       otherEm = otherEm,
       # landDemand = landDemand,
       # landDemand_prop = landDemand_prop,
-      landtable = landtable,
+      #landtable = landtable,
       I_A = I_A,
       leontief = leontief,
       GDPAll = GDPAll,
+      LU_tahun = LU_tahun,
+      LDMprop = LDMprop,
       linkagesTable = linkagesTable,
       multiplierAll = multiplierAll,
       periodIO = periodIO,
@@ -176,10 +186,12 @@ server <- function(input, output, session) {
     otherEm <- allData$otherEm
     # landDemand <- allData$landDemand
     # landDemand_prop <- allData$landDemand_prop
-    landtable <- allData$landtable
+    #landtable <- allData$landtable
     I_A <- allData$I_A
     leontief <- allData$leontief
     GDPAll <- allData$GDPAll
+    LU_tahun <- allData$LU_tahun
+    LDMprop <- allData$LDMprop
     linkagesTable <- allData$linkagesTable
     multiplierAll <- allData$multiplierAll
     periodIO <- allData$periodIO
@@ -261,6 +273,7 @@ server <- function(input, output, session) {
     
     # Income per capita
     income_per_capita <- sum(as.matrix(addval_matrix[income_row,])) / input$popDensTable
+    
       
     result <- cbind(sector,
                     DBL,
@@ -283,7 +296,10 @@ server <- function(input, output, session) {
     list_table <- list(result=result,
                        sector=sector, 
                        indem=indem, 
-                       findem=findem, 
+                       findem=findem,
+                       LU_tahun=LU_tahun,
+                       GDPAll=GDPAll,
+                       LDMprop=LDMprop,
                        addval=addval, 
                        labour=labour, 
                        energy=energy, 
@@ -292,7 +308,6 @@ server <- function(input, output, session) {
                        waste=waste,
                        ef_waste=ef_waste,
                        ef_energy=ef_energy,
-                       landtable=landtable,
                        income_per_capita=income_per_capita,
                        otherEm=otherEm,
                        population=population
@@ -301,178 +316,196 @@ server <- function(input, output, session) {
   }
   
   ###*historical input####
-  allInputs <- eventReactive(input$button, {
-    inSector <- input$sector
-    if(is.null(inSector))
-      return(NULL)
-    
-    inIntermediateDemand <- input$intermediateDemand
-    if(is.null(inIntermediateDemand))
-      return(NULL)
-
-    inFinalDemand <- input$finalDemand
-    if(is.null(inFinalDemand))
-      return(NULL)
-    
-    inAddedValue <- input$addedValue
-    if(is.null(inAddedValue))
-      return(NULL)    
-    
-    inLabour <- input$labour
-    if(is.null(inLabour))
-      return(NULL)
-    
-    inEnergy <- input$energyTable
-    if(is.null(inEnergy))
-      return(NULL) 
-    
-    inWaste <- input$wasteTable
-    if(is.null(inWaste))
-      return(NULL)
-    
-    inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
-    if(is.null(inEmissionFactorEnergiTable))
-      return(NULL)
-    
-    inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
-    if(is.null(inEmissionFactorLandWasteTable))
-      return(NULL)
-    
-    inFinalDemandComp <- input$finalDemandComponent
-    if(is.null(inFinalDemandComp))
-      return(NULL) 
-    
-    inAddedValueComp <- input$addedValueComponent
-    if(is.null(inAddedValueComp))
-      return(NULL)  
-    
-    sector <- read.table(inSector$datapath, header=FALSE, sep=",")
-    indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
-    findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
-    addval <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
-    labour <- read.table(inLabour$datapath, header=TRUE, sep=",")
-    energy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
-    waste <- read.table(inWaste$datapath, header=TRUE, sep=",")
-    ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
-    ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
-    findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
-    addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
-    
-    # Row explicit definition
-    incomeRow <- 2
-    
-    indem_matrix <- as.matrix(indem)
-    addval_matrix <- as.matrix(addval)
-    num_addval <- nrow(addval_matrix)
-    dimensi <- ncol(indem_matrix)
-    
-    indem_colsum <- colSums(indem_matrix)
-    addval_colsum <- colSums(addval_matrix)
-    fin_con <- 1/(indem_colsum+addval_colsum)
-    fin_con[is.infinite(fin_con)] <- 0
-    tinput_invers <- diag(fin_con)
-    A <- indem_matrix %*% tinput_invers
-    I <- as.matrix(diag(dimensi))
-    I_A <- I-A
-    leontief <- solve(I_A)
-    
-    # Backward Linkage
-    DBL <- colSums(leontief)
-    DBL <- DBL/(mean(DBL))
-    # Forward Linkage
-    DFL <- rowSums(leontief)
-    DFL <- DFL/(mean(DFL))
-    # GDP
-    GDP <- colSums(addval_matrix[2:num_addval,])
-    # Multiplier Output
-    multiplierOutput <- colSums(leontief)
-    # Multiplier Income
-    income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
-    income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
-    InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
-    multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
-    multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
-    multiplierIncome[is.na(multiplierIncome)] <- 0
-    # Labour
-    labour_coef <- tinput_invers %*% as.matrix(labour[,3])
-    labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
-    InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
-    multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
-    multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
-    multiplierLabour[is.na(multiplierLabour)] <- 0
-    # Multiplier Energy Used
-    energy_coef <- tinput_invers %*% as.matrix(energy[,3])
-    energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
-    InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
-    multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
-    multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
-    multiplierEnergy[is.na(multiplierEnergy)] <- 0
-    # Multiplier Waste Product
-    waste_coef <- tinput_invers %*% as.matrix(waste[,3])
-    waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
-    InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
-    multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
-    multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
-    multiplierWaste[is.na(multiplierWaste)] <- 0
-    # Ratio Wages / Business Surplus
-    ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
-    ratio_ws[is.na(ratio_ws)] <- 0
-    ratio_ws[ratio_ws == Inf] <- 0
-    colnames(ratio_ws) <- "ratio_ws"
-    # Koefisien Intensitas Energi
-    # total sectoral energy cons / sectoral GDP
-    coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
-    # Koefisien Produk Limbah
-    coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
-    # Emission from energy
-    f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
-    em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag # need to count ncol
-    em_energy_total <- rowSums(em_energy)
-    # Emission from waste
-    f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
-    em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag # need to count ncol
-    em_waste_total <- rowSums(em_waste)
-    # Wages
-    wages <- as.matrix(t(addval[2,]))
-    colnames(wages) <- "wages"
-    
-    # Income per capita
-    income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
-      
-    result <- cbind(sector,
-                    DBL,
-                    DFL, 
-                    GDP, 
-                    multiplierOutput, 
-                    multiplierIncome,
-                    multiplierLabour,
-                    multiplierEnergy,
-                    multiplierWaste,
-                    wages,
-                    ratio_ws, 
-                    coef_energy,
-                    coef_waste,
-                    em_energy_total,
-                    em_waste_total
-                    )
-    colnames(result)[1] <- "Sektor"
-    
-    list_table <- list(result=result, 
-                       sector=sector, 
-                       indem=indem, 
-                       findem=findem, 
-                       addval=addval, 
-                       labour=labour, 
-                       energy=energy, 
-                       findemcom=findemcom, 
-                       addvalcom=addvalcom,
-                       waste=waste,
-                       ef_waste=ef_waste,
-                       ef_energy=ef_energy,
-                       income_per_capita=income_per_capita
-                    ) 
-    list_table
-  })
+  # allInputs <- eventReactive(input$button, {
+  #   inSector <- input$sector
+  #   if(is.null(inSector))
+  #     return(NULL)
+  #   
+  #   inIntermediateDemand <- input$intermediateDemand
+  #   if(is.null(inIntermediateDemand))
+  #     return(NULL)
+  # 
+  #   inFinalDemand <- input$finalDemand
+  #   if(is.null(inFinalDemand))
+  #     return(NULL)
+  #   
+  #   inAddedValue <- input$addedValue
+  #   if(is.null(inAddedValue))
+  #     return(NULL)    
+  #   
+  #   inLabour <- input$labour
+  #   if(is.null(inLabour))
+  #     return(NULL)
+  #   
+  #   inEnergy <- input$energyTable
+  #   if(is.null(inEnergy))
+  #     return(NULL) 
+  #   
+  #   inWaste <- input$wasteTable
+  #   if(is.null(inWaste))
+  #     return(NULL)
+  #   
+  #   inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
+  #   if(is.null(inEmissionFactorEnergiTable))
+  #     return(NULL)
+  #   
+  #   inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
+  #   if(is.null(inEmissionFactorLandWasteTable))
+  #     return(NULL)
+  #   
+  #   inFinalDemandComp <- input$finalDemandComponent
+  #   if(is.null(inFinalDemandComp))
+  #     return(NULL) 
+  #   
+  #   inAddedValueComp <- input$addedValueComponent
+  #   if(is.null(inAddedValueComp))
+  #     return(NULL)  
+  #   
+  #   inLU_tahun <- input$LU_tahun
+  #   if(is.null(inLU_tahun))
+  #     return(NULL)
+  #   
+  #   inGDPAll<-input$GDPAll
+  #   if(is.null(inGDPAll))
+  #      return(NULL)
+  #   
+  #   inLDMprop <- input$LDMprop
+  #   if(is.null(inLDMprop))
+  #     return(NULL)
+  #   
+  #   sector <- read.table(inSector$datapath, header=FALSE, sep=",")
+  #   indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
+  #   findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
+  #   addval <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
+  #   labour <- read.table(inLabour$datapath, header=TRUE, sep=",")
+  #   energy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
+  #   waste <- read.table(inWaste$datapath, header=TRUE, sep=",")
+  #   ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
+  #   ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+  #   findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
+  #   addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
+  #   LU_tahun <- read.table(inLU_tahun$datapath, header = TRUE, sep=",")
+  #   GDPAll<-read.table(inGDPAll$datapath, header = FALSE, sep=",")
+  #   LDMprop<-read.table(inLDMprop$datapath, header=FALSE,sep=",")
+  #   
+  #   # Row explicit definition
+  #   incomeRow <- 2
+  #   
+  #   indem_matrix <- as.matrix(indem)
+  #   addval_matrix <- as.matrix(addval)
+  #   num_addval <- nrow(addval_matrix)
+  #   dimensi <- ncol(indem_matrix)
+  #   
+  #   indem_colsum <- colSums(indem_matrix)
+  #   addval_colsum <- colSums(addval_matrix)
+  #   fin_con <- 1/(indem_colsum+addval_colsum)
+  #   fin_con[is.infinite(fin_con)] <- 0
+  #   tinput_invers <- diag(fin_con)
+  #   A <- indem_matrix %*% tinput_invers
+  #   I <- as.matrix(diag(dimensi))
+  #   I_A <- I-A
+  #   leontief <- solve(I_A)
+  #   
+  #   # Backward Linkage
+  #   DBL <- colSums(leontief)
+  #   DBL <- DBL/(mean(DBL))
+  #   # Forward Linkage
+  #   DFL <- rowSums(leontief)
+  #   DFL <- DFL/(mean(DFL))
+  #   # GDP
+  #   GDP <- colSums(addval_matrix[2:num_addval,])
+  #   # Multiplier Output
+  #   multiplierOutput <- colSums(leontief)
+  #   # Multiplier Income
+  #   income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+  #   income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+  #   InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+  #   multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+  #   multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+  #   multiplierIncome[is.na(multiplierIncome)] <- 0
+  #   # Labour
+  #   labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+  #   labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+  #   InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+  #   multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+  #   multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+  #   multiplierLabour[is.na(multiplierLabour)] <- 0
+  #   # Multiplier Energy Used
+  #   energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+  #   energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  #   InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+  #   multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+  #   multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+  #   multiplierEnergy[is.na(multiplierEnergy)] <- 0
+  #   # Multiplier Waste Product
+  #   waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+  #   waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  #   InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+  #   multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+  #   multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+  #   multiplierWaste[is.na(multiplierWaste)] <- 0
+  #   # Ratio Wages / Business Surplus
+  #   ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
+  #   ratio_ws[is.na(ratio_ws)] <- 0
+  #   ratio_ws[ratio_ws == Inf] <- 0
+  #   colnames(ratio_ws) <- "ratio_ws"
+  #   # Koefisien Intensitas Energi
+  #   # total sectoral energy cons / sectoral GDP
+  #   coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
+  #   # Koefisien Produk Limbah
+  #   coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
+  #   # Emission from energy
+  #   f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
+  #   em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag # need to count ncol
+  #   em_energy_total <- rowSums(em_energy)
+  #   # Emission from waste
+  #   f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
+  #   em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag # need to count ncol
+  #   em_waste_total <- rowSums(em_waste)
+  #   # Wages
+  #   wages <- as.matrix(t(addval[2,]))
+  #   colnames(wages) <- "wages"
+  #   
+  #   # Income per capita
+  #   income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
+  #     
+  #   result <- cbind(sector,
+  #                   DBL,
+  #                   DFL, 
+  #                   GDP, 
+  #                   multiplierOutput, 
+  #                   multiplierIncome,
+  #                   multiplierLabour,
+  #                   multiplierEnergy,
+  #                   multiplierWaste,
+  #                   wages,
+  #                   ratio_ws, 
+  #                   coef_energy,
+  #                   coef_waste,
+  #                   em_energy_total,
+  #                   em_waste_total
+  #                   )
+  #   colnames(result)[1] <- "Sektor"
+  #   
+  #   list_table <- list(result=result, 
+  #                      sector=sector, 
+  #                      indem=indem, 
+  #                      findem=findem, 
+  #                      addval=addval, 
+  #                      labour=labour, 
+  #                      energy=energy, 
+  #                      findemcom=findemcom, 
+  #                      addvalcom=addvalcom,
+  #                      waste=waste,
+  #                      ef_waste=ef_waste,
+  #                      ef_energy=ef_energy,
+  #                      income_per_capita=income_per_capita,
+  #                      LU_tahun=LU_tahun,
+  #                      GDPAll=GDPAll,
+  #                      LDMprop=LDMprop
+  #                   ) 
+  #   list_table
+  # })
   
   output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$periodIO) })
   
@@ -494,7 +527,7 @@ server <- function(input, output, session) {
     }
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
-    landtable <- sec$landtable
+    #landtable <- sec$landtable
     graph <- data.frame(Sektor="", Analysis="")
     
     if(input$categorySector=="Ekonomi"){
@@ -982,6 +1015,9 @@ server <- function(input, output, session) {
     sector <- sec$sector
     indem <- sec$indem
     findem <- sec$findem
+    LU_tahun <- sec$LU_tahun
+    GDPAll <- sec$GDPAll
+    LDMprop <- sec$LDMprop
     addval <- sec$addval
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
@@ -1071,6 +1107,50 @@ server <- function(input, output, session) {
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
     
+    #calculation of Proyeksi PDRB sektor lahan=====
+    LU_tahun<-as.data.frame(LU_tahun)
+    LU_tahun<-as.matrix(LU_tahun)
+    LDMdimcol<-ncol(LDMprop)
+    LDMdimrow<-nrow(LDMprop)
+    LDMprop<-as.matrix(LDMprop)
+    GDPAll<-as.data.frame(GDPAll)
+    
+    diagLU <- list()
+    landtable<-list()
+    landreq<-matrix(nrow=nrow(LDMprop),ncol=ncol(LU_tahun))
+    
+    for (i in 1:ncol(LU_tahun)){
+      diagLU[[i]]<-as.matrix(diag(LU_tahun[,i]))
+      landtable[[i]]<-LDMprop%*%diagLU[[i]]
+      landreq[,i]<-as.matrix(rowSums(landtable[[i]]))
+    }
+    
+    LPC<-GDPAll[,4]/landreq[,1]
+    LPC[is.infinite(LPC)]<-0
+    LRC<-1/LPC
+    LRC[is.infinite(LRC)]<-0
+    landtable_t0<-cbind(landtable[[1]],landreq[,1], LPC, LRC)
+    Prop_GDP<-GDPAll$GDP/GDPAll$OUTPUT
+    
+    GDPlahan_tahun<-matrix(nrow=nrow(landreq), ncol=ncol(landreq))
+    # GDP_BAU<-matrix(ncol=ncol(landreq))
+    # colnames(GDP_BAU)<-tahun
+    
+    for(x in 1:ncol(landreq)){
+      GDPlahan_tahun[,x]<-landreq[,x]*landtable_t0[,"LPC"]*Prop_GDP
+    }
+    
+    GDPlahan_tahun[is.na(GDPlahan_tahun)]<-0
+    #colnames(GDP_tahun)<-tahun
+    
+    GDP_BAU<-as.data.frame(colSums(GDPlahan_tahun))
+    tahun<-as.vector(str_extract_all(colnames(LU_tahun), '[0-9]+'))
+    tahun<-as.data.frame(tahun)
+    tahun<-t(tahun)
+    GDP_BAU<-cbind(tahun,GDP_BAU)
+    colnames(GDP_BAU)=c("year","PDRB")
+  
+      
     stepN <- endT-startT
     for(s in 1:stepN){
       if(s == 1){
@@ -1080,6 +1160,10 @@ server <- function(input, output, session) {
         findem_series <- findem_rowsum
         tStamps <- paste0("y", startT)
         tOutputSeries <- leontief %*% findem_rowsum
+        # PDRB sektor lahan compile table
+        # GDPlahan_series <- data.frame(sector.id=1:nrow(sector), sector=sector[,1], stringsAsFactors = FALSE)
+        # eval(parse(text=paste0("GDPlahan_series$x",startT,"<-GDPlahan_tahun")))
+        # eval(parse(text=paste0("GDPlahan$y", startT)))
         # blank lists for keeping intDemandSeries; addValueSeries; finDemCompSeries
         intDemandSeries <- list()
         addValueSeries <- list()
@@ -1135,6 +1219,28 @@ server <- function(input, output, session) {
       GDPOutput <- data.frame(rbind(GDPOutput, add.row), stringsAsFactors = FALSE)
     }
     GDPOutput <- GDPOutput[GDPOutput$year != 0, ] # remove initial values
+    
+    print(GDPOutput)
+
+    # # # PDRB sektor lahan
+    colnames(GDPlahan_tahun)<-tahun
+    #GDPlahan<-data.frame(sector.id=1:nrow(sector), sector = sector[,1], GDPlahan_tahun)
+    GDPlahan<-data.frame(sector.id=1:nrow(GDPlahan_tahun),sector=1:nrow(GDPlahan_tahun), GDPlahan_tahun)
+    #GDPlahan<-cbind(GDPlahan, GDPlahan_tahun)
+
+    #GDPlahan_result<-data.frame(year=0, id.sector=0, sector="", GDP=0)
+    GDPlahan_result<-data.frame(year=0, id.sector=0, sector=0, GDP=0)
+    for (x in 3:ncol(GDPlahan)){
+      newtable<- GDPlahan[,c(1,2,x)]
+      names(newtable) <- c("id.sector", "sector", "GDP")
+      yearcol<-(str_extract_all(colnames(GDPlahan), '[0-9]+'))
+      newtable$year<-yearcol[x]
+      newtable<-newtable[,colnames(GDPlahan_result)]
+      GDPlahan_result<-data.frame(rbind(newtable, GDPlahan_result))
+    }
+    
+    GDPlahan_table <- GDPlahan_result[GDPlahan_result$year != 0, ] # remove initial values
+
     
     # 2. Income per capita (ind. 9)
     incomePerCapitaOutput <- data.frame(year = 0, Income.per.capita = 0)
@@ -1268,7 +1374,9 @@ server <- function(input, output, session) {
                      AVSeries = addValueSeries,
                      GDP_rate = gdpRate,
                      dateTo = endT,
-                     dateFrom = startT
+                     dateFrom = startT,
+                     GDP_BAU = GDP_BAU,
+                     GDPlahan_table = GDPlahan_table
                     ) 
     list_bau
   })
@@ -1288,6 +1396,8 @@ server <- function(input, output, session) {
     waste_consumption_table <- results$waste_consumption_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
+    GDP_BAU <- results$GDP_BAU
+
     
     if(input$bauResults == "Proyeksi PDRB"){
       removeUI(selector = '#baupdrb')
@@ -1395,7 +1505,11 @@ server <- function(input, output, session) {
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
-    
+    else if(input$bauResults == "Proyeksi PDRB Sektor Lahan"){
+      removeUI(selector = '#baupdrb')
+      gplot26<-ggplot(data=GDP_BAU, aes(x=year, y=PDRB, group=1))+ geom_line() + geom_point()
+      ggplotly(gplot26)
+    }
   })
   
   output$tableResultsBAU <- renderDataTable({
@@ -1409,6 +1523,7 @@ server <- function(input, output, session) {
     waste_consumption_table <- results$waste_consumption_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
+    GDPlahan_table<- results$GDPlahan_table
     
     if(input$bauResults == "Proyeksi PDRB"){
       tables <- GDP_table[GDP_table$year==input$selectedYear,]
@@ -1437,6 +1552,11 @@ server <- function(input, output, session) {
       return(NULL)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
+    # } else if(input$bauResults == "Proyeksi PDRB Sektor Lahan"){
+    #   tables <-GDP_BAU_table[GDP_]
+    } else if(input$bauResults == "Proyeksi PDRB Sektor Lahan"){
+      tables <- GDPlahan_table[GDPlahan_table$year==input$selectedYear,]
+      tables
     }
     datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)

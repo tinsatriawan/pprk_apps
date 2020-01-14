@@ -107,7 +107,8 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                   "Proyeksi Buangan Limbah",
                                   "Proyeksi Emisi Terkait Buangan Limbah",
                                   "Proyeksi Total Emisi",
-                                  "Proyeksi Intensitas Emisi"
+                                  "Proyeksi Intensitas Emisi",
+                                  "Proyeksi PDRB Sektor Lahan"
                                   )
                         )
     ),
@@ -248,7 +249,7 @@ body <- dashboardBody(
           )
         ),
         conditionalPanel(
-          condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
+          condition="input.bauResults!='Proyeksi Upah per Kapita' & 'input.bauResults!='Proyeksi PDRB Sektor Lahan' & input.bauResults!='Proyeksi Total Emisi'",
           uiOutput("yearSelection")
         ),
         plotlyOutput("plotlyResultsBAU"),
