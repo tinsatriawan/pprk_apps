@@ -305,12 +305,12 @@ server <- function(input, output, session) {
     return(list_table)
   }
   
-  ###*historical input####
+# ###*historical input####
   allInputs <- eventReactive(input$button, {
     inSector <- input$sector
     if(is.null(inSector))
       return(NULL)
-    
+
     inIntermediateDemand <- input$intermediateDemand
     if(is.null(inIntermediateDemand))
       return(NULL)
@@ -318,39 +318,39 @@ server <- function(input, output, session) {
     inFinalDemand <- input$finalDemand
     if(is.null(inFinalDemand))
       return(NULL)
-    
+
     inAddedValue <- input$addedValue
     if(is.null(inAddedValue))
-      return(NULL)    
-    
+      return(NULL)
+
     inLabour <- input$labour
     if(is.null(inLabour))
       return(NULL)
-    
+
     inEnergy <- input$energyTable
     if(is.null(inEnergy))
-      return(NULL) 
-    
+      return(NULL)
+
     inWaste <- input$wasteTable
     if(is.null(inWaste))
       return(NULL)
-    
+
     inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
     if(is.null(inEmissionFactorEnergiTable))
       return(NULL)
-    
+
     inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
     if(is.null(inEmissionFactorLandWasteTable))
       return(NULL)
-    
+
     inFinalDemandComp <- input$finalDemandComponent
     if(is.null(inFinalDemandComp))
-      return(NULL) 
-    
+      return(NULL)
+
     inAddedValueComp <- input$addedValueComponent
     if(is.null(inAddedValueComp))
-      return(NULL)  
-    
+      return(NULL)
+
     sector <- read.table(inSector$datapath, header=FALSE, sep=",")
     indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
     findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
@@ -362,15 +362,15 @@ server <- function(input, output, session) {
     ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
     findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
     addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
-    
+
     # Row explicit definition
     incomeRow <- 2
-    
+
     indem_matrix <- as.matrix(indem)
     addval_matrix <- as.matrix(addval)
     num_addval <- nrow(addval_matrix)
     dimensi <- ncol(indem_matrix)
-    
+
     indem_colsum <- colSums(indem_matrix)
     addval_colsum <- colSums(addval_matrix)
     fin_con <- 1/(indem_colsum+addval_colsum)
@@ -380,7 +380,7 @@ server <- function(input, output, session) {
     I <- as.matrix(diag(dimensi))
     I_A <- I-A
     leontief <- solve(I_A)
-    
+
     # Backward Linkage
     DBL <- colSums(leontief)
     DBL <- DBL/(mean(DBL))
@@ -440,47 +440,47 @@ server <- function(input, output, session) {
     # Wages
     wages <- as.matrix(t(addval[2,]))
     colnames(wages) <- "wages"
-    
+
     # Income per capita
     income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
-      
+
     result <- cbind(sector,
                     DBL,
-                    DFL, 
-                    GDP, 
-                    multiplierOutput, 
+                    DFL,
+                    GDP,
+                    multiplierOutput,
                     multiplierIncome,
                     multiplierLabour,
                     multiplierEnergy,
                     multiplierWaste,
                     wages,
-                    ratio_ws, 
+                    ratio_ws,
                     coef_energy,
                     coef_waste,
                     em_energy_total,
                     em_waste_total
                     )
     colnames(result)[1] <- "Sektor"
-    
-    list_table <- list(result=result, 
-                       sector=sector, 
-                       indem=indem, 
-                       findem=findem, 
-                       addval=addval, 
-                       labour=labour, 
-                       energy=energy, 
-                       findemcom=findemcom, 
+
+    list_table <- list(result=result,
+                       sector=sector,
+                       indem=indem,
+                       findem=findem,
+                       addval=addval,
+                       labour=labour,
+                       energy=energy,
+                       findemcom=findemcom,
                        addvalcom=addvalcom,
                        waste=waste,
                        ef_waste=ef_waste,
                        ef_energy=ef_energy,
                        income_per_capita=income_per_capita
-                    ) 
+                    )
     list_table
   })
-  
+
   output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$periodIO) })
-  
+
   output$sectorSelection <- renderUI({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -490,7 +490,7 @@ server <- function(input, output, session) {
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
-  
+
   output$plotlyResults <- renderPlotly({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -501,7 +501,7 @@ server <- function(input, output, session) {
     income_per_capita <- sec$income_per_capita
     landtable <- sec$landtable
     graph <- data.frame(Sektor="", Analysis="")
-    
+
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
         graph <- subset(analysisResult, select = c(Sektor, GDP))
@@ -536,7 +536,7 @@ server <- function(input, output, session) {
       } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
         graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
         removeUI(selector = '#pdrb')
-        removeUI(selector = '#capita') 
+        removeUI(selector = '#capita')
       } else if(input$pprkResults == "Upah gaji"){
         graph <- subset(analysisResult, select = c(Sektor, wages))
         removeUI(selector = '#pdrb')
@@ -554,19 +554,19 @@ server <- function(input, output, session) {
             id='capita'
           )
         )
-      } 
-      
+      }
+
       if(input$pprkResults == "Perbandingan Angka Pengganda"){
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
-        
+
         multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
         tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
-        
+
         normalize<- function(x){
           return((x-min(x))/(max(x)-min(x)))
         }
-        
+
         tabel_radarchart<-as.data.frame(tabel_radarchart[2:6])
         tabel_radar<-normalize(tabel_radarchart)
         nilai_temp<-t(tabel_radar)
@@ -587,30 +587,30 @@ server <- function(input, output, session) {
           )
         # tabel_radar <- tabel_radarchart
         # tabel_radar$Sektor <- NULL
-        # tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
-        #                              multiplierOutput=max(multiplierTable$multiplierOutput), 
-        #                              multiplierLabour=max(multiplierTable$multiplierLabour), 
+        # tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome),
+        #                              multiplierOutput=max(multiplierTable$multiplierOutput),
+        #                              multiplierLabour=max(multiplierTable$multiplierLabour),
         #                              multiplierEnergy=max(multiplierTable$multiplierEnergy),
-        #                              multiplierWaste=max(multiplierTable$multiplierWaste) 
+        #                              multiplierWaste=max(multiplierTable$multiplierWaste)
         #                              )
-        # tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
-        #                              multiplierOutput=min(multiplierTable$multiplierOutput),  
-        #                              multiplierLabour=min(multiplierTable$multiplierLabour),  
+        # tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),
+        #                              multiplierOutput=min(multiplierTable$multiplierOutput),
+        #                              multiplierLabour=min(multiplierTable$multiplierLabour),
         #                              multiplierEnergy=min(multiplierTable$multiplierEnergy),
-        #                              multiplierWaste=min(multiplierTable$multiplierWaste) 
+        #                              multiplierWaste=min(multiplierTable$multiplierWaste)
         #                              )
         # tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
         # radarchart(tabel_radar)
-       
+
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
         gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
           geom_bar(stat="identity", colour="black") + theme_void() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
         ggplotly(gplot)
-        
+
         # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
-        
+
         # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
         #   add_bars(orientation = 'h',name=~Sektor) %>%
         #   layout(barmode = 'stack',
@@ -630,8 +630,8 @@ server <- function(input, output, session) {
         graph <- subset(analysisResult, select = c(Sektor, em_energy_total))
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
-      } 
-      
+      }
+
       colnames(graph) <- c("Sektor", "Analisis")
       gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
         geom_bar(colour="black", stat="identity") + theme_void() +
@@ -678,13 +678,13 @@ server <- function(input, output, session) {
       } else if(input$pprkWaste == "Koefisien Produk Limbah"){
         graph <- subset(analysisResult, select = c(Sektor, coef_waste))
         removeUI(selector = '#pdrb')
-        removeUI(selector = '#capita') 
+        removeUI(selector = '#capita')
       } else if(input$pprkWaste == "Emisi dari Limbah"){
         graph <- subset(analysisResult, select = c(Sektor, em_waste_total))
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
       }
-      
+
       colnames(graph) <- c("Sektor", "Analisis")
       gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
         geom_bar(colour="black", stat="identity") + theme_void() +
@@ -697,7 +697,7 @@ server <- function(input, output, session) {
       #          yaxis = list(title ="Sektor"))
     }
   })
-  
+
   output$tableResults <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -706,7 +706,7 @@ server <- function(input, output, session) {
     }
     analysisResult <- sec$result
     landtable <- sec$landtable
-    
+
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
         tables <- subset(analysisResult, select = c(Sektor, GDP))
@@ -735,7 +735,7 @@ server <- function(input, output, session) {
       } else if(input$pprkResults == "Pendapatan per kapita"){
         return(NULL)
       } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
-        tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste)) 
+        tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
         tables
       }
     } else if(input$categorySector=="Energi"){
@@ -751,7 +751,7 @@ server <- function(input, output, session) {
       }
     } else if (input$categorySector=="Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
-        # removeUI(selector = '#plotlyResults') 
+        # removeUI(selector = '#plotlyResults')
         tables <- subset(landtable, select=-Kategori)
         tables
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
@@ -775,7 +775,7 @@ server <- function(input, output, session) {
       }  else if(input$pprkWaste == "Emisi dari Limbah"){
         tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
         tables
-      } 
+      }
     }
     datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
       formatRound(columns=c(1:length(tables)),2) %>%
@@ -792,7 +792,7 @@ server <- function(input, output, session) {
         sec <- allInputs()
       }
       analysisResult <- sec$result
-      
+
       if(input$categorySector=="Ekonomi"){
         if(input$pprkResults == "PDRB"){
           tables <- subset(analysisResult, select = c(Sektor, GDP))
@@ -822,7 +822,7 @@ server <- function(input, output, session) {
           tables <- subset(analysisResult, select = c(Sektor, coef_energy))
         } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
           tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
-        } 
+        }
       } else {
         if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
           tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
@@ -835,14 +835,14 @@ server <- function(input, output, session) {
       write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
     }
   )
-  
+
   output$downloadReport <- downloadHandler(
     filename = "report.doc",
     content = function(file){
       file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
     }
   )
-  
+
   output$tableIO <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -855,31 +855,31 @@ server <- function(input, output, session) {
     addval <- sec$addval
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
-    
+
     io_table <- cbind(sector, indem)
     colnames(io_table) <- c("Sektor", t(sector))
     io_table$`Total Permintaan Antara` <- rowSums(indem)
-    
+
     colnames(findem) <- c(t(findemcom))
     findem$`Total Permintaan Akhir` <- rowSums(findem)
     io_table <- cbind(io_table, findem)
-    
+
     total_indem <- colSums(indem)
     out_indem <- sum(total_indem)
     total_findem <- colSums(findem)
     out_findem <- sum(total_findem)
     total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
-    
+
     colnames(total_all_indem) <- colnames(io_table)
     io_table<-rbind(io_table, total_all_indem)
-    
+
     totalrow_addval <- rowSums(addval)
     totalcol_addval <- colSums(addval)
     total_addval <- sum(totalrow_addval)
     addval_table <- cbind(addvalcom, addval, totalrow_addval)
     total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
-    
-    remaining_col <- ncol(io_table) - ncol(total_addval_table) 
+
+    remaining_col <- ncol(io_table) - ncol(total_addval_table)
     for(i in 1:remaining_col){
       eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
       eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
@@ -888,13 +888,13 @@ server <- function(input, output, session) {
     colnames(total_addval_table) <- colnames(io_table)
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
-    
+
     datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
             formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
   })
-  
+
   output$SatelitTenagaKerja <- renderDataTable({
     if(debugMode){
     sec <- blackBoxInputs()
@@ -912,7 +912,7 @@ server <- function(input, output, session) {
     }
     energy <- sec$energy
   }, options=list(pageLength=100, rownames=FALSE))
-  
+
   output$SatelitLimbah <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
