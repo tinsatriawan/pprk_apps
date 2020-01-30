@@ -94,6 +94,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
               # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
               actionButton("generateBAUTable", "Buat Tabel"),
+              menuSubItem("Input sektor lahan", tabName = "pageNine"),
               menuSubItem("Results", tabName = "pageFive"),
               selectInput("bauResults",
                         label="Pilih output yang ingin ditampilkan",
@@ -107,9 +108,24 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                   "Proyeksi Emisi Terkait Buangan Limbah",
                                   "Proyeksi Total Emisi",
                                   "Proyeksi Intensitas Emisi"
-                                  )
-                        )
-    ),
+                                  )),
+              menuSubItem("Result BAU Sektor Lahan", tabName = "pageTen"),
+              selectInput("lahanResults",
+                          label="pilih output sektor lahan yang ingin ditampilkan",
+                          choices=c("Proyeksi Output",
+                                    "Proyeksi PDRB",
+                                    "Proyeksi Income",
+                                    "Proyeksi Profit",
+                                    "Proyeksi Pajak",
+                                    "Proyeksi Impor",
+                                    "Proyeksi Ekspor",
+                                    "Proyeksi Belanja Pemerintah",
+                                    "Proyeksi Belanja Rumah Tangga",
+                                    "Proyeksi Tenaga Kerja", 
+                                    "Proyeksi Neraca Perdagangan"
+                                    )
+              )),
+
     ###sidebar-intervention####
     menuItem("Skenario Aksi", icon = icon("random"), id="intervensi",
               menuSubItem("Input", tabName = "pageSeven"),
@@ -126,9 +142,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               menuSubItem("Results", tabName = "pageEight")
     ),
     menuItem("Tentang redcluwe.id", icon = icon("question-circle"), tabName="help")
-  )
-)
-
+))
 ###*body####
 body <- dashboardBody(
   ###*tab-home####
@@ -220,6 +234,36 @@ body <- dashboardBody(
           )
         )
     ),
+    tabItem(tabName = "pageTen",
+            fluidRow(
+              column(width=12,
+                     tags$div(id='bauplaceholder'),
+                     hr()
+              )
+            ),
+            conditionalPanel(
+              condition="input.lahanResults!='Proyeksi Neraca Perdagangan'",
+              uiOutput("yearSelection2")
+            ),
+            plotlyOutput("plotlyResultsBAU_lahan"),
+            hr(),
+            fluidRow(
+              column(width=12,
+                     box(width=NULL,
+                         dataTableOutput('tableResultsBAU_lahan'),
+                         downloadButton('downloadTableBAU_lahan', 'Download Table (.csv)')
+                     )
+              )
+            )
+    ),
+    tabItem(tabName = "pageNine",
+            actionButton("saveTableLDMProp", "Simpan Tabel"),
+            hr(),
+            rHandsontableOutput('tableLDMProp'),
+            hr(),
+            actionButton("buttonBAULahan", "Jalankan Simulasi")
+    ),
+    
     ###*tab-intervention####
     tabItem(tabName = "pageSeven",
             h2("Perubahan permintaan akhir dari lapangan usaha terkait"),

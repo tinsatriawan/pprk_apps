@@ -1,7 +1,7 @@
 selectedProv<-"Jambi"
 
 datapath <- paste0("data/", selectedProv, "/")
-
+readRDS("data/Jambi/sector")
 
 sector <- readRDS(paste0(datapath, "sector"))
 indem <- readRDS(paste0(datapath, "indem"))
@@ -18,7 +18,7 @@ population <- readRDS(paste0(datapath, "population"))
 otherEm <- readRDS(paste0(datapath, "otherEm"))
 # landDemand <- readRDS(paste0(datapath, "landDemand"))
 # landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
-landtable <- readRDS(paste0(datapath, "landtable"))
+# landtable <- readRDS(paste0(datapath, "landtable"))
 I_A <- readRDS(paste0(datapath, "I_A"))
 leontief <- readRDS(paste0(datapath, "leontief"))
 GDPAll <- readRDS(paste0(datapath, "GDPAll"))
@@ -26,6 +26,8 @@ linkagesTable <- readRDS(paste0(datapath, "linkagesTable"))
 multiplierAll <- readRDS(paste0(datapath, "multiplierAll"))
 periodIO <- readRDS(paste0(datapath, "periodIO"))
 rtffile <- readRDS(paste0(datapath, "rtffile"))
+LU_tahun<-readRDS(paste0(datapath,"LU_tahun"))
+LDMProp<-readRDS(paste0(datapath,"LDMProp"))
 
 income_row <- 2
 
@@ -128,14 +130,24 @@ leontief <- solve(I_A)
 #   res_mx <- matrix(c(rep(as.numeric(input_mx), column)), nrow = nrow(input_mx), ncol = column)
 #   return(res_mx)
 # }
+coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
 
-tbl_sat = waste
+# Calculation of final demand projection====
+findem_matrix <- as.matrix(findem)
+findem_rowsum <- as.matrix(rowSums(findem_matrix))
+
+findem_proportion <- findem/findem_rowsum
+findem_proportion[is.na(findem_proportion)] <- 0
+
+
+tbl_sat = labour
+tOutputSeries <- leontief %*% findem_rowsum
 tbl_output_matrix = as.matrix(tOutputSeries)
 emission_lookup = ef_waste
 
 
 #satelliteImpact <- function(sat_type = "energy", tbl_sat = data.frame(), tbl_output_matrix = matrix(), emission_lookup = data.frame()){ 
- # if(sat_type == "energy" | sat_type == "waste"){
+# if(sat_type == "energy" | sat_type == "waste"){
     impact <- list() # impact$cons; impact$emission
     # if(sat_type == "energy") impact$cons <- energy else impact$cons <- waste
     impact$cons <- tbl_sat
@@ -155,85 +167,155 @@ emission_lookup = ef_waste
     em_f <- numeric()
     
     
-    for(m in 1:length(order_cname)){
-      em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
-    }
-    em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
     
-    impact$emission <- impact$cons
-    impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)]) %*% em_f
-    impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
-    colnames(impact$emission)[3] <- "Temission"
-  } else { # for labour case
     impact <- list()
     impact$cons <- tbl_sat
     coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
     coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
     impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
-  }
-  impact$cons[is.na(impact$cons)] <- 0
-  impact$emission[is.na(impact$emission)] <- 0
-  return(impact)
-}
+    
+    
+    for(m in 1:length(order_cname)){
+      em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
+    }
+    length_order_cname<-length(order_cname)
+    x<-length(em_f)
+    print(emission_lookup)
+    print(order_cname)
+    em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
+    
+    
+    
+    # for(m in 1:length(order_cname)){
+    #   em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
+    # }
+    # em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
+  
+    
+    LU_tahun<-as.data.frame(LU_tahun)
+    LU_tahun<-as.matrix(LU_tahun)
+    LDMdimcol<-ncol(LDMProp)
+    LDMdimrow<-nrow(LDMProp)
+    LDMProp<-as.matrix(LDMProp)
+    GDPAll<-as.data.frame(GDPAll)
+    
+    diagLU <- list()
+    landTable<-list()
+    landReq<-matrix(nrow=nrow(LDMProp),ncol=ncol(LU_tahun))
+    
+    for (i in 1:ncol(LU_tahun)){
+      diagLU[[i]]<-as.matrix(diag(LU_tahun[,i]))
+      landTable[[i]]<-LDMProp%*%diagLU[[i]]
+      landReq[,i]<-as.matrix(rowSums(landTable[[i]]))
+    }
+    
+    LPC<-GDPAll[,4]/landReq[,1]
+    LPC[is.infinite(LPC)]<-0
+    LRC<-1/LPC
+    LRC[is.infinite(LRC)]<-0
+    landTable_t0<-cbind(sector, landTable[[1]],landReq[,1], LPC, LRC)
+    colnames(landTable_t0)<-c("Sektor","Kategori",colnames(LDMProp),"Total Kebutuhan Lahan", "LPC", "LRC")
+    tahun<-as.vector(str_extract_all(colnames(LU_tahun), '[0-9]+'))
+    tahun<-as.data.frame(tahun)
+    tahun<-t(tahun)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#     
+#     
+#     
+#     
+#     
+#     
+#     
+#       
+#     impact$emission <- impact$cons
+#     impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)]) %*% em_f
+#     impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
+#     colnames(impact$emission)[3] <- "Temission"
+#   } else { # for labour case
+#     impact <- list()
+#     impact$cons <- tbl_sat
+#     coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
+#     coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
+#     impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
+#   }
+#   impact$cons[is.na(impact$cons)] <- 0
+#   impact$emission[is.na(impact$emission)] <- 0
+#   return(impact)
+# }
+# 
+# coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
+# 
+# # Calculation of final demand projection====
+# findem_matrix <- as.matrix(findem)
+# findem_rowsum <- as.matrix(rowSums(findem_matrix))
+# 
+# findem_proportion <- findem/findem_rowsum
+# findem_proportion[is.na(findem_proportion)] <- 0
+# 
+# coef_grise <- (100+gdpRate)/100
+# bau_scenario$Lapangan_usaha <- NULL
+# bau_scenario_matrix <- as.matrix(bau_scenario)
+# bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+# 
+# stepN <- endT-startT
+# for(s in 1:stepN){
+#   if(s == 1){
+#     # GDP compile table
+#     GDPseries <- data.frame(sector.id=1:nrow(sector), sector = sector[,1], stringsAsFactors = FALSE)
+#     eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), import_row),])")))
+#     findem_series <- findem_rowsum
+#     tStamps <- paste0("y", startT)
+#     tOutputSeries <- leontief %*% findem_rowsum
+#     # blank lists for keeping intDemandSeries; addValueSeries; finDemCompSeries
+#     intDemandSeries <- list()
+#     addValueSeries <- list()
+#     finDemCompSeries <- list()
+#     impactLabour <- list()
+#     impactEnergy <- list()
+#     impactWaste <- list()
+#     # Add first values to the lists. Lists values are all matrices
+#     eval(parse(text= paste0("intDemandSeries$y", startT, " <- indem_matrix")))
+#     eval(parse(text= paste0("addValueSeries$y", startT, " <- addval_matrix")))
+#     eval(parse(text= paste0("finDemCompSeries$y", startT, " <- findem_matrix")))
+#     eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
+#     eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
+#     eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
+#   }
+#   if(input$typeIntervention=='Tipe 1'){
+#     projFinDem <- coef_grise * findem_series[, s]
+#   } else {
+#     projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
+#   }
+#   findem_series <- cbind(findem_series, projFinDem)
+#   projOutput <- leontief %*% projFinDem
+#   tOutputSeries <- cbind(tOutputSeries, projOutput)
+#   # notes on the year
+#   projT <- startT+s
+#   projT <- paste0("y", projT)
+#   tStamps <- c(tStamps, projT)
+#   # add additional values to the list
+#   eval(parse(text=paste0("finDemCompSeries$", projT, " <- as.matrix(findem_proportion*projFinDem)"))) # contains NaN
+#   eval(parse(text=paste0("intDemandSeries$", projT, " <-  A %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
+#   eval(parse(text=paste0("addValueSeries$", projT, " <-  coef_primary_input %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
+#   # GDP projection
+#   eval(parse(text = paste0("GDPseries$", projT, "<- colSums(addValueSeries$", projT, "[setdiff(1:nrow(addval_matrix), import_row),])")))
+#   # Impact projection
+#   eval(parse(text= paste0("impactLabour$", projT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(projOutput))")))
+#   eval(parse(text= paste0("impactEnergy$", projT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_energy)")))
+#   eval(parse(text= paste0("impactWaste$", projT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_waste)")))
+# }
+    
+waste<-read.csv("data/Jambi/waste.csv", header=TRUE, sep=",")
 
-coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
-
-# Calculation of final demand projection====
-findem_matrix <- as.matrix(findem)
-findem_rowsum <- as.matrix(rowSums(findem_matrix))
-
-findem_proportion <- findem/findem_rowsum
-findem_proportion[is.na(findem_proportion)] <- 0
-
-coef_grise <- (100+gdpRate)/100
-bau_scenario$Lapangan_usaha <- NULL
-bau_scenario_matrix <- as.matrix(bau_scenario)
-bau_scenario_matrix <- (100+bau_scenario_matrix)/100
-
-stepN <- endT-startT
-for(s in 1:stepN){
-  if(s == 1){
-    # GDP compile table
-    GDPseries <- data.frame(sector.id=1:nrow(sector), sector = sector[,1], stringsAsFactors = FALSE)
-    eval(parse(text = paste0("GDPseries$y", startT, "<- colSums(addval_matrix[setdiff(1:nrow(addval_matrix), import_row),])")))
-    findem_series <- findem_rowsum
-    tStamps <- paste0("y", startT)
-    tOutputSeries <- leontief %*% findem_rowsum
-    # blank lists for keeping intDemandSeries; addValueSeries; finDemCompSeries
-    intDemandSeries <- list()
-    addValueSeries <- list()
-    finDemCompSeries <- list()
-    impactLabour <- list()
-    impactEnergy <- list()
-    impactWaste <- list()
-    # Add first values to the lists. Lists values are all matrices
-    eval(parse(text= paste0("intDemandSeries$y", startT, " <- indem_matrix")))
-    eval(parse(text= paste0("addValueSeries$y", startT, " <- addval_matrix")))
-    eval(parse(text= paste0("finDemCompSeries$y", startT, " <- findem_matrix")))
-    eval(parse(text= paste0("impactLabour$y", startT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(tOutputSeries))")))
-    eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
-    eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
-  }
-  if(input$typeIntervention=='Tipe 1'){
-    projFinDem <- coef_grise * findem_series[, s]
-  } else {
-    projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
-  }
-  findem_series <- cbind(findem_series, projFinDem)
-  projOutput <- leontief %*% projFinDem
-  tOutputSeries <- cbind(tOutputSeries, projOutput)
-  # notes on the year
-  projT <- startT+s
-  projT <- paste0("y", projT)
-  tStamps <- c(tStamps, projT)
-  # add additional values to the list
-  eval(parse(text=paste0("finDemCompSeries$", projT, " <- as.matrix(findem_proportion*projFinDem)"))) # contains NaN
-  eval(parse(text=paste0("intDemandSeries$", projT, " <-  A %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
-  eval(parse(text=paste0("addValueSeries$", projT, " <-  coef_primary_input %*% diag(as.vector(projOutput), ncol = dimensi, nrow= dimensi)")))
-  # GDP projection
-  eval(parse(text = paste0("GDPseries$", projT, "<- colSums(addValueSeries$", projT, "[setdiff(1:nrow(addval_matrix), import_row),])")))
-  # Impact projection
-  eval(parse(text= paste0("impactLabour$", projT, " <- satelliteImpact('labour', tbl_sat = labour, tbl_output_matrix = as.matrix(projOutput))")))
-  eval(parse(text= paste0("impactEnergy$", projT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_energy)")))
-  eval(parse(text= paste0("impactWaste$", projT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(projOutput), emission_lookup = ef_waste)")))
-}
+saveRDS(waste, file="data/Jambi/waste")    
+    
