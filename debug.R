@@ -316,6 +316,7 @@ emission_lookup = ef_waste
 # }
     
 waste<-read.csv("data/Jambi/waste.csv", header=TRUE, sep=",")
+<<<<<<< HEAD
 
 saveRDS(waste, file="data/Jambi/waste")    
     
@@ -330,3 +331,8 @@ total<-as.matrix("total")
 sectors<-as.matrix(sector[,1])
 sectors<-as.data.frame(rbind(sectors,total))
 sum<-as.matrix(colSums(LDMProp))
+=======
+
+saveRDS(waste, file="data/Jambi/waste")    
+    
+>>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8

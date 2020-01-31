@@ -853,6 +853,7 @@ server <- function(input, output, session) {
   })
   
   # untuk menu input BAU sektor lahan
+<<<<<<< HEAD
   
   
   # output$tableLDMProp <- renderRHandsontable({
@@ -893,6 +894,15 @@ server <- function(input, output, session) {
   observeEvent(input$saveTableLDMProp,{
     tabLDMProp<-hot_to_r(input$tableLDMProp)
     tabLDMProp<-tabLDMProp[c(1:nrow(allDataProv$LDMProp_his)),c(2:ncol(tabLDMProp))]
+=======
+  output$tableLDMProp <- renderRHandsontable({
+    rhandsontable(cbind(allDataProv$sector, allDataProv$LDMProp_his), colHeaders = c("sektor","kategori",colnames(allDataProv$LDMProp)))%>% hot_col("sektor", readOnly = TRUE)%>% hot_col("kategori", readOnly = TRUE)
+  })
+
+  observeEvent(input$saveTableLDMProp,{
+    tabLDMProp<-hot_to_r(input$tableLDMProp)
+    tabLDMProp<-tabLDMProp[,c(3:ncol(tabLDMProp))]
+>>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
     allDataProv$LDMProp<-tabLDMProp
     notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
   })
@@ -1422,6 +1432,10 @@ server <- function(input, output, session) {
   
   BAULahan_0<-as.data.frame(cbind(tahun,colSums(outputlahan_tahun)))
   colnames(BAULahan_0)<-c("year","output")
+<<<<<<< HEAD
+=======
+  print(BAULahan_0)
+>>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
 
   listBAU_lahan<-list(BAULahan_0=BAULahan_0,
                       BAULahan_1=BAULahan_1,
@@ -1684,9 +1698,13 @@ server <- function(input, output, session) {
   
   #### tampilkan result BAU sektor lahan====
   output$yearSelection2 <- renderUI({
+<<<<<<< HEAD
     sec<-blackBoxInputs()
     tahun<-sec$tahun
     selectInput("selectedYear2", "Tahun", "Pilih tahun", choices=c(tahun))
+=======
+    selectInput("selectedYear2", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
+>>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
   }) 
   
   output$plotlyResultsBAU_lahan <- renderPlotly({
@@ -1706,6 +1724,11 @@ server <- function(input, output, session) {
     neracaLahan_plot <-as.data.frame(cbind(tahun,ekspor_impor))
     colnames(neracaLahan_plot)<-c("year", "ekspor_impor")
 
+<<<<<<< HEAD
+=======
+    print(ekspor_impor)
+    print(neracaLahan_plot)
+>>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
     
   
     if(input$lahanResults=="Proyeksi Output"){
