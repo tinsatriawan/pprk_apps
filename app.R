@@ -61,7 +61,7 @@ server <- function(input, output, session) {
     LUtahun=NULL,
     LDMProp=NULL,
     LDMProp_his=NULL
-     )
+  )
   
   final_results <- reactiveValues(table1=NULL, plot23=NULL, plot24=NULL, plot25=NULL)
   
@@ -322,7 +322,7 @@ server <- function(input, output, session) {
                     coef_waste,
                     em_energy_total,
                     em_waste_total
-                    )
+    )
     colnames(result)[1] <- "Sektor"
     
     list_table <- list(result=result,
@@ -350,7 +350,7 @@ server <- function(input, output, session) {
                        tahun=tahun, 
                        landTable_his=landTable_his
                        
-                    ) 
+    ) 
     
     return(list_table)
   }
@@ -358,7 +358,7 @@ server <- function(input, output, session) {
   ###*historical input####
   
   output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$periodIO) })
-
+  
   output$sectorSelection <- renderUI({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -368,7 +368,7 @@ server <- function(input, output, session) {
     analysisResult <- sec$result
     selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
   })
-
+  
   output$plotlyResults <- renderPlotly({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -379,7 +379,7 @@ server <- function(input, output, session) {
     income_per_capita <- sec$income_per_capita
     graph <- data.frame(Sektor="", Analysis="")
     landTable_his<-sec$landTable_his
-
+    
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
         graph <- subset(analysisResult, select = c(Sektor, GDP))
@@ -433,18 +433,18 @@ server <- function(input, output, session) {
           )
         )
       }
-
+      
       if(input$pprkResults == "Perbandingan Angka Pengganda"){
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
-
+        
         multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
         tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
-
+        
         normalize<- function(x){
           return((x-min(x))/(max(x)-min(x)))
         }
-
+        
         tabel_radarchart<-as.data.frame(tabel_radarchart[2:6])
         tabel_radar<-normalize(tabel_radarchart)
         nilai_temp<-t(tabel_radar)
@@ -479,16 +479,16 @@ server <- function(input, output, session) {
         #                              )
         # tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
         # radarchart(tabel_radar)
-
+        
       } else {
         colnames(graph) <- c("Sektor", "Analisis")
         gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
           geom_bar(stat="identity", colour="black") + theme_void() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
         ggplotly(gplot)
-
+        
         # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
-
+        
         # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
         #   add_bars(orientation = 'h',name=~Sektor) %>%
         #   layout(barmode = 'stack',
@@ -509,7 +509,7 @@ server <- function(input, output, session) {
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
       }
-
+      
       colnames(graph) <- c("Sektor", "Analisis")
       gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
         geom_bar(colour="black", stat="identity") + theme_void() +
@@ -562,7 +562,7 @@ server <- function(input, output, session) {
         removeUI(selector = '#pdrb')
         removeUI(selector = '#capita')
       }
-
+      
       colnames(graph) <- c("Sektor", "Analisis")
       gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
         geom_bar(colour="black", stat="identity") + theme_void() +
@@ -575,7 +575,7 @@ server <- function(input, output, session) {
       #          yaxis = list(title ="Sektor"))
     }
   })
-
+  
   output$tableResults <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -584,7 +584,7 @@ server <- function(input, output, session) {
     }
     analysisResult <- sec$result
     landTable_his <- sec$landTable_his
-
+    
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
         tables <- subset(analysisResult, select = c(Sektor, GDP))
@@ -659,7 +659,7 @@ server <- function(input, output, session) {
       formatRound(columns=c(1:length(tables)),2) %>%
       formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
-
+  
   output$downloadTable <- downloadHandler(
     filename = input$pprkResults,
     contentType = "text/csv",
@@ -671,7 +671,7 @@ server <- function(input, output, session) {
       }
       analysisResult <- sec$result
       landTable_his <- sec$landTable_his
-
+      
       if(input$categorySector=="Ekonomi"){
         if(input$pprkResults == "PDRB"){
           tables <- subset(analysisResult, select = c(Sektor, GDP))
@@ -725,14 +725,14 @@ server <- function(input, output, session) {
       write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
     }
   )
-
+  
   output$downloadReport <- downloadHandler(
     filename = "report.doc",
     content = function(file){
       file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
     }
   )
-
+  
   output$tableIO <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -745,30 +745,30 @@ server <- function(input, output, session) {
     addval <- sec$addval
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
-
+    
     io_table <- cbind(sector, indem)
     colnames(io_table) <- c("Sektor", t(sector))
     io_table$`Total Permintaan Antara` <- rowSums(indem)
-
+    
     colnames(findem) <- c(t(findemcom))
     findem$`Total Permintaan Akhir` <- rowSums(findem)
     io_table <- cbind(io_table, findem)
-
+    
     total_indem <- colSums(indem)
     out_indem <- sum(total_indem)
     total_findem <- colSums(findem)
     out_findem <- sum(total_findem)
     total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
-
+    
     colnames(total_all_indem) <- colnames(io_table)
     io_table<-rbind(io_table, total_all_indem)
-
+    
     totalrow_addval <- rowSums(addval)
     totalcol_addval <- colSums(addval)
     total_addval <- sum(totalrow_addval)
     addval_table <- cbind(addvalcom, addval, totalrow_addval)
     total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
-
+    
     remaining_col <- ncol(io_table) - ncol(total_addval_table)
     for(i in 1:remaining_col){
       eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
@@ -778,22 +778,22 @@ server <- function(input, output, session) {
     colnames(total_addval_table) <- colnames(io_table)
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
-
+    
     datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
-            formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
+      formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
   })
-
+  
   output$SatelitTenagaKerja <- renderDataTable({
     if(debugMode){
-    sec <- blackBoxInputs()
-  } else {
-    sec <- allInputs()
-  }
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
     labour <- sec$labour
   }, options=list(pageLength=100, rownames=FALSE))
-
+  
   output$SatelitEnergi <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -802,7 +802,7 @@ server <- function(input, output, session) {
     }
     energy <- sec$energy
   }, options=list(pageLength=100, rownames=FALSE))
-
+  
   output$SatelitLimbah <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -835,7 +835,7 @@ server <- function(input, output, session) {
     if(input$typeIntervention=='Tipe 1'){
       
       allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate))
-    
+      
     } else if(input$typeIntervention=='Tipe 2'){
       
       column_year <- paste0("y", input$yearBAUInv)
@@ -843,17 +843,16 @@ server <- function(input, output, session) {
       eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate)"))))
       
       allDataProv$bau_scenario<-bau_scenario
-    
+      
     } else {
-    
+      
       allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
-    
+      
     }
     notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
   })
   
   # untuk menu input BAU sektor lahan
-<<<<<<< HEAD
   
   
   # output$tableLDMProp <- renderRHandsontable({
@@ -864,13 +863,13 @@ server <- function(input, output, session) {
   #                 )%>% hot_col("sektor", readOnly = TRUE)
   # })
   
-
+  
   LDMTable_0 <- reactive({
     sekt<-as.data.frame(rbind(as.matrix(allDataProv$sector[,1]),as.matrix("total")))
     colnames(sekt)<-"sektor"
     LDMsum<-as.data.frame(rbind(allDataProv$LDMProp_his, colSums(allDataProv$LDMProp_his)))
     as.data.frame(cbind(sekt, LDMsum))
-    })
+  })
   
   LDMTableFun <- reactive ({
     if(is.null(input$tableLDMProp)){return(LDMTable_0())}
@@ -882,31 +881,22 @@ server <- function(input, output, session) {
     }
   })
   
-
+  
   output$tableLDMProp <- renderRHandsontable({
     rhandsontable(LDMTableFun(),
                   fixedColumnsLeft=1,
                   fixedRowsBottom=1,
                   height=640
-                  )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
-    })
+    )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
+  })
   
   observeEvent(input$saveTableLDMProp,{
     tabLDMProp<-hot_to_r(input$tableLDMProp)
     tabLDMProp<-tabLDMProp[c(1:nrow(allDataProv$LDMProp_his)),c(2:ncol(tabLDMProp))]
-=======
-  output$tableLDMProp <- renderRHandsontable({
-    rhandsontable(cbind(allDataProv$sector, allDataProv$LDMProp_his), colHeaders = c("sektor","kategori",colnames(allDataProv$LDMProp)))%>% hot_col("sektor", readOnly = TRUE)%>% hot_col("kategori", readOnly = TRUE)
-  })
-
-  observeEvent(input$saveTableLDMProp,{
-    tabLDMProp<-hot_to_r(input$tableLDMProp)
-    tabLDMProp<-tabLDMProp[,c(3:ncol(tabLDMProp))]
->>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
     allDataProv$LDMProp<-tabLDMProp
     notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
   })
-
+  
   
   ##### all inputs BAU====
   
@@ -924,10 +914,10 @@ server <- function(input, output, session) {
       inEmOtherTable <- input$emissionSectorRADTable
       if(is.null(inEmOtherTable))
         return(NULL)
-
+      
       population <- read.table(inPopTable$datapath, header=TRUE, sep=",")
       otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, sep=",")
-
+      
     }
     sector <- sec$sector
     indem <- sec$indem
@@ -1016,7 +1006,7 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
-
+    
     # Calculation of final demand projection====
     findem_matrix <- as.matrix(findem)
     findem_rowsum <- as.matrix(rowSums(findem_matrix))
@@ -1229,10 +1219,10 @@ server <- function(input, output, session) {
                      GDP_rate = gdpRate,
                      dateTo = endT,
                      dateFrom = startT
-                    ) 
+    ) 
     list_bau
   })
-
+  
   
   #### all inputs BAU sektor lahan====
   allInputsBAULahan <- eventReactive(input$buttonBAULahan, {
@@ -1241,7 +1231,7 @@ server <- function(input, output, session) {
     } else {
       sec <- allInputs()
     }
-      
+    
     LU_tahun<-sec$LU_tahun
     GDPAll<-sec$GDPAll
     landTable_t0<-sec$landTable_t0
@@ -1293,174 +1283,170 @@ server <- function(input, output, session) {
     landTable_t0<-cbind(sector,kategori, landTable[[1]],landReq[,1], LPC, LRC)
     colnames(landTable_t0)<-c("Sektor", "Kategori",colnames(LDMProp),"Total Kebutuhan Lahan", "LPC", "LRC")
     
-  
-  #### proyeksi output sektor lahan
-  
-  # generate tabel output sektor u/ tiap tahun
-  outputlahan_tahun<-matrix(nrow=nrow(landReq), ncol=ncol(landReq))
-  for(x in 1:ncol(landReq)){
-    outputlahan_tahun[,x]<-landReq[,x]*landTable_t0[,"LPC"]
-  }
-  
-
-  # generate tabel BAU output sektor lahan untuk ditampilkan di shiny
-  
-  colnames(outputlahan_tahun)<-tahun
-  outputlahan<-data.frame(sector.id=1:nrow(outputlahan_tahun),sector=sector[,1], outputlahan_tahun)
-  
-  outputlahan_result<-data.frame(year=0, id.sector=0, sector="", Output=0)
-  for (x in 3:ncol(outputlahan)){
-    newtable<- outputlahan[,c(1,2,x)]
-    names(newtable) <- c("id.sector", "sector", "Output")
-    yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
-    newtable$year<-yearcol[x]
-    newtable<-newtable[,colnames(outputlahan_result)]
-    outputlahan_result<-data.frame(rbind(newtable, outputlahan_result))
-  }
-  
-  outputlahan_table <- outputlahan_result[outputlahan_result$year != 0, ] # remove initial values
-  
-    ##### proyeksi lain2
-  
-  landProp<-as.data.frame(cbind(
-    GDPAll$GDP/GDPAll$OUTPUT,
-    t(addval[2,]/GDPAll$OUTPUT),
-    t(addval[3,]/GDPAll$OUTPUT),
-    t(addval[5,]/GDPAll$OUTPUT),
-    t(addval[1,]/GDPAll$OUTPUT),
-    findem[,5]/GDPAll$OUTPUT,
-    findem[,2]/GDPAll$OUTPUT,
-    findem[,1]/GDPAll$OUTPUT,
-    labour_coef
-  )
-  )
-  
-  landProp[is.na(landProp)]<-0
-  colnames(landProp)<-c("PDRB",
-                        "income",
-                        "profit",
-                        "pajak",
-                        "impor",
-                        "ekspor", 
-                        "belanja_pemerintah", 
-                        "belanja_RT",
-                        "labour"
-  )
-  landProp_name<-colnames(landProp)
-  
-  # generate tabel proyeksi BAU tiap indikator per tahun & sektor (landProp * outputlahan_tahun)
-
-  
-  for(b in 1:ncol(landProp)){
-    eval(parse(text=(paste0("tabel_",b, "<- matrix(nrow=nrow(outputlahan_tahun), ncol=ncol(outputlahan_tahun))"))))
-    eval(parse(text=(paste0("BAULahan_",b,"<- matrix(nrow=ncol(outputlahan_tahun), ncol=2)"))))
-    for (c in 1:ncol(outputlahan_tahun)){
-      #tabel indikator ekonomi per tahun & sektor
-      eval(parse(text=paste0("tabel_",b,"[,c]<-landProp[,",b,"]*outputlahan_tahun[,c]")))
-      eval(parse(text = paste0("tabel_",b,"[is.na(tabel_",b,")]<-0")))
-      #tabel total indikator tiap tahun
-      eval(parse(text= paste0("BAULahan_",b,"<-cbind(tahun,as.data.frame(colSums(tabel_",b,")))")))
-      #tabel untuk ditampilkan di shiny
-    }
-    eval(parse(text=(paste0("colnames(BAULahan_",b,")=c('year',landProp_name[",b,"])"))))
-    eval(parse(text=(paste0("colnames(tabel_",b,")<-tahun"))))
-    eval(parse(text=(paste0("lahan_",b,"<-data.frame(sector.id=1:nrow(tabel_",b,"),sector=sector[,1], tabel_",b,")"))))
-    eval(parse(text=(paste0('lahanResult_',b,'<-data.frame(year=0, id.sector=0, sector="",indikator=0)'))))
-    eval(parse(text=(paste0("newtable_",b,"<-data.frame(id.sector=0,sector='', indikator=0, year=0)"))))
     
-  }
-
-  
-  tabel_list <- list (tabel_1,
-                      tabel_2,
-                      tabel_3, 
-                      tabel_4,
-                      tabel_5,
-                      tabel_6,
-                      tabel_7,
-                      tabel_8,
-                      tabel_9
-  )
-  lahan_list <- list( lahan_1, 
-                      lahan_2, 
-                      lahan_3, 
-                      lahan_4, 
-                      lahan_5, 
-                      lahan_6, 
-                      lahan_7, 
-                      lahan_8,
-                      lahan_9
-  )
-  
-  newtable_list<-list(newtable_1, 
-                      newtable_2, 
-                      newtable_3, 
-                      newtable_4, 
-                      newtable_5, 
-                      newtable_6, 
-                      newtable_7, 
-                      newtable_8,
-                      newtable_9
-  )    
-  
-  lahanResult_list<-list(lahanResult_1,
-                         lahanResult_2,
-                         lahanResult_3,
-                         lahanResult_4,
-                         lahanResult_5,
-                         lahanResult_6,
-                         lahanResult_7,
-                         lahanResult_8,
-                         lahanResult_9
-  )
-  
-  
-  for (i in 1:length(tabel_list)){
-    for(x in 3:ncol(lahan_list[[i]])){
-      newtable_list[[i]]<- lahan_list[[i]][,c(1,2,x)]
-      names(newtable_list[[i]]) <- c("id.sector", "sector", "indikator")
-      yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
-      newtable_list[[i]]$year<-as.double(yearcol[x])
-      newtable_list[[i]]<-newtable_list[[i]][,colnames(lahanResult_list[[i]])]
-      lahanResult_list[[i]]<-data.frame(rbind(newtable_list[[i]], lahanResult_list[[i]]))
+    #### proyeksi output sektor lahan
+    
+    # generate tabel output sektor u/ tiap tahun
+    outputlahan_tahun<-matrix(nrow=nrow(landReq), ncol=ncol(landReq))
+    for(x in 1:ncol(landReq)){
+      outputlahan_tahun[,x]<-landReq[,x]*landTable_t0[,"LPC"]
     }
-    eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]), byrow=TRUE)"))))
-    eval(parse(text=(paste0("lahanResult_list[[",i,"]]<-as.matrix(lahanResult_list[[",i,"]], header=TRUE)"))))
-    eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]),ncol=4)"))))
-    eval(parse(text=(paste0('colnames(lahanResult_',i,')<-c("year", "id.sector", "sector",landProp_name[',i,'])'))))
-  }
-  
-  BAULahan_0<-as.data.frame(cbind(tahun,colSums(outputlahan_tahun)))
-  colnames(BAULahan_0)<-c("year","output")
-<<<<<<< HEAD
-=======
-  print(BAULahan_0)
->>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
-
-  listBAU_lahan<-list(BAULahan_0=BAULahan_0,
-                      BAULahan_1=BAULahan_1,
-                      BAULahan_2=BAULahan_2,
-                      BAULahan_3=BAULahan_3,
-                      BAULahan_4=BAULahan_4,
-                      BAULahan_5=BAULahan_5,
-                      BAULahan_6=BAULahan_6,
-                      BAULahan_7=BAULahan_7,
-                      BAULahan_8=BAULahan_8,
-                      BAULahan_9=BAULahan_9,
-                      lahanResult_0=outputlahan_result,
-                      lahanResult_1=lahanResult_1,
-                      lahanResult_2=lahanResult_2,
-                      lahanResult_3=lahanResult_3,
-                      lahanResult_4=lahanResult_4,
-                      lahanResult_5=lahanResult_5,
-                      lahanResult_6=lahanResult_6,
-                      lahanResult_7=lahanResult_7,
-                      lahanResult_8=lahanResult_8,
-                      lahanResult_9=lahanResult_9,
-                      tahun=tahun
-                      )
-  listBAU_lahan
-})
+    
+    
+    # generate tabel BAU output sektor lahan untuk ditampilkan di shiny
+    
+    colnames(outputlahan_tahun)<-tahun
+    outputlahan<-data.frame(sector.id=1:nrow(outputlahan_tahun),sector=sector[,1], outputlahan_tahun)
+    
+    outputlahan_result<-data.frame(year=0, id.sector=0, sector="", Output=0)
+    for (x in 3:ncol(outputlahan)){
+      newtable<- outputlahan[,c(1,2,x)]
+      names(newtable) <- c("id.sector", "sector", "Output")
+      yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
+      newtable$year<-yearcol[x]
+      newtable<-newtable[,colnames(outputlahan_result)]
+      outputlahan_result<-data.frame(rbind(newtable, outputlahan_result))
+    }
+    
+    outputlahan_table <- outputlahan_result[outputlahan_result$year != 0, ] # remove initial values
+    
+    ##### proyeksi lain2
+    
+    landProp<-as.data.frame(cbind(
+      GDPAll$GDP/GDPAll$OUTPUT,
+      t(addval[2,]/GDPAll$OUTPUT),
+      t(addval[3,]/GDPAll$OUTPUT),
+      t(addval[5,]/GDPAll$OUTPUT),
+      t(addval[1,]/GDPAll$OUTPUT),
+      findem[,5]/GDPAll$OUTPUT,
+      findem[,2]/GDPAll$OUTPUT,
+      findem[,1]/GDPAll$OUTPUT,
+      labour_coef
+    )
+    )
+    
+    landProp[is.na(landProp)]<-0
+    colnames(landProp)<-c("PDRB",
+                          "income",
+                          "profit",
+                          "pajak",
+                          "impor",
+                          "ekspor", 
+                          "belanja_pemerintah", 
+                          "belanja_RT",
+                          "labour"
+    )
+    landProp_name<-colnames(landProp)
+    
+    # generate tabel proyeksi BAU tiap indikator per tahun & sektor (landProp * outputlahan_tahun)
+    
+    
+    for(b in 1:ncol(landProp)){
+      eval(parse(text=(paste0("tabel_",b, "<- matrix(nrow=nrow(outputlahan_tahun), ncol=ncol(outputlahan_tahun))"))))
+      eval(parse(text=(paste0("BAULahan_",b,"<- matrix(nrow=ncol(outputlahan_tahun), ncol=2)"))))
+      for (c in 1:ncol(outputlahan_tahun)){
+        #tabel indikator ekonomi per tahun & sektor
+        eval(parse(text=paste0("tabel_",b,"[,c]<-landProp[,",b,"]*outputlahan_tahun[,c]")))
+        eval(parse(text = paste0("tabel_",b,"[is.na(tabel_",b,")]<-0")))
+        #tabel total indikator tiap tahun
+        eval(parse(text= paste0("BAULahan_",b,"<-cbind(tahun,as.data.frame(colSums(tabel_",b,")))")))
+        #tabel untuk ditampilkan di shiny
+      }
+      eval(parse(text=(paste0("colnames(BAULahan_",b,")=c('year',landProp_name[",b,"])"))))
+      eval(parse(text=(paste0("colnames(tabel_",b,")<-tahun"))))
+      eval(parse(text=(paste0("lahan_",b,"<-data.frame(sector.id=1:nrow(tabel_",b,"),sector=sector[,1], tabel_",b,")"))))
+      eval(parse(text=(paste0('lahanResult_',b,'<-data.frame(year=0, id.sector=0, sector="",indikator=0)'))))
+      eval(parse(text=(paste0("newtable_",b,"<-data.frame(id.sector=0,sector='', indikator=0, year=0)"))))
+      
+    }
+    
+    
+    tabel_list <- list (tabel_1,
+                        tabel_2,
+                        tabel_3, 
+                        tabel_4,
+                        tabel_5,
+                        tabel_6,
+                        tabel_7,
+                        tabel_8,
+                        tabel_9
+    )
+    lahan_list <- list( lahan_1, 
+                        lahan_2, 
+                        lahan_3, 
+                        lahan_4, 
+                        lahan_5, 
+                        lahan_6, 
+                        lahan_7, 
+                        lahan_8,
+                        lahan_9
+    )
+    
+    newtable_list<-list(newtable_1, 
+                        newtable_2, 
+                        newtable_3, 
+                        newtable_4, 
+                        newtable_5, 
+                        newtable_6, 
+                        newtable_7, 
+                        newtable_8,
+                        newtable_9
+    )    
+    
+    lahanResult_list<-list(lahanResult_1,
+                           lahanResult_2,
+                           lahanResult_3,
+                           lahanResult_4,
+                           lahanResult_5,
+                           lahanResult_6,
+                           lahanResult_7,
+                           lahanResult_8,
+                           lahanResult_9
+    )
+    
+    
+    for (i in 1:length(tabel_list)){
+      for(x in 3:ncol(lahan_list[[i]])){
+        newtable_list[[i]]<- lahan_list[[i]][,c(1,2,x)]
+        names(newtable_list[[i]]) <- c("id.sector", "sector", "indikator")
+        yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
+        newtable_list[[i]]$year<-as.double(yearcol[x])
+        newtable_list[[i]]<-newtable_list[[i]][,colnames(lahanResult_list[[i]])]
+        lahanResult_list[[i]]<-data.frame(rbind(newtable_list[[i]], lahanResult_list[[i]]))
+      }
+      eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]), byrow=TRUE)"))))
+      eval(parse(text=(paste0("lahanResult_list[[",i,"]]<-as.matrix(lahanResult_list[[",i,"]], header=TRUE)"))))
+      eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]),ncol=4)"))))
+      eval(parse(text=(paste0('colnames(lahanResult_',i,')<-c("year", "id.sector", "sector",landProp_name[',i,'])'))))
+    }
+    
+    BAULahan_0<-as.data.frame(cbind(tahun,colSums(outputlahan_tahun)))
+    colnames(BAULahan_0)<-c("year","output")
+    
+    listBAU_lahan<-list(BAULahan_0=BAULahan_0,
+                        BAULahan_1=BAULahan_1,
+                        BAULahan_2=BAULahan_2,
+                        BAULahan_3=BAULahan_3,
+                        BAULahan_4=BAULahan_4,
+                        BAULahan_5=BAULahan_5,
+                        BAULahan_6=BAULahan_6,
+                        BAULahan_7=BAULahan_7,
+                        BAULahan_8=BAULahan_8,
+                        BAULahan_9=BAULahan_9,
+                        lahanResult_0=outputlahan_result,
+                        lahanResult_1=lahanResult_1,
+                        lahanResult_2=lahanResult_2,
+                        lahanResult_3=lahanResult_3,
+                        lahanResult_4=lahanResult_4,
+                        lahanResult_5=lahanResult_5,
+                        lahanResult_6=lahanResult_6,
+                        lahanResult_7=lahanResult_7,
+                        lahanResult_8=lahanResult_8,
+                        lahanResult_9=lahanResult_9,
+                        tahun=tahun
+    )
+    listBAU_lahan
+  })
   
   
   #### tampilkan result BAU====
@@ -1547,7 +1533,7 @@ server <- function(input, output, session) {
       colnames(energy_all) = c("year", "Energy")
       gplot8<-ggplot(data=energy_all, aes(x=year, y=Energy, group=1)) + geom_line() + geom_point()
       ggplotly(gplot8)
-
+      
     } 
     else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
       removeUI(selector = '#baupdrb')
@@ -1559,7 +1545,7 @@ server <- function(input, output, session) {
       colnames(em_energy_all) = c("year", "EmEnergy")
       gplot9<-ggplot(data=em_energy_all, aes(x=year, y=EmEnergy, group=1)) + geom_line() + geom_point()
       ggplotly(gplot9)
-
+      
     } 
     else if(input$bauResults == "Proyeksi Buangan Limbah"){
       removeUI(selector = '#baupdrb')
@@ -1571,7 +1557,7 @@ server <- function(input, output, session) {
       colnames(waste_all) = c("year", "Waste")
       gplot10<-ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
       ggplotly(gplot10)
-
+      
     } 
     else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       removeUI(selector = '#baupdrb')
@@ -1583,7 +1569,7 @@ server <- function(input, output, session) {
       colnames(em_waste_all) = c("year", "EmWaste")
       gplot11<-ggplot(data=em_waste_all, aes(x=year, y=EmWaste, group=1)) + geom_line() + geom_point()
       ggplotly(gplot11)
-
+      
     } 
     else if(input$bauResults == "Proyeksi Total Emisi"){
       removeUI(selector = '#baupdrb')
@@ -1599,7 +1585,7 @@ server <- function(input, output, session) {
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
-
+    
   })
   
   output$tableResultsBAU <- renderDataTable({
@@ -1651,13 +1637,13 @@ server <- function(input, output, session) {
     else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
     }
-
+    
     datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)
-
     
-   }) #extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
-
+    
+  }) #extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
+  
   output$downloadTableBAU <- downloadHandler(
     filename = input$bauResults,
     contentType = "text/csv",
@@ -1698,13 +1684,9 @@ server <- function(input, output, session) {
   
   #### tampilkan result BAU sektor lahan====
   output$yearSelection2 <- renderUI({
-<<<<<<< HEAD
     sec<-blackBoxInputs()
     tahun<-sec$tahun
     selectInput("selectedYear2", "Tahun", "Pilih tahun", choices=c(tahun))
-=======
-    selectInput("selectedYear2", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
->>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
   }) 
   
   output$plotlyResultsBAU_lahan <- renderPlotly({
@@ -1723,14 +1705,9 @@ server <- function(input, output, session) {
     ekspor_impor<-as.vector(eksporLahan_plot$ekspor) - as.vector(imporLahan_plot$impor)
     neracaLahan_plot <-as.data.frame(cbind(tahun,ekspor_impor))
     colnames(neracaLahan_plot)<-c("year", "ekspor_impor")
-
-<<<<<<< HEAD
-=======
-    print(ekspor_impor)
-    print(neracaLahan_plot)
->>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
     
-  
+    
+    
     if(input$lahanResults=="Proyeksi Output"){
       removeUI(selector = '#baupdrb')
       OutputLahan_gplot<-ggplot(data=OutputLahan_plot, aes(x=year, y=output, group=1)) + geom_line() + geom_point()
@@ -1964,26 +1941,26 @@ server <- function(input, output, session) {
     # tableReactive <- function(table){
     #   renderDataTable({ table })
     # }
-
+    
     resultOfBAU <- allInputsBAU()
     finalDemandSeriesTable <- resultOfBAU$FDSeries
     # energy_consumption_table <- resultOfBAU$energy_consumption_table
     # waste_disposal_table <- resultOfBAU$waste_disposal_table
-
+    
     output = tagList()
-
+    
     if(input$interTableOutput=="Permintaan Akhir"){
       req(input$selectMultiSector)
       selectedSector <- input$selectMultiSector
       lenSelSector <- length(selectedSector)
-
+      
       startCol <- grep(paste0("y", input$yearInter), colnames(finalDemandSeriesTable))
       finDemCol <- ncol(finalDemandSeriesTable)
-
+      
       if(lenSelSector != 0){
         numOfInput  = sapply(1:lenSelSector, function(i){ paste0("numInt", i) })
         # numOfSlider = sapply(1:lenSelSector, function(i){ paste0("sliderInt", i) })
-
+        
         for(i in 1:lenSelSector){
           selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[i],]
           selectedSectorFinDemValue <- selectedSectorFinDem[, startCol]
@@ -2020,8 +1997,8 @@ server <- function(input, output, session) {
         #   div(style="overflow-x: scroll", tableReactive(finalDemandSeriesTable[i,c(1, startCol:finDemCol)]))
         # })
       }
-    # } else if(input$interTableOutput=="Tabel Satelit Sektor Energi"){
-    # } else {
+      # } else if(input$interTableOutput=="Tabel Satelit Sektor Energi"){
+      # } else {
     }
     
     # print(output)
@@ -2033,7 +2010,7 @@ server <- function(input, output, session) {
   })  
   
   
-
+  
   ###*intervention input####
   allInputsInter <- eventReactive(input$buttonInter, {
     if(debugMode){
@@ -2151,7 +2128,7 @@ server <- function(input, output, session) {
     stepInv <- yearIntervention - startT
     
     mGDPseries <- GDPseries[, 1:which(colnames(GDPseries) == paste0("y", startT+(stepInv-1)))]
-        
+    
     # colnames(mtOutputseries) <- colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(tu-1)))] # retain missing colnames
     mtOutputseries <- tOutputSeries[, colnames(tOutputSeries)[1:which(colnames(tOutputSeries) == paste0("y", startT+(stepInv-1)))]]
     
@@ -2327,11 +2304,11 @@ server <- function(input, output, session) {
                             waste_consumption_table = mWasteDispOutput,
                             waste_emission_table = mWasteEmissionOutput,
                             total_emission_table = mTotalEmissionOutput
-                        ) 
+    ) 
     
     list_intervensi
   })
-    
+  
   output$plotlyResultsInter <- renderPlotly({
     results <- allInputsInter()
     GDP_table <- results$GDP_table
@@ -2437,7 +2414,7 @@ server <- function(input, output, session) {
     datatable(tables, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)
   }) #, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)  
-
+  
   output$downloadTableInter <- downloadHandler(
     filename = input$interResults,
     contentType = "text/csv",
@@ -2535,10 +2512,10 @@ server <- function(input, output, session) {
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
     gplot23<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
-            geom_line(aes(color=Scenario))+
-            geom_point(aes(color=Scenario))+
-            labs(x = "Tahun", y = "Emisi")+
-            ggtitle("Grafik Proyeksi Emisi")
+      geom_line(aes(color=Scenario))+
+      geom_point(aes(color=Scenario))+
+      labs(x = "Tahun", y = "Emisi")+
+      ggtitle("Grafik Proyeksi Emisi")
     final_results$plot23<-gplot23
     ggplotly(gplot23)
   })
@@ -2565,10 +2542,10 @@ server <- function(input, output, session) {
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
     
     gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=TotalGDP, group=Scenario)) +
-            geom_line(aes(color=Scenario))+
-            geom_point(aes(color=Scenario))+
-            labs(x = "Tahun", y = "PDRB")+
-            ggtitle("Grafik Proyeksi PDRB")
+      geom_line(aes(color=Scenario))+
+      geom_point(aes(color=Scenario))+
+      labs(x = "Tahun", y = "PDRB")+
+      ggtitle("Grafik Proyeksi PDRB")
     final_results$plot24<-gplot24
     ggplotly(gplot24)
   })
@@ -2576,43 +2553,43 @@ server <- function(input, output, session) {
   output$curveIntensityEmission <- renderPlotly({
     resBAU <- allInputsBAU()
     resInv <- allInputsInter()
-
+    
     emissionBAU <- resBAU$total_emission_table
     emissionInv <- resInv$total_emission_table
-
+    
     cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
-
+    
     cumSumBAU$Scenario<-"BAU"
     cumSumInv$Scenario<-input$scenarioName
-
+    
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-
-
+    
+    
     gdpBAU <- resBAU$GDP_table
     gdpInv <- resInv$GDP_table
-
+    
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
-
+    
     colnames(totalGDPBAUPerYear)[2] <- "TotalGDP"
     colnames(totalGDPInvPerYear)[2] <- "TotalGDP"
-
+    
     intensityBAU <- merge(cumSumBAU, totalGDPBAUPerYear, by="Year")
     intensityInv <- merge(cumSumInv, totalGDPInvPerYear, by="Year")
-
+    
     intensityBAU$intensitas <- intensityBAU$CummulativeEmission / intensityBAU$TotalGDP
     intensityInv$intensitas <- intensityInv$CummulativeEmission / intensityInv$TotalGDP
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
-
+    
     final_results$tabel1<-tblIntensity
     
     gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
-            geom_line(aes(color=Scenario))+
-            geom_point(aes(color=Scenario))+
-            labs(x = "Tahun", y = "Intensitas Emisi")+
-            ggtitle("Grafik Proyeksi Intensitas Emisi")
+      geom_line(aes(color=Scenario))+
+      geom_point(aes(color=Scenario))+
+      labs(x = "Tahun", y = "Intensitas Emisi")+
+      ggtitle("Grafik Proyeksi Intensitas Emisi")
     final_results$plot25<-gplot25
     ggplotly(gplot25)
   })
@@ -2741,18 +2718,18 @@ server <- function(input, output, session) {
   ))
   
   observeEvent(input$quickTour,
-    introjs(session, 
-      options = list(steps=steps(),
-                     "nextLabel"="Berikutnya",
-                     "prevLabel"="Sebelumnya",
-                     "skipLabel"="Lewati",
-                     "doneLabel"="Selesai",
-                     "scrollToElement"=TRUE,
-                     "exitOnOverlayClick"= TRUE,
-                     "helperNumberLayer"="right",
-                     "tooltipPosition"= "right"),
-      events = list("oncomplete" = I('alert("Bantuan telah selesai")'))
-    )
+               introjs(session, 
+                       options = list(steps=steps(),
+                                      "nextLabel"="Berikutnya",
+                                      "prevLabel"="Sebelumnya",
+                                      "skipLabel"="Lewati",
+                                      "doneLabel"="Selesai",
+                                      "scrollToElement"=TRUE,
+                                      "exitOnOverlayClick"= TRUE,
+                                      "helperNumberLayer"="right",
+                                      "tooltipPosition"= "right"),
+                       events = list("oncomplete" = I('alert("Bantuan telah selesai")'))
+               )
   )
   
   runjs('
