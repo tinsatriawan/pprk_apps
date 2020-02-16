@@ -655,7 +655,7 @@ server <- function(input, output, session) {
         tables
       }
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="70vh", fixedColumns=list(leftColumns=1)), rownames=FALSE, height = 540) %>%
       formatRound(columns=c(1:length(tables)),2) %>%
       formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
@@ -779,7 +779,9 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    # datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX='TRUE', fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    # edit here
+    datatable(io_table, extensions = "FixedColumns", options=list(paging= FALSE , scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
       formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
@@ -792,7 +794,9 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     labour <- sec$labour
-  }, options=list(pageLength=100, rownames=FALSE))
+  # }, options=list(pageLength=100, rownames=FALSE))
+    # edit here
+  }, options=list(paging = FALSE, scrollY='70vh'))
   
   output$SatelitEnergi <- renderDataTable({
     if(debugMode){
@@ -801,8 +805,10 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     energy <- sec$energy
-  }, options=list(pageLength=100, rownames=FALSE))
-  
+  # }, options=list(pageLength=100, rownames=FALSE, height=540))
+    # edit here
+  },extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
+    
   output$SatelitLimbah <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -810,8 +816,10 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     waste <- sec$waste
-  }, options=list(pageLength=100, rownames=FALSE))
-  
+  # }, options=list(pageLength=100, rownames=FALSE, height=540))
+    # edit here
+  }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3))) 
+
   ###*bau input####
   generate_table<-function(table, first_year, second_year, value=0.05){
     n <- second_year-first_year
@@ -827,7 +835,7 @@ server <- function(input, output, session) {
     notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
   })
   output$tableBAUType <- renderRHandsontable({
-    rhandsontable(allDataProv$bau_scenario) %>% hot_cols(format="0%") # load table
+    rhandsontable(allDataProv$bau_scenario, fixedColumnsLeft=1, height=640) %>% hot_cols(format="0%") # load table
   })
   
   
@@ -876,7 +884,7 @@ server <- function(input, output, session) {
     else if (!identical(LDMTable_0(), input$tableLDMProp)){
       LDMTable_1 <- as.data.frame(hot_to_r(input$tableLDMProp))
       # LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<- colSums(LDMTable_1[1:nrow(LDMTable_1)-1, 2:ncol(LDMTable_1)])
-      LDMTable_1[37,2:25]<-colSums(LDMTable_1[1:36,2:25])
+      LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<-colSums(LDMTable_1[1:nrow(LDMTable_1)-1,2:ncol(LDMTable_1)])
       LDMTable_1
     }
   })

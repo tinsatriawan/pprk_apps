@@ -204,7 +204,7 @@ body <- dashboardBody(
       ),
       conditionalPanel(
         condition = "input.typeIntervention=='Tipe 1' | input.typeIntervention=='Tipe 2'",
-        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=1, post=" x 100%", value=0.05, step=0.01, width = "600px")
+        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=1, post=" x 100%", value=0.05, step=0.001, width = "600px")
       ),
       actionButton("saveTableBauType", "Simpan Tabel"),
       hr(),
