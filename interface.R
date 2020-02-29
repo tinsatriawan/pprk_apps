@@ -87,44 +87,13 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), id="bau",
-              menuSubItem("Input", tabName = "pageFour"),
-              selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2", "Tipe 3")),
-              selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
-              selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
-              # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-              # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-              actionButton("generateBAUTable", "Buat Tabel"),
-              menuSubItem("Input sektor lahan", tabName = "pageNine"),
-              menuSubItem("Results", tabName = "pageFive"),
-              selectInput("bauResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi",
-                                  "Proyeksi Intensitas Emisi"
-                                  )),
-              menuSubItem("Result BAU Sektor Lahan", tabName = "pageTen"),
-              selectInput("lahanResults",
-                          label="pilih output sektor lahan yang ingin ditampilkan",
-                          choices=c("Proyeksi Output",
-                                    "Proyeksi PDRB",
-                                    "Proyeksi Income",
-                                    "Proyeksi Profit",
-                                    "Proyeksi Pajak",
-                                    "Proyeksi Impor",
-                                    "Proyeksi Ekspor",
-                                    "Proyeksi Belanja Pemerintah",
-                                    "Proyeksi Belanja Rumah Tangga",
-                                    "Proyeksi Tenaga Kerja", 
-                                    "Proyeksi Neraca Perdagangan"
-                                    )
-              )),
+             menuSubItem("Pilih Data Input", tabName = "pageEleven"),
+             selectInput('selectProjType',
+                         label="Pilih tipe proyeksi BAU yang akan dijalankan:", 
+                         choices=c("Proyeksi BAU berdasarkan pertumbuhan ekonomi", 
+                                   "Proyeksi BAU berdasarkan perubahan tutupan lahan")),
+             tags$div(id='inputProjType')
+              ),
 
     ###sidebar-intervention####
     menuItem("Skenario Aksi", icon = icon("random"), id="intervensi",
@@ -197,6 +166,19 @@ body <- dashboardBody(
       )
     ),
     ###*tab-bau####
+    tabItem(tabName="pageEleven", 
+      fluidRow(
+        h3(style="padding-left: 15px;", "Pilih Data Input BAU"), 
+        tabBox(id="tabPanelBAUData", width=12,
+                     tabPanel("Tabel LDM Proporsi", id="TabPanelBAUDataLDMProp",
+                              div(style="overflow-x: scroll", 
+                                  uiOutput("LDMFileOptions"),
+                                  dataTableOutput("LDMListTable"),
+                                  dataTableOutput("LDMTampil"),
+                                  uiOutput('LDMTableTampilUI'),
+                                  uiOutput('modalLDMUI'))
+                                  )
+            ))),
     tabItem(tabName = "pageFour",
       conditionalPanel(
         condition = "input.typeIntervention=='Tipe 2'",
@@ -204,7 +186,8 @@ body <- dashboardBody(
       ),
       conditionalPanel(
         condition = "input.typeIntervention=='Tipe 1' | input.typeIntervention=='Tipe 2'",
-        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=1, post=" x 100%", value=0.05, step=0.001, width = "600px")
+        # sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=0.1, post="x100%", value=0.05, step=0.01, width = "600px")
+        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=10, post="%", value=5, step=0.01, width = "600px") #edit
       ),
       actionButton("saveTableBauType", "Simpan Tabel"),
       hr(),
@@ -257,11 +240,16 @@ body <- dashboardBody(
             )
     ),
     tabItem(tabName = "pageNine",
-            actionButton("saveTableLDMProp", "Simpan Tabel"),
-            hr(),
-            rHandsontableOutput('tableLDMProp'),
-            hr(),
-            actionButton("buttonBAULahan", "Jalankan Simulasi")
+            # actionButton("saveTableLDMProp", "Simpan Tabel"),
+            # hr(),
+            # rHandsontableOutput('tableLDMProp'),
+            # hr(),
+            # actionButton("buttonBAULahan", "Jalankan Simulasi")
+            actionButton("saveInputBAULahanLandCover", "Simpan Tabel"),
+            actionButton("buttonBAULahan", "Jalankan Simulasi"),
+            hr(), 
+            rHandsontableOutput("inputBAULahanLandCover"), 
+            hr()
     ),
     
     ###*tab-intervention####

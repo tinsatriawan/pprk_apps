@@ -33,6 +33,28 @@ server <- function(input, output, session) {
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
+  
+  
+  
+  LDMProp_new<-reactiveValues(
+    tablo = NULL,
+    coba= NULL
+  )
+  
+  tabel<-reactiveValues(
+    manualSave=NULL
+  )
+  
+  ldmRV<-reactiveValues(
+    LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),
+    LDMTotFile= unique(length(list.files("LDMData/Prov/")))
+  )
+  
+  editable<-reactiveValues(
+    BAULahan_landCover=NULL
+  )
+  
+  
   allDataProv <- reactiveValues(
     username = NULL,
     prov = NULL,
@@ -348,7 +370,9 @@ server <- function(input, output, session) {
                        # landTable_t0=landTable_t0,
                        # landReq=landReq,
                        tahun=tahun, 
-                       landTable_his=landTable_his
+                       landTable_his=landTable_his,
+                       leontief=leontief, 
+                       LDMProp_his = LDMProp_his
                        
     ) 
     
@@ -836,26 +860,27 @@ server <- function(input, output, session) {
   })
   output$tableBAUType <- renderRHandsontable({
     rhandsontable(allDataProv$bau_scenario, fixedColumnsLeft=1, height=640) %>% hot_cols(format="0%") # load table
-  })
+    })
   
   
   observeEvent(input$saveTableBauType, {
     if(input$typeIntervention=='Tipe 1'){
       
-      allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate))
+      #allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate)) #edit
+      allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate/100))
       
     } else if(input$typeIntervention=='Tipe 2'){
       
       column_year <- paste0("y", input$yearBAUInv)
       bau_scenario <- allDataProv$bau_scenario
-      eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate)"))))
-      
+      # eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate)")))) #edit
+      eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate/100)"))))
       allDataProv$bau_scenario<-bau_scenario
-      
+    
     } else {
       
       allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
-      
+
     }
     notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
   })
@@ -872,42 +897,551 @@ server <- function(input, output, session) {
   # })
   
   
-  LDMTable_0 <- reactive({
-    sekt<-as.data.frame(rbind(as.matrix(allDataProv$sector[,1]),as.matrix("total")))
-    colnames(sekt)<-"sektor"
-    LDMsum<-as.data.frame(rbind(allDataProv$LDMProp_his, colSums(allDataProv$LDMProp_his)))
-    as.data.frame(cbind(sekt, LDMsum))
+  # LDMTable_0 <- reactive({
+  #   sekt<-as.data.frame(rbind(as.matrix(allDataProv$sector[,1]),as.matrix("total")))
+  #   colnames(sekt)<-"sektor"
+  #   LDMsum<-as.data.frame(rbind(allDataProv$LDMProp_his, colSums(allDataProv$LDMProp_his)))
+  #   as.data.frame(cbind(sekt, LDMsum))
+  # })
+  # 
+  # LDMTableFun <- reactive ({
+  #   if(is.null(input$tableLDMProp)){return(LDMTable_0())}
+  #   else if (!identical(LDMTable_0(), input$tableLDMProp)){
+  #     LDMTable_1 <- as.data.frame(hot_to_r(input$tableLDMProp))
+  #     # LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<- colSums(LDMTable_1[1:nrow(LDMTable_1)-1, 2:ncol(LDMTable_1)])
+  #     LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<-colSums(LDMTable_1[1:nrow(LDMTable_1)-1,2:ncol(LDMTable_1)])
+  #     LDMTable_1
+  #   }
+  # })
+  # 
+  # 
+  # output$tableLDMProp <- renderRHandsontable({
+  #   rhandsontable(LDMTableFun(),
+  #                 fixedColumnsLeft=1,
+  #                 fixedRowsBottom=1,
+  #                 height=640
+  #   )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
+  # })
+  # 
+  # observeEvent(input$saveTableLDMProp,{
+  #   tabLDMProp<-hot_to_r(input$tableLDMProp)
+  #   tabLDMProp<-tabLDMProp[c(1:nrow(allDataProv$LDMProp_his)),c(2:ncol(tabLDMProp))]
+  #   allDataProv$LDMProp<-tabLDMProp
+  #   notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
+  # })
+  # 
+  #delete after use
+  
+  ##### all inputs BAU====
+  
+  
+  ###### tab pilih data untuk BAU
+  
+  ##### Tabel menampilkan LDM yang sudah dibuat######
+  
+  ###function untuk generate button_id###
+  
+  ListLDMButton_fun <- function(FUN, len, id, ...) {
+    inputs <- character(len)
+    for (i in seq_len(len)) {
+      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+    }
+    inputs
+  }
+  
+  
+  ### buat tabel daftar nama file LDM reaktif ###
+  
+  LDMListTableReact <- reactive({
+    data.frame(
+      Nama_File = c("LDM historis", ldmRV$LDMListFile),
+      Lihat_File = ListLDMButton_fun(actionButton, length(ldmRV$LDMListFile)+1,
+                                     'button_',
+                                     label = "Tampilkan",
+                                     onclick = paste0('Shiny.onInputChange( \"select_button\" , this.id)')
+      )
+    )
   })
   
-  LDMTableFun <- reactive ({
-    if(is.null(input$tableLDMProp)){return(LDMTable_0())}
-    else if (!identical(LDMTable_0(), input$tableLDMProp)){
-      LDMTable_1 <- as.data.frame(hot_to_r(input$tableLDMProp))
-      # LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<- colSums(LDMTable_1[1:nrow(LDMTable_1)-1, 2:ncol(LDMTable_1)])
-      LDMTable_1[nrow(LDMTable_1),2:ncol(LDMTable_1)]<-colSums(LDMTable_1[1:nrow(LDMTable_1)-1,2:ncol(LDMTable_1)])
-      LDMTable_1
+  ### buat list options ###
+  output$LDMFileOptions<- renderUI({
+    LDMListTableReact <- LDMListTableReact()
+    namaFile<-as.character(LDMListTableReact$Nama_File)
+    selectInput("LDMPropUse", "Pilih tabel LDM proporsi yang akan digunakan dalam perhitungan:", choices=namaFile)
+  })
+  
+  ###tampilkan tabel list file LDM###
+  
+  output$LDMListTable <- renderDataTable({
+    LDMListTableReact()
+  }, escape = FALSE)
+  
+  
+  
+  ###pilh nama file dan file yang akan ditampilkan###
+  
+  LDMTableTampil<-eventReactive(input$select_button,{
+    
+    selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
+    
+    if(selectedRow==1){
+      fileName = "LDM historis"
+      selectedFile = LDMProp_his
+      list<-list(fileName=fileName,
+                 selectedFile=selectedFile)
+      print("kondisi1")
+    }
+    else if(selectedRow != 1){
+      fileName<- LDMListTableReact()[selectedRow,1]
+      selectedFile<-readRDS(paste0("LDMData/Prov/",fileName))
+      list<-list(fileName=fileName, 
+                 selectedFile=selectedFile)
+      print("kondisi2")
+    }
+    list
+  })
+  
+  
+  ### tampilkan UI tabel LDM yang dipilih ###
+  
+  output$LDMTableTampilUI<-renderUI({
+    
+    LDMTableTampil<-LDMTableTampil()
+    selectedFile<-LDMTableTampil$selectedFile
+    fileName<-LDMTableTampil$fileName
+    
+    if(identical(fileName, "LDM historis")){
+      tagList(tags$br(),
+              tags$br(),
+              tags$h3(paste0(fileName)),
+              tags$br(),
+              actionButton('modalLDMbutton', 'Sunting Tabel'),
+              tags$br(),
+              tags$br(),
+              datatable(selectedFile, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=TRUE))
+    }
+    else {
+      tagList(tags$br(),
+              tags$br(),
+              tags$h3(paste0(fileName)),
+              tags$br(),
+              actionButton('modalLDMbutton', 'Sunting Tabel'),
+              actionButton('deleteLDMTable','Hapus Tabel'),
+              tags$br(),
+              tags$br(),
+              datatable(selectedFile))
+    }
+    
+  })
+  
+  
+  #### tampilkan modal dialog modalLDM ketika sunting tabel dipilih ####
+  
+  observeEvent(input$modalLDMbutton,{
+    showModal(modalDialog(sidebarLayout(sidebarPanel(
+      fluidRow(
+        selectInput("tupla",
+                    label="jenis tutupan lahan",
+                    choices=colnamesLDM),
+        selectInput("sektor",
+                    label="sektor",
+                    choices=sector)),
+      rHandsontableOutput('editLDM'),
+      tags$br(),
+      uiOutput('LDMButton'),
+      textOutput("sunting"),
+      width=5
+    ),
+    mainPanel(
+      tags$div(id = 'LDMPlaceholder'),
+      width=7)
+    ),
+    title="sunting LDM",
+    footer= tagList(
+      actionButton("saveLDMTable", "simpan tabel"),
+      actionButton("closeModalLDM", "tutup")
+    ),
+    size="l",
+    easyClose = FALSE
+    ))
+  })
+  
+  ### tutup modal dialog ###
+  observeEvent(input$closeModalLDM,{
+    removeModal()
+  })
+  
+  
+  ### hapus file ###
+  observeEvent(input$deleteLDMTable, {
+    LDMTableTampil<-LDMTableTampil()
+    fileName<-LDMTableTampil$fileName
+    file.remove(paste0("LDMData/", selectedProv, "/", fileName))
+    
+  })
+  ###### modal dialog######
+  
+  # hapus tampilan kolom jika memasukkan 
+  
+  observeEvent(c(input$modalLDMbutton,input$tupla,input$sektor), {
+    
+    LDMTableTampil<-LDMTableTampil()
+    selectedFile<-LDMTableTampil$selectedFile
+    fileName<-LDMTableTampil$fileName
+    
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+    
+    
+    if(is.null(LDMProp_new$tablo) & is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo <- selectedFile
+    }
+    else if(!is.null(LDMProp_new$tablo) & is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo<- selectedFile
+    }
+    else if (!is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo<-LDMProp_new$coba
+    }
+    
+  })
+  
+  
+  
+  
+  teksLDM<-reactiveValues(unedited=" ",
+                          edited="Total nilai kolom tutupan lahan tidak sama dengan 1")
+  
+  valLDM<- reactive({
+    table_show <- as.matrix(subset(LDMProp_new$tablo, rownames(LDMProp_new$tablo) %in% input$sektor, colnames(LDMProp_new$tablo) %in% input$tupla))
+    table_show
+  })
+  
+  output$editLDM <- renderRHandsontable({
+    rhandsontable(valLDM(),
+                  rowHeaderWidth = 160,
+    )%>%hot_cols(format=3)
+  })
+  
+  output$LDMButton<-renderUI({
+    if (is.null(valLDM())){
+      return(NULL)}
+    else if (!is.null(valLDM)){
+      tagList(actionButton('LDMButtonEdit','simpan hasil sunting'),
+              tags$div(id='NormOrMan'))
     }
   })
   
   
-  output$tableLDMProp <- renderRHandsontable({
-    rhandsontable(LDMTableFun(),
-                  fixedColumnsLeft=1,
-                  fixedRowsBottom=1,
-                  height=640
-    )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
+  #### masukkan nilai sel baru ke dalam kolom tupla 
+  
+  LDM_fun<-eventReactive(input$LDMButtonEdit,{
+    tablo = LDMProp_new$tablo
+    LDM_sel<-as.data.frame(hot_to_r(input$editLDM))
+    LDM_sel<-as.numeric(LDM_sel[1,1])
+    # inputSektor<-as.character(input$sektor)
+    # inputTupla<-as.character(input$tupla)
+    inputSektor<-input$sektor
+    inputTupla<-input$tupla
+    tablo[inputSektor, inputTupla]<-LDM_sel
+    tablo<-as.data.frame(tablo)
+    totLDMProp<-as.data.frame(colSums(tablo))
+    totLDMProp_sel<-totLDMProp[inputTupla,]
+    LDM_list<-list(LDM_sel=LDM_sel,
+                   totLDMProp_sel=totLDMProp_sel,
+                   totLDMProp=totLDMProp,
+                   tablo = tablo,
+                   inputTupla=inputTupla
+    )
+    LDM_list
   })
   
-  observeEvent(input$saveTableLDMProp,{
-    tabLDMProp<-hot_to_r(input$tableLDMProp)
-    tabLDMProp<-tabLDMProp[c(1:nrow(allDataProv$LDMProp_his)),c(2:ncol(tabLDMProp))]
-    allDataProv$LDMProp<-tabLDMProp
-    notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
+  
+  
+  observe({ 
+    tes <- LDM_fun()
+    inputTupla<-tes$inputTupla
+    
+    if(tes$totLDMProp_sel==1){
+      insertUI(selector='#NormOrMan',
+               where= 'afterEnd',
+               ui= tags$div(id='pesanHitungLDMNo', "tidak ada perubahan")
+      )
+    } else {
+      insertUI(selector='#NormOrMan',
+               where = 'afterEnd',
+               ui= tags$div(id='pesanHitungLDMYes',
+                            tagList(tags$br(),
+                                    paste0("Jumlah total kolom ", inputTupla," tidak sama dengan 1"),
+                                    tags$br(),
+                                    tags$br(),
+                                    radioButtons('LDMhit',
+                                                 'Pilih perhitungan yang akan dilakukan',
+                                                 choiceNames = c('normalisasi','hitung manual'),
+                                                 choiceValues = c('normal','manual'),
+                                                 selected = character(0))
+                            )
+                            
+               )
+      )
+    }
   })
   
   
-  ##### all inputs BAU====
+  ### visualisasi kolom baru yang sudah diisi nilai sel yang diganti 
   
+  LDMPropKol_0 <- reactive({
+    tes<-LDM_fun()
+    inputTupla<-tes$inputTupla
+    tablo<-tes$tablo
+    # tablo<-LDMProp_new$tablo
+    LDMProp_kol<-as.matrix(tablo[,inputTupla])
+    kolsum<-as.matrix(colSums(LDMProp_kol))
+    LDMProp_kol<-rbind(LDMProp_kol,kolsum)
+    row.names(LDMProp_kol)<-c(row.names(tablo),"total")
+    colnames(LDMProp_kol)<-inputTupla
+    LDMProp_kol
+  })
+  
+  
+  observeEvent(input$LDMButtonEdit, {
+    tabel$manualSave<-LDMPropKol_0()
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+  })
+  
+  
+  observeEvent(input$LDMhit, {
+    if(input$LDMhit=='normal'){
+      removeUI(selector='#LDMUIManual')
+      insertUI(selector='#LDMPlaceholder',
+               where='afterEnd',
+               ui= uiOutput('LDMUINormal')
+      )
+    }
+    else if (input$LDMhit=='manual'){
+      removeUI(selector='#LDMUINormal')
+      insertUI(selector='#LDMPlaceholder',
+               where='afterEnd',
+               ui= uiOutput('LDMUIManual')
+      )
+    }
+  })
+  
+  
+  
+  
+  
+  
+  ##### untuk edit manual satu kolom tupla #####
+  
+  output$LDMUIManual<- renderUI({
+    tagList(tags$b('Sunting secara manual'),
+            tags$br(),
+            tags$br(),
+            rHandsontableOutput('LDMKolManualTable'),
+            tags$br(),
+            actionButton('saveLDMPropManual', 'Simpan kolom'),
+            tags$br(),
+            tags$div(id='teksLDMManual')
+    )
+  })
+  
+  
+  observeEvent(input$LDMKolManualTable$changes$changes,{
+    
+    tes<-LDM_fun()
+    inputTupla<-tes$inputTupla
+    tablo<-tes$tablo
+    
+    LDMPropKol_1 <- as.data.frame(hot_to_r(input$LDMKolManualTable))
+    row.names(LDMPropKol_1)<-c(row.names(tablo),"total")
+    colnames(LDMPropKol_1)<-inputTupla
+    LDMPropKol_1[nrow(LDMPropKol_1),1]<- sum(LDMPropKol_1[1:nrow(LDMPropKol_1)-1,1])
+    tabel$manualSave<-LDMPropKol_1
+    
+    removeUI(selector='#teksManual')
+    
+  })
+  
+  
+  
+  output$LDMKolManualTable<-renderRHandsontable({
+    rhandsontable(tabel$manualSave,
+                  rowHeaderWidth = 220,
+                  height=420,
+                  fixedRowsBottom=1
+    )
+  })
+  
+  observeEvent(input$saveLDMPropManual,{
+    tes<-LDM_fun()
+    tablo = tes$tablo
+    inputTupla = tes$inputTupla
+    kolom<-as.data.frame(hot_to_r(input$LDMKolManualTable))
+    total = kolom[nrow(kolom),1]
+    
+    if(total != 1){
+      insertUI(selector='#teksLDMManual', 
+               where = 'afterEnd',
+               ui = tags$div (id ='teksManual', "Kolom tidak dapat disimpan. Nilai total tidak sama dengan 1."))
+    }
+    else {
+      kolomMinSum <- kolom[1:nrow(kolom)-1,]
+      tablo[,inputTupla]<-kolomMinSum
+      LDMProp_new$coba<-tablo
+      insertUI(selector='#teksLDMManual',
+               where='afterEnd',
+               ui= tags$div (id='teksManual',"Kolom berhasil disimpan. Silakan melanjutkan penyuntingan kolom lain.")
+      )
+      removeUI(selector='#pesanHitungLDMNo')
+      removeUI(selector='#pesanHitungLDMYes')
+    }
+  })
+  
+  
+  
+  ##### untuk isi satu kolom dengan normalisasi #####
+  
+  output$LDMUINormal<- renderUI({
+    tagList(tags$b ('Hasil perhitungan normalisasi'),
+            tags$br(),
+            tags$br(),
+            rHandsontableOutput('LDMKolNormalTable'),
+            tags$br(),
+            actionButton('saveLDMPropNormal', 'Simpan kolom'),
+            tags$br(),
+            tags$div(id='teksLDMNormal')
+    )
+  })
+  
+  normal_fun<-reactive({
+    LDMPropKol_0<-LDMPropKol_0()
+    before<-as.matrix(LDMPropKol_0[1:nrow(LDMPropKol_0)-1,])
+    sum<-matrix(data=LDMPropKol_0[nrow(LDMPropKol_0),], nrow=nrow(before), ncol=1)
+    normal<- before/sum
+    normal_sum<-sum(normal)
+    normal<-rbind(normal,normal_sum)
+    rownames(normal)<-rownames(LDMPropKol_0)
+    colnames(normal)<-colnames(LDMPropKol_0)
+    normal
+    
+  })
+  
+  output$LDMKolNormalTable<-renderRHandsontable({
+    rhandsontable(normal_fun(), 
+                  rowHeaderWidth = 220,
+                  height=420, 
+                  readOnly = TRUE, 
+                  fixedRowsBottom=1
+    )
+  })
+  
+  observeEvent(input$saveLDMPropNormal,{
+    tes<-LDM_fun()
+    tablo = tes$tablo
+    inputTupla = tes$inputTupla
+    kolom <- as.data.frame(hot_to_r(input$LDMKolNormalTable))
+    kolomMinSum <- kolom[1:nrow(kolom)-1,]
+    tablo[,inputTupla]<-kolomMinSum
+    LDMProp_new$coba<-tablo
+    insertUI(selector='#teksLDMNormal',
+             where='afterEnd',
+             ui= tags$div (id='teksNormal',"Kolom berhasil disimpan. Silakan melanjutkan penyuntingan kolom lain.")
+    )
+    removeUI(selector='#pesanHitungLDMNo')
+    removeUI(selector='#pesanHitungLDMYes')
+    
+  })
+  
+  
+  ##### simpan tabel LDM ke dalam folder ####
+  
+  observeEvent(input$saveLDMTable,{
+    waktuLDM<-Sys.time()
+    simpanLDM<-gsub(" ","_",waktuLDM,fixed = TRUE)
+    simpanLDM<-gsub(":","-",simpanLDM,fixed = TRUE)
+    tanggalLDM<-Sys.Date()
+    namafileLDM<-paste0(username,"_",selectedProv,"_",simpanLDM)
+    saveRDS(LDMProp_new$coba, file = paste0('LDMData/',selectedProv,'/',namafileLDM))
+    ldmRV$LDMListFile<-list.files(paste0("LDMData/",selectedProv))
+    ldmRV$LDMTotFile<-length(list.files("LDMData/", selectedProv))
+    removeUI(selector='#pesanHitungLDMNo')
+    removeUI(selector='#pesanHitungLDMYes')
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+  })
+  
+  
+  
+  
+  
+  ###### select tipe proyeksi BAU yang diinginkan 
+  
+  observeEvent(input$selectProjType,{
+    if(input$selectProjType=="Proyeksi BAU berdasarkan pertumbuhan ekonomi"){
+      removeUI(selector='#projTypeLandUI')
+      insertUI(selector='#inputProjType',
+               where='afterEnd',
+               ui= uiOutput('projTypeEconomyUI'))
+    }
+    else {
+      removeUI(selector='#projTypeEconomyUI')
+      insertUI(selector='#inputProjType',
+               where = 'afterEnd',
+               ui=uiOutput('projTypeLandUI'))
+      
+    }
+  })
+  
+  output$projTypeEconomyUI<-renderUI(
+    tagList(menuSubItem("Input", tabName = "pageFour"),
+            selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2", "Tipe 3")),
+            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
+            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030),
+            # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+            # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+            actionButton("generateBAUTable", "Buat Tabel"),
+            menuSubItem("Results", tabName = "pageFive"),
+            selectInput("bauResults",
+                      label="Pilih output yang ingin ditampilkan",
+                      choices=c("Proyeksi PDRB",
+                                "Proyeksi Upah per Kapita",
+                                "Proyeksi Upah Gaji",
+                                "Proyeksi Tenaga Kerja",
+                                "Proyeksi Konsumsi Energi",
+                                "Proyeksi Emisi Terkait Konsumsi Energi",
+                                "Proyeksi Buangan Limbah",
+                                "Proyeksi Emisi Terkait Buangan Limbah",
+                                "Proyeksi Total Emisi",
+                                "Proyeksi Intensitas Emisi", 
+                                "Proyeksi Tutupan Lahan",
+                                "Proyeksi Emisi Terkait Tutupan Lahan"
+                                )),
+    )
+  )
+  
+  output$projTypeLandUI<-renderUI(
+    tagList(menuSubItem("Input sektor lahan", tabName = "pageNine"),
+            menuSubItem("Result BAU Sektor Lahan", tabName = "pageTen"),
+            selectInput("lahanResults",
+                        label="pilih output sektor lahan yang ingin ditampilkan",
+                        choices=c("Proyeksi Output",
+                                  "Proyeksi PDRB",
+                                  "Proyeksi Income",
+                                  "Proyeksi Profit",
+                                  "Proyeksi Pajak",
+                                  "Proyeksi Impor",
+                                  "Proyeksi Ekspor",
+                                  "Proyeksi Belanja Pemerintah",
+                                  "Proyeksi Belanja Rumah Tangga",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Neraca Perdagangan"
+                                  )
+            )
+    )
+  )
+  
+
   allInputsBAU <- eventReactive(input$buttonBAU, {
     if(debugMode){
       sec <- blackBoxInputs()
@@ -939,19 +1473,36 @@ server <- function(input, output, session) {
     waste <-sec$waste
     ef_waste <- sec$ef_waste
     bau_scenario <- allDataProv$bau_scenario
-    # LU_tahun<-sec$LU_tahun
+    LU_tahun<-sec$LU_tahun   #LU_tahun yang tidak editable
     # LDMProp<-sec$LDMProp
-    # GDPAll<-sec$GDPAll
+    GDPAll<-sec$GDPAll
+    kategori<-sec$kategori
+    tahun<-sec$tahun
     # landTable_t0<-sec$landTable_t0
     # landReq<-sec$landReq
     # analysisResult <- sec$result
     # multiplierLabour<-analysisResult$multiplierLabour
     
+    
+    ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
+    
+    if (input$LDMPropUse=="LDM historis"){
+      LDMProp=sec$LDMProp_his
+    }
+    else {
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))
+    }
+    
+    
+    
+    
+    
     import_row <- 1
     income_row <- 2
     profit_row <- 3
     
-    gdpRate <- as.numeric(input$gdpRate)
+    # gdpRate <- as.numeric(input$gdpRate) 
+    gdpRate<- as.numeric(input$gdpRate)/100 #edit  jika input$gdpRate = 5, maka gdpRate= 0.05
     startT <- as.numeric(input$dateFrom)
     endT <- as.numeric(input$dateTo)
     
@@ -1022,10 +1573,12 @@ server <- function(input, output, session) {
     findem_proportion <- findem/findem_rowsum
     findem_proportion[is.na(findem_proportion)] <- 0
     
-    coef_grise <- (100+gdpRate)/100
+    # coef_grise <- (100+gdpRate)/100
+    coef_grise<- (1+gdpRate) #edit   
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
-    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+    # bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+    bau_scenario_matrix <- (1+bau_scenario_matrix) #edit
     
     stepN <- endT-startT
     for(s in 1:stepN){
@@ -1059,6 +1612,7 @@ server <- function(input, output, session) {
       findem_series <- cbind(findem_series, projFinDem)
       projOutput <- leontief %*% projFinDem
       tOutputSeries <- cbind(tOutputSeries, projOutput)
+      
       # notes on the year
       projT <- startT+s
       projT <- paste0("y", projT)
@@ -1076,6 +1630,8 @@ server <- function(input, output, session) {
     }
     colnames(findem_series) <- as.character(tStamps)
     colnames(tOutputSeries) <- as.character(tStamps)
+    
+    saveRDS(tOutputSeries, "user/tOutputSeries_2")  #delete after use
     
     finalDemandSeriesTable <- cbind(sector, findem_series)
     colnames(finalDemandSeriesTable) <- c("Sector", as.character(tStamps)) 
@@ -1203,6 +1759,70 @@ server <- function(input, output, session) {
     totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
     totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
     
+    # 10. Land
+    
+    tOutputSeries_lahan<-tOutputSeries
+    
+    for (i in 2:ncol(tOutputSeries_lahan)){
+      tOutputSeries_lahan[9:nrow(tOutputSeries_lahan),i]<- tOutputSeries[9:nrow(tOutputSeries_lahan),1]  #delta pdrb hanya pada land-based sector. Masih perlu diubah lagi code nya supaya sesuai kategori.
+    }
+    
+    deltaOutputSeries<-tOutputSeries_lahan
+    for (i in 1:ncol(tOutputSeries_lahan)){
+      deltaOutputSeries[,i]<-tOutputSeries_lahan[,i]-tOutputSeries[,1]
+    }
+    
+
+    
+    # untuk hitung landTable, LPC, LRC dari data LDM baru yang editable
+    LU_tahun<-as.data.frame(LU_tahun)
+    LU_tahun<-as.matrix(LU_tahun)
+    LU_tahun_0<-as.matrix(LU_tahun[,1])   #Land cover di tahun tabel I-O historis    
+    LDMdimcol<-ncol(LDMProp)
+    LDMdimrow<-nrow(LDMProp)
+    LDMProp<-as.matrix(LDMProp)
+    GDPAll<-as.data.frame(GDPAll)
+    diagLU<-as.matrix(diag(LU_tahun[,1]))
+    landTable_0<-LDMProp%*%diagLU
+    landReq_0<-as.matrix(rowSums(landTable_0))
+    
+    LPC_0<-GDPAll[,4]/landReq_0
+    LPC_0[is.infinite(LPC_0)]<-0
+    LRC_0<-1/LPC_0
+    LRC_0[is.infinite(LRC_0)]<-0
+    landTable_0<-cbind(sector, kategori, landTable_0, landReq_0, LPC_0, LRC_0)
+    colnames(landTable_0)<-c("Sektor", "Kategori", colnames(LDMProp),"Total Kebutuhan Lahan", "LPC", "LRC")
+    # tahun<-as.vector(str_extract_all(colnames(LU_tahun), '[0-9]+'))
+    # tahun<-as.data.frame(tahun)
+    # tahun<-t(tahun)
+    
+
+    #rumus: land cover = LDMProp_transpose x LRC x output 
+    
+    LDMProp_t<- t(LDMProp)
+    diagLRC<-as.matrix(diag(landTable_0$LRC))
+    L_R<- LDMProp_t %*% diagLRC
+    
+    
+    tot_LU_tahun_0<-colSums(LU_tahun_0)
+
+    #generate delta LandCover dari skenario output
+    deltaLandCover<-matrix(ncol=ncol(deltaOutputSeries), nrow=nrow(L_R))
+    for (i in 1:ncol(tOutputSeries)){
+      deltaLandCover[,i] <- L_R %*% deltaOutputSeries[,i]
+    }
+    
+    #generate total land cover tahun berikutnya
+    landCover_t1<-matrix(ncol = ncol(deltaLandCover), nrow=nrow(deltaLandCover))
+    for (i in 1:ncol(deltaLandCover)){
+      landCover_t1[,i]<-LU_tahun_0 + deltaLandCover[,i]
+    }
+    rownames(landCover_t1)<-colnames(LDMProp)
+    landCover_t1_years<-as.data.frame(as.character(startT:endT))
+    
+    
+    
+    
     notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
     
     list_bau <- list(population = population,
@@ -1226,11 +1846,53 @@ server <- function(input, output, session) {
                      AVSeries = addValueSeries,
                      GDP_rate = gdpRate,
                      dateTo = endT,
-                     dateFrom = startT
+                     dateFrom = startT, 
+                     landCover_t1=landCover_t1,
+                     landCover_t1_years=landCover_t1_years
     ) 
     list_bau
   })
   
+  
+  
+  #### input BAU sektor lahan, edit tabel land cover ====
+  landCoverTable_0 <- reactive({
+    sec <- blackBoxInputs()
+    LU_tahun<-sec$LU_tahun
+    tahun<-sec$tahun
+    colnames(LU_tahun)<-tahun
+    sum<-colSums(LU_tahun)
+    as.data.frame(rbind(LU_tahun, sum), row.names=c(colnames(allDataProv$LDMProp_his), "total luas"))
+  })
+
+    landCoverTable_fun <- reactive ({
+      if(is.null(input$inputBAULahanLandCover)){return(landCoverTable_0())}
+      else if (!identical(landCoverTable_0(), input$inputBAULahanLandCover)){
+        landCoverTable_1 <- as.data.frame(hot_to_r(input$inputBAULahanLandCover))
+        landCoverTable_1[nrow(landCoverTable_1),]<-colSums(landCoverTable_1[1:nrow(landCoverTable_1)-1,])
+        landCoverTable_1
+      }
+    })
+
+
+    output$inputBAULahanLandCover <- renderRHandsontable({
+      rhandsontable(landCoverTable_fun(),
+                    # fixedColumnsLeft=1,
+                    fixedRowsBottom=1,
+                    height=640,
+                    rowHeaderWidth = 180
+      # )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
+      )
+    })
+
+    observeEvent(input$saveInputBAULahanLandCover,{
+      tabLandCover<-hot_to_r(input$inputBAULahanLandCover)
+      tabLandCoverMinSum<-tabLandCover[1:nrow(allDataProv$LU_tahun),1:ncol(allDataProv$LU_tahun)]
+      editable$BAULahan_landCover<-tabLandCoverMinSum
+      notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
+    })
+
+    
   
   #### all inputs BAU sektor lahan====
   allInputsBAULahan <- eventReactive(input$buttonBAULahan, {
@@ -1240,9 +1902,9 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     
-    LU_tahun<-sec$LU_tahun
+    
     GDPAll<-sec$GDPAll
-    landTable_t0<-sec$landTable_t0
+    # landTable_t0<-sec$landTable_t0
     landReq<-sec$landReq
     analysisResult <- sec$result
     multiplierLabour<-analysisResult$multiplierLabour
@@ -1261,8 +1923,28 @@ server <- function(input, output, session) {
     bau_scenario <- allDataProv$bau_scenario
     tahun<-sec$tahun
     GDPAll<-sec$GDPAll
-    LDMProp<-allDataProv$LDMProp
+    # LDMProp<-allDataProv$LDMProp
     labour_coef<-analysisResult$labour_coef
+    leontief<-sec$leontief
+    
+    
+    ##### Gunakan input LDM yang sudah diedit 
+    
+    if (input$LDMPropUse=="LDM historis"){
+      LDMProp=sec$LDMProp_his
+    }
+    else {
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))
+    }
+    
+    
+    ##### Gunakan input Land cover yang sudah diedit
+    if(is.null(editable$BAULahan_landCover)){
+      LU_tahun <- sec$LU_tahun
+    }
+    else {
+      LU_tahun<-editable$BAULahan_landCover
+    }
     
     ### Sektor Lahan: hitung LDM dalam satuan luas, LPC, LRC
     
@@ -1272,10 +1954,14 @@ server <- function(input, output, session) {
     LDMdimrow<-nrow(LDMProp)
     LDMProp<-as.matrix(LDMProp)
     GDPAll<-as.data.frame(GDPAll)
+    #proporis findem/output
+    propFindemOutput<- as.matrix(rowSums(findem)/GDPAll[,4])
     
     diagLU <- list()
     landTable<-list()
     landReq<-matrix(nrow=nrow(LDMProp),ncol=ncol(LU_tahun))
+    
+
     
     for (i in 1:ncol(LU_tahun)){
       diagLU[[i]]<-as.matrix(diag(LU_tahun[,i]))
@@ -1294,11 +1980,22 @@ server <- function(input, output, session) {
     
     #### proyeksi output sektor lahan
     
-    # generate tabel output sektor u/ tiap tahun
-    outputlahan_tahun<-matrix(nrow=nrow(landReq), ncol=ncol(landReq))
+    
+    #generate tabel findem sektor u/ tiap tahun
+    findemLahan_tahun<-matrix(nrow=nrow(landReq), ncol=ncol(landReq))
     for(x in 1:ncol(landReq)){
-      outputlahan_tahun[,x]<-landReq[,x]*landTable_t0[,"LPC"]
+      findemLahan_tahun[,x]<-landReq[,x]*landTable_t0[,"LPC"]*propFindemOutput
     }
+    
+    findemLahan_tahun[is.na(findemLahan_tahun)]<-0
+    
+    
+    # generate tabel output sektor u/ tiap tahun
+    outputlahan_tahun<-matrix(nrow=nrow(findemLahan_tahun), ncol=ncol(findemLahan_tahun))
+    for(x in 1:ncol(findemLahan_tahun)){
+      outputlahan_tahun[,x]<-leontief %*% findemLahan_tahun[,x]
+    }
+    
     
     
     # generate tabel BAU output sektor lahan untuk ditampilkan di shiny
@@ -1317,6 +2014,8 @@ server <- function(input, output, session) {
     }
     
     outputlahan_table <- outputlahan_result[outputlahan_result$year != 0, ] # remove initial values
+
+  
     
     ##### proyeksi lain2
     
@@ -1451,7 +2150,8 @@ server <- function(input, output, session) {
                         lahanResult_7=lahanResult_7,
                         lahanResult_8=lahanResult_8,
                         lahanResult_9=lahanResult_9,
-                        tahun=tahun
+                        tahun=tahun, 
+                        landTable_t0=landTable_t0
     )
     listBAU_lahan
   })
@@ -1476,7 +2176,8 @@ server <- function(input, output, session) {
     waste_disposal_table <- results$waste_disposal_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
-    
+    landCover_t1<- results$landCover_t1
+    landCover_t1_years<-results$landCover_t1_years
     
     if(input$bauResults == "Proyeksi PDRB"){
       removeUI(selector = '#baupdrb')
@@ -1593,7 +2294,13 @@ server <- function(input, output, session) {
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
-    
+    else if(input$bauResults=="Proyeksi Tutupan Lahan"){
+      removeUI(selector='#baupdrb')
+      landCoverData<-cbind(landCover_t1_years,colSums(landCover_t1))
+      colnames(landCoverData)<-c("year", "Tutupan_Lahan")
+      landCover_plot<-ggplot(data=landCoverData, aes(x=year, y=Tutupan_Lahan, group=1)) + geom_line() + geom_point()
+      ggplotly(landCover_plot)
+    }
   })
   
   output$tableResultsBAU <- renderDataTable({
@@ -1643,6 +2350,9 @@ server <- function(input, output, session) {
       return(NULL)
     } 
     else if(input$bauResults == "Proyeksi Intensitas Emisi"){
+      return(NULL)
+    }
+    else if (input$bauResults=='Proyeksi Tutupan Lahan'){
       return(NULL)
     }
     
@@ -2127,10 +2837,10 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers
-    coef_grise <- (100+input$gdpRate)/100
+    coef_grise <- (100+input$gdpRate)/100 #edit?
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
-    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+    bau_scenario_matrix <- (100+bau_scenario_matrix)/100  #edit?
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
