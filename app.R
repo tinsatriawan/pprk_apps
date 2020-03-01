@@ -16,6 +16,7 @@ library(formattable)
 library(rtf)
 library(rhandsontable)
 library(stringr)
+library(gridExtra)
 #library(ggradar)
 # library(RColorBrewer)
 
@@ -46,8 +47,8 @@ server <- function(input, output, session) {
   )
   
   ldmRV<-reactiveValues(
-    LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),
-    LDMTotFile= unique(length(list.files("LDMData/Prov/")))
+    LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
+    LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
   )
   
   editable<-reactiveValues(
@@ -130,6 +131,7 @@ server <- function(input, output, session) {
     periodIO <- readRDS(paste0(datapath, "periodIO"))
     LU_tahun<-readRDS(paste0(datapath,"LU_tahun"))
     LDMProp_his<-readRDS(paste0(datapath,"LDMProp"))
+    row.names(LDMProp_his)<-sector[,1]
     rtffile <- readRDS(paste0(datapath, "rtffile"))
     
     allDataProv$username = username 
@@ -981,7 +983,8 @@ server <- function(input, output, session) {
   ###pilh nama file dan file yang akan ditampilkan###
   
   LDMTableTampil<-eventReactive(input$select_button,{
-    
+    sec<-blackBoxInputs()
+    LDMProp_his<-sec$LDMProp_his
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
     
     if(selectedRow==1){
@@ -993,7 +996,7 @@ server <- function(input, output, session) {
     }
     else if(selectedRow != 1){
       fileName<- LDMListTableReact()[selectedRow,1]
-      selectedFile<-readRDS(paste0("LDMData/Prov/",fileName))
+      selectedFile<-readRDS(paste0("LDMData/Prov/",fileName))   # ganti mas alfa
       list<-list(fileName=fileName, 
                  selectedFile=selectedFile)
       print("kondisi2")
@@ -1038,6 +1041,10 @@ server <- function(input, output, session) {
   #### tampilkan modal dialog modalLDM ketika sunting tabel dipilih ####
   
   observeEvent(input$modalLDMbutton,{
+    sec<-blackBoxInputs()
+    LDMProp_his<-sec$LDMProp_his
+    sector<-sec$sector
+    colnamesLDM<-colnames(LDMProp_his)
     showModal(modalDialog(sidebarLayout(sidebarPanel(
       fluidRow(
         selectInput("tupla",
@@ -1076,7 +1083,7 @@ server <- function(input, output, session) {
   observeEvent(input$deleteLDMTable, {
     LDMTableTampil<-LDMTableTampil()
     fileName<-LDMTableTampil$fileName
-    file.remove(paste0("LDMData/", selectedProv, "/", fileName))
+    file.remove(paste0("LDMData/Prov/", fileName))   # ganti mas alfa
     
   })
   ###### modal dialog######
@@ -1167,6 +1174,7 @@ server <- function(input, output, session) {
                ui= tags$div(id='pesanHitungLDMNo', "tidak ada perubahan")
       )
     } else {
+      removeUI('#pesanHitungLDMNo')
       insertUI(selector='#NormOrMan',
                where = 'afterEnd',
                ui= tags$div(id='pesanHitungLDMYes',
@@ -1361,10 +1369,10 @@ server <- function(input, output, session) {
     simpanLDM<-gsub(" ","_",waktuLDM,fixed = TRUE)
     simpanLDM<-gsub(":","-",simpanLDM,fixed = TRUE)
     tanggalLDM<-Sys.Date()
-    namafileLDM<-paste0(username,"_",selectedProv,"_",simpanLDM)
-    saveRDS(LDMProp_new$coba, file = paste0('LDMData/',selectedProv,'/',namafileLDM))
-    ldmRV$LDMListFile<-list.files(paste0("LDMData/",selectedProv))
-    ldmRV$LDMTotFile<-length(list.files("LDMData/", selectedProv))
+    namafileLDM<-paste0("username","_","Prov","_",simpanLDM) # ganti mas alfa
+    saveRDS(LDMProp_new$coba, file = paste0('LDMData/Prov/',namafileLDM)) #ganti mas alfa
+    ldmRV$LDMListFile<-list.files(paste0("LDMData/Prov")) #ganti mas alfa
+    ldmRV$LDMTotFile<-length(list.files("LDMData/Prov")) # ganti mas alfa
     removeUI(selector='#pesanHitungLDMNo')
     removeUI(selector='#pesanHitungLDMYes')
     removeUI(selector='#LDMUIManual')
@@ -1490,7 +1498,7 @@ server <- function(input, output, session) {
       LDMProp=sec$LDMProp_his
     }
     else {
-      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
     }
     
     
@@ -1934,7 +1942,7 @@ server <- function(input, output, session) {
       LDMProp=sec$LDMProp_his
     }
     else {
-      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))   # ganti mas alfa
     }
     
     
