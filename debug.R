@@ -1,4 +1,4 @@
-selectedProv<-"Jambi"
+selectedProv<-"JaBar"
 
 datapath <- paste0("data/", selectedProv, "/")
 readRDS("data/Jambi/sector")
@@ -316,7 +316,7 @@ emission_lookup = ef_waste
 # }
     
 waste<-read.csv("data/Jambi/waste.csv", header=TRUE, sep=",")
-<<<<<<< HEAD
+
 
 saveRDS(waste, file="data/Jambi/waste")    
     
@@ -331,8 +331,29 @@ total<-as.matrix("total")
 sectors<-as.matrix(sector[,1])
 sectors<-as.data.frame(rbind(sectors,total))
 sum<-as.matrix(colSums(LDMProp))
-=======
+
 
 saveRDS(waste, file="data/Jambi/waste")    
-    
->>>>>>> f497f01a25d6607bad3498370b91cc77428dbfb8
+
+
+waste_SumBar<-readRDS("data/SumBar/waste")
+write.csv(waste_SumBar,file="data/SumBar/waste.csv")
+waste_SumBar<-read.csv("data/SumBar/waste.csv", header=TRUE)
+saveRDS(waste_SumBar, file="data/SumBar/waste")
+
+waste<-waste[,1:17]
+saveRDS(waste, file="data/SumUt/waste")
+
+addval<-addval[2:6,]
+saveRDS(addval,"data/SumUt/addval")
+
+GDPAll_SumBar<-read.csv("data/SumBar/GDPAll.csv")
+saveRDS(GDPAll_SumBar,"data/SumBar/GDPAll")
+
+
+
+# CEK GDP
+GDP <- colSums(addval_matrix[2:num_addval,])
+GDPvalues <- as.matrix(GDP)
+GDPTotal <- colSums(GDPvalues)
+GDPTotal <- round(GDPTotal,digits = 2)

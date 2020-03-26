@@ -1,0 +1,20 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+Padi,0,0,0,0,0,0,0,0,0,0.1,0,0.2,0,1,0,0,0,0,0,0,0.1,0,0
+Tanaman bahan makanan lainnya,0,0.006129795,0,0,0,0,0,0.97010904,0,0,0,0.2,0.8,0,0,0,0.2,0,0,0,0,0,0
+Tanaman pertanian lainnya,0,0.016865988,0,0,0,0,0,0.02989096,0,0,0,0.4,0.1,0,0,0,0.2,0,0,0,0,0,0
+Peternakan dan hasil-hasilnya,0,0,0,0,0,0,0,0,0,0,0,0.2,0,0,0,0,0.2,0,0,0,0,0,0
+Kehutanan,0.8,0.777004217,0.8,0.8,0.8,0.8,0.2,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0.1,0,0
+Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0
+Pertambangan dan penggalian,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5,1,0,0,0,0
+Industri makanan minuman dan tembakau,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Industri lainnya,0,0,0,0,0,0,0.8,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Pengilangan minyak bumi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Listrik gas dan air minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Bangunan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0.2,0,0,0,0,0,1
+Perdagangan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Hotel dan restoran,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Pengangkutan dan komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Lembaga keuangan usaha bangunan dan jasa perusahaan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Pemerintahan umum dan petahanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Jasa-jasa,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.090909091,0,0,0,0,0,0,0
+Kegiatan yang tak jelas batasannya,0.2,0.2,0.2,0.2,0.2,0.2,0,0,1,0.9,1,0,0,0,0,0,0.2,0.5,0,0,0.8,1,0

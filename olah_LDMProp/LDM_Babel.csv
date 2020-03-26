@@ -1,0 +1,61 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+Padi,0,0,0,0,0,0,0,0,0,0.1,0,0.1,0,1,0,0,0,0,0,0,0.1,0,0
+Tanaman Bahan Makanan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Sayur-Sayuran,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Buah-Buahan,0,0,0,0,0,0,0.113358029,0.001985811,0.1,0,0,0,0.7,0,0,0,0.1,0,0,0,0,0,0
+Tanaman Hortikultura Lainnya,0,0,0,0,0,0,0.141478104,0,0,0.1,0.1,0.6,0,0,0,0,0.1,0,0,0,0,0,0
+Kelapa Sawit,0,0,0,0,0,0,0,0.865668593,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Lada,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Karet,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Tanaman Perkebunan Lainnya,0,0,0,0,0,0,0.031619361,0.132345597,0,0,0.1,0,0,0,0,0,0.1,0,0,0,0,0,0
+Ternak dan Hasil-Hasilnya,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0.1,0,0,0,0,0,0
+Unggas dan Hasil-Hasilnya serta Pemeliharaan Hewan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0
+Jasa Pertanian,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0
+Hasil Kehutanan dan Penebangan Kayu,1,1,1,1,1,1,0,0,0.9,0.8,0.7,0,0,0,0,0,0,0,0,0,0.9,1,0
+Ikan dan Hasil Perikanan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0
+Migas (tambang),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.1,0,0,0,0
+Bijih Timah,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.1,0,0,0,0
+Hasil Tambang dan Galian Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.6,0.7,0,0,0,0
+Produk industri Pengilangan Migas,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.1,0,0,0,0
+Minyak Hewani dan Nabati,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Krupuk Getas Kritcu dan Produk Makanan Lainnya yang Sejenis,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Makanan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Minuman,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Produk Tembakau,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Tekstil dan Pakaian Jadi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Kulit Barang dari Kulit dan Alas Kaki,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Kayu Barang dari Kayu dan Gabus dan Barang Anyaman dari Bambu Rotan dan Sejenisnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Kertas Barang dari Kertas dan Pencetakan Reproduksi Media Rekamam,0,0,0,0,0,0,0.713544507,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Bahan Kimia dan Barang dari Bahan Kimia Farmasi Produk obat Kimia dan Obat Tradisional,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Karet Barang dari Karet dan Plastik,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Barang Galian Bukan Logam Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Logam Dasar Mulia dan Logam Dasar Bukan Besi Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Logam Dasar Besi dan Baja Barang dari Logam,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Mesin dan Perlengkapan Ytdl,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Kendaraan Bermotor Trailer dan Semi Trailer dan Alat Angkutan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Furnitur,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Produk Pengolahan Lainnya Jasa Reparasi dan Pemasangan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Listrik Gas dan Produk Es,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Pengadaan Air Pengelolaan Sampah Limbah dan Daur Ulang,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Konstruksi dan Jasa Konstruksi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0.1,0,0,0,0,0.7
+Perdagangan Mobil Sepeda Motor dan Reparasinya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Perdagangan Selain Mobil dan Sepeda Motor,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Angkutan Darat,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Angkutan Laut,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Angkutan Sungai,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Angkutan Udara,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0.3
+Pergudangan dan Jasa Penunjang Angkutan Pos dan Kurir,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Penyediaan Akomodasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Penyediaan Makan Minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Informasi dan Komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Keuangan Perbankan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Asuransi dan Dana Pensiun,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Lembaga Keuangan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Real Estat,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Perusahaan dan Jasa Persewaan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Agen Perjalanan Penyelenggaraan Tur dan Jasa Reservasi Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Pemerintahan Umum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Pendidikan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Kesehatan dan Kegiatan Sosial,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Kesenian Hiburan dan Rekreasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0
+Jasa Perorangan yang Melayani Rumah Tangga,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.023809524,0,0,0,0,0,0,0

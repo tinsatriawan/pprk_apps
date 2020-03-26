@@ -1,0 +1,33 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+ Tanaman Bahan Makanan ,0,0,0,0,0,0,0,0.042061548,0.1,0.1,0.1,1,0.9,1,0,0,0.5,0,0,0,0,0,0
+ Tanaman Perkebunan ,0,0,0,0,0,0,0,0.957938452,0.1,0.1,0.1,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+ Peternakan dan Hasil-hasilnya ,0,0,0,0,0,0,0,0,0.1,0.1,0.1,0,0,0,0,0,0.2,0,0,0,0,0,0
+ Kehutanan ,1,1,1,1,1,1,1,0,0.7,0.7,0.7,0,0,0,0,0,0.1,0.1,0,0,1,1,0
+ Perikanan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0.1,0,0,0.5,0,0,0
+ Minyak dan Gas Bumi ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.3,0.2,0,0,0,0
+ Pertambangan dan penggalian lainnya ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.6,0.8,0,0,0,0
+" Industri Makanan, Minuman dan Tembakau ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+" Industri Tekstil, Brg. Kulit & Alas kaki ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Industri Brg. Kayu & Hasil Hutan lainnya ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Industri Kertas dan Barang Cetakan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+" Industri Pupuk, Kimia & Brg. dari Karet ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Industri Semen & Brg. Galian bukan logam ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Industri Logam Dasar Besi & Baja ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+" Industri Alat Angk., Mesin & Peralatannya ",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Industri Barang lainnya ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Listrik dan Gas ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Air Bersih ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0.5,0,0,0
+ Bangunan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0.5
+ Perdagangan Besar & Eceran ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Hotel dan Restoran    ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Angkutan Jalan Raya   ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Angkutan Laut ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Angkutan Udara ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0.5
+ Jasa Penunjang Angkutan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Komunikasi ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Bank dan Lembaga Keuangan tanpa Bank ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Sewa Bangunan dan Jasa Perusahaan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Pemerintahan Umum ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Jasa Sosial Kemasyarakatan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Jasa Hiburan & Rekreasi ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0
+ Jasa Perorangan & Rumahtangga ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.04,0,0,0,0,0,0,0

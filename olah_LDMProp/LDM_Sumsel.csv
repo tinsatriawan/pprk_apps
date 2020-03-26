@@ -1,0 +1,61 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+Padi-padian,0,0,0,0,0,0,0,0,0,0.1,0,0,0,1,0,0,0,0,0,0,0.1,0,0
+Kacang-kacangan,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Jagung,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Umbi-umbian,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Sayuran dan buah-buahan,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Karet,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0.1,0,0,0,,0,0
+Tebu,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Kelapa,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Kelapa Sawit,0,0,0,0,0,0,0,0.3,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Lada,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,,0,0,0,0,0,0
+Kopi,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,,0,0,0,0,0,0
+Teh,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,,0,0,0,0,0,0
+Tanaman lainnya,0,0,0,0,0,0,0.1,0.1,0,0,0,0,0.1,0,0,0,0.1,0,0,0,0,0,0
+Peternakan,0,0,0,0,0,0,0,0,0,0,0.2,0,0,0,0,0,0,0,0,0,0,0,0
+Pemotongan Hewan,0,0,0,0,0,0,0,0,0,0,,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Unggas dan Hasil-hasilnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Kayu dan Hasil-hasilnya,0.2,0.3,0.2,0.3,0.2,0.3,0,0,0.1,0.1,0.1,0,0,0,0,0,0,0,0,0,0.1,0,0
+Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.6,0,0,0,0,0.6,0,0,0
+Penambangan Batu Bara,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.4,,0,0,0
+Penambangan Timah,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.2,,0,0,0
+Penambangan Minyak dan Gas Bumi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0.2,0,0,0,0
+Penggalian,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0.2,0,0,0,0
+Industri Pengolahan dan Pengawetan Makanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Minyak dan Lemak,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Indsutri Penggilingan Padi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Tepung,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Gula,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Makanan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Minuman,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industru Rokok,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Tekstil Pakaian dan Kulit,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Bambu Kayu dan Rotan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Kertas Barang-barang dari Kertas dan Penjilidan,0,0,0,0,0,0,0.880990944,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Pupuk dan Pestisida,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Kimia,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Pengilangan Minyak Bumi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Barang Karet dan Plastik,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Barang-barang dari Mineral Bukan Logam,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Semen,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Logam Dasar Besi dan Baja,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Logam Dasar Bukan Besi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Barang dari Logam lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Mesin Alat-alat dan Perlengkapan Listrik,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri Alat Pengangkutan dan Perbaikannya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Industri yang Belum Digolongkan dimanapun,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Listrik Gas dan Air Minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Bangunan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0.2
+Perdagangan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Hotel dan Restoran,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Angkutan Kereta Api,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Angkutan Jalan Raya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Angkutan Air,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Angkutan Udara dan Jasa Penunjang Angkutan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0.2
+Komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Bank dan Lembaga Keuangan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Usaha Bangunan dan Jasa Perusahaan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Pemerintahan Umum dan Jasa,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Jasa Sosial Kemasyarakatan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Jasa Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.025641026,0,0,0,0,0,0,0
+Kegiatan yang tak jelas batasannya,0.8,0.7,0.8,0.7,0.8,0.7,0.019009056,0,0.9,0.8,0.7,0.6,0.2,0,0.4,0,0.1,0.4,0,0.4,0.8,1,0.6

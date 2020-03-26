@@ -1,0 +1,46 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+Padi,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0
+Jagung,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0
+Tanaman umbi-umbian,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0
+Kacang-kacangan,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0
+Sayur-sayuran dan buah-buahan,0,0.005468203,0,0,0,0,0,0.052581878,0,0,0,0.1,0.6,0,0,0,0,0,0,0,0,0,0
+Padi-padian dan tanaman lainnya,0,0,0,0.021435934,0,0,0,0.003625954,0,0.1,0,0,0,0,0,0,0,0,0,0,0.1,0,0
+Karet,0,0,0,0,0,0,0,0.15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Kelapa,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0
+Kelapa sawit,0,0,0,0,0,0,0,0.567611687,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Kopi,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Teh,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Cengkeh,0,0,0,0,0,0,0,0,0,0,0,0,0.05,0,0,0,0,0,0,0,0,0,0
+Kakao,0,0,0,0,0,0,0,0,0,0,0,0,0.05,0,0,0,0,0,0,0,0,0,0
+Hasil pertanian lainnya,0,0.003325629,0,0,0,0,0,0.02618048,0,0,0,0.6,0.2,0,0,0,0.2,0,0,0,0,0,0
+Ternak dan hasil2nya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0
+"Unggas, hewan lainnya dan hasil2nya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0
+Kayu,0.023705907,0.179915559,0.023705907,0.179915559,0.023705907,0.179915559,0.2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Hasil hutan dan perburuan lainnya,0.1,0.2,0.1,0.2,0.1,0.2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Perikanan laut dan hasil laut lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0,0,0
+Perikanan darat dan hasil perikanan darat,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0.2,0,0,0
+Pertambangan batu bara dan mineral logam,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0.5,0,0,0,0
+Pertambangan dan penggalian lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0.5,0,0,0,0
+Industri penggilingan dan penyosohan padi dan kopi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Industri makanan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Industri tekstil, brg kulit dan alas kaki",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Industri barang kayu, hasil hutan lainnya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Industri kertas dan barang cetakan,0,0,0,0,0,0,0.8,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Industri pupuk, kimia & barang dari karet",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Industri semen & barang galian bukan logam,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Industri alat angkutan, mesin & peralatannya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Industri Barang lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Listrik , gas dan air bersih",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Bangunan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0.2
+Perdagangan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Hotel dan Restoran,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Angkutan darat,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+"Angkutan laut, sungai dan danau",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Angkutan udara,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0.2
+Jasa penunjang angkutan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Bank dan lembaga keuangan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Pemerintahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Jasa pendidikan dan kesehatan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Jasa lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.043478261,0,0,0,0,0,0,0
+Kegiatan yang tak jelas batasannya,0.876294093,0.61129061,0.876294093,0.598648507,0.876294093,0.620084441,0,0,1,0.9,1,0,0,0,0,0.043478261,0.6,0.6,0,0.6,0.9,1,0.6

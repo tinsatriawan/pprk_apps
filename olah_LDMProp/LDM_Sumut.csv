@@ -1,0 +1,72 @@
+,Hutan lahan kering primer,Hutan lahan kering sekunder / bekas tebangan,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara
+Padi,0,0,0,0,0,0,0,0,0,0.1,0,0.1,0,1,0,0,0,0,0,0,0.1,0,0
+Jagung,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Umbi-umbian dan Pati,0,0,0,0,0,0,0,0,0,0,0.1,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Sayur-sayuran,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Buah-buahan,0,0,0,0,0,0,0.016609859,0.003100832,0.1,0.1,0.1,0.1,0.1,0,0,0,0.1,0,0,0,0,0,0
+Tanaman Bahan Makanan Lainnya,0,0,0,0,0,0,0.022821094,0.022821094,0,0,0,0.1,0.1,0,0,0,0.1,0,0,0,0,0,0
+Karet,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Coklat,0,0,0,0,0,0,0,0,0,0,0,0.1,0.7,0,0,0,0.1,0,0,0,0,0,0
+Kelapa,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Kelapa Sawit,0,0,0,0,0,0,0,0.6,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0
+Kopi,0,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0.1,0,0,0,0,0,0
+Tanaman Perkebunan Lainnya,0,0,0,0,0,0,0.025408242,0.374078074,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0
+Ternak dan Hasilnya,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0
+Unggas dan Peternakan Lainnya,0,0,0,0,0,0,0,0,0,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0
+Kehutanan,1,1,1,1,1,1,0.2,0,0.9,0.8,0.6,0,0,0,0,0,0,0,0,0,0.9,1,0
+Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.9,0,0,0,0,1,0,0,0
+Penambangan Minyak dan Gas Bumi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2,0.2,0,0,0,0
+Penggalian dan Penambangan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.8,0.8,0,0,0,0
+"Industri Pengolahan Daging, Sayur-sayuran dan Buahan-buhan",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Minyak Makan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.018867925,0,0,0,0,0,0,0
+"Industri Penggilingan Beras, Biji-bijian dan Tepung",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Makanan dari Tepung, Gula, Coklat dan Pengolahannya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Makanan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Minuman dan Sirop,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Rokok dan Tembakau,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Pemintalan, Penenunan dan Perajutan",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Pakaian Jadi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Penyamakan Kulit, Alas Kaki dan Barang dari Kulit",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Penggergajian Kayu dan Bahan Bangunan dari Kayu,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Kayu Lapis dan Sejenisnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Perabotan Rumahtangga dari Kayu, Bambu dan Rotan",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Kertas, Barang Kertas, Percetakan dan Penerbitan",0,0,0,0,0,0,0.735160805,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Kimia Dasar dan Pupuk,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Obatan-obatan dan Jamu,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Bahan Pembersih, Kosmetik dan Barang Kimia Lainnya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Pengilangan Migas,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Karet dan Barang-Barang dari Karet,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Plastik dan Barang dari Plastik,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Keramik, Kapur, Bahan Bukan Logam",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Kaca dan Barang dari Kaca,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Logam Dasar Besi dan Baja,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Barang dari Logam,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Mesin dan Perlengkapan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Barang Elektronika untuk Komunikasi dan Rumahtangga,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Aki Baterai dan Perlengkapan Listrik Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Industri Kapal, Kereta Api, Pesawat Terbang, Perlengkapannya dan Perbaikannya",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Kendaraan Bermotor dan Perlengkapannya dan Industri Alat Angkutan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Industri Barang-Barang Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Listrik dan Gas,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Air Minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Bangunan Tempat Tinggal dan Bangunan Bukan Tempat Tinggal,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Bangunan lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0.7
+Perdagangan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Restoran,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Perhotelan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Angkutan Kereta Api,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Angkutan Jalan Raya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Angkutan Laut, Danau dan Sungai",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Angkutan Udara,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0.3
+Jasa Penunjang Angkutan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Bank dan Lembaga Keuangan Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Usaha Persewaan Bangunan dan Tanah,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Jasa Perusahaan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Pemerintah dan Pertahanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Jasa Pendidikan dan Kemasyarakatan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+"Jasa Hiburan, Rekreasi dan Kebudayaan",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Jasa Perbengkelan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Jasa Kesehatan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Jasa Perorangan dan Rumahtangga,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0
+Barang dan Jasa Tidak Termasuk Dimanapun,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.018867925,0,0,0,0,0,0,0

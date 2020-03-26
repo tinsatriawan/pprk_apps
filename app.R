@@ -1618,8 +1618,10 @@ server <- function(input, output, session) {
         projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
       }
       findem_series <- cbind(findem_series, projFinDem)
+      write.csv(findem_series,"SumSel_findem_series.csv") #delete after use
       projOutput <- leontief %*% projFinDem
       tOutputSeries <- cbind(tOutputSeries, projOutput)
+      
       
       # notes on the year
       projT <- startT+s
@@ -1639,7 +1641,7 @@ server <- function(input, output, session) {
     colnames(findem_series) <- as.character(tStamps)
     colnames(tOutputSeries) <- as.character(tStamps)
     
-    saveRDS(tOutputSeries, "user/tOutputSeries_2")  #delete after use
+    write.csv(tOutputSeries, "SumSel_tOutputSeries.csv")  #delete after use
     
     finalDemandSeriesTable <- cbind(sector, findem_series)
     colnames(finalDemandSeriesTable) <- c("Sector", as.character(tStamps)) 
@@ -1753,6 +1755,7 @@ server <- function(input, output, session) {
     
     # 9. Total Emission
     totalEmissionOutput <- otherEm[which(otherEm$Year>=startT & otherEm$Year<= endT),]
+    print(totalEmissionOutput)
     emissionEnergyCons <- numeric()
     emissionIndWaste <- numeric()
     for(t in 0:stepN){
@@ -1766,7 +1769,7 @@ server <- function(input, output, session) {
     totalEmissionOutput$emissionWasteDisp <- emissionIndWaste
     totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
     totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
-    
+
     # 10. Land
     
     tOutputSeries_lahan<-tOutputSeries
