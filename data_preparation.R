@@ -1,4 +1,4 @@
-prov = "Aceh"
+prov = "SumSel_2015"
 io_folder <- paste0("raw/", prov, "/")
 data_folder <- paste0("data/", prov, "/")
 
@@ -333,7 +333,7 @@ saveRDS(multiplier, "multiplierAll")
 saveRDS(I_O_period, "periodIO")
 saveRDS(rtffile, "rtffile")
 
-setwd("d:/PPRK/pprk_apps/")
+setwd("C:/Users/icrafguest01/tin/pprk_apps_tinbaru/pprk_apps")
 # 
 # save(sector , file="sector")
 # save(indem , file="indem")
